@@ -71,6 +71,18 @@ export default function DropDetailScreen() {
   const [loading, setLoading] = useState(true)
   const [claiming, setClaiming] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [fixTimedOut, setFixTimedOut] = useState(false)
+
+  // This screen starts its own location watch, so there is a gap before the
+  // first fix. Say what is happening instead of spinning indefinitely.
+  useEffect(() => {
+    if (fix) {
+      setFixTimedOut(false)
+      return
+    }
+    const timer = setTimeout(() => setFixTimedOut(true), 10000)
+    return () => clearTimeout(timer)
+  }, [fix])
 
   const ka = locale === 'ka'
 
@@ -125,6 +137,32 @@ export default function DropDetailScreen() {
 
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
     router.replace('/vouchers')
+  }
+
+  if (!fix) {
+    return (
+      <View style={styles.centered}>
+        {fixTimedOut ? (
+          <>
+            <Text style={styles.title}>
+              {ka ? 'ლოკაცია მიუწვდომელია' : 'No location yet'}
+            </Text>
+            <Text style={styles.hint}>
+              {ka
+                ? 'ჩართე GPS და გამოდი ღია ცის ქვეშ.'
+                : 'Turn on GPS and step outside — the drop needs your position to measure distance.'}
+            </Text>
+          </>
+        ) : (
+          <>
+            <ActivityIndicator color={c.accent} />
+            <Text style={styles.hint}>
+              {ka ? 'მდებარეობის დადგენა…' : 'Finding your location…'}
+            </Text>
+          </>
+        )}
+      </View>
+    )
   }
 
   if (loading) {
@@ -278,6 +316,8 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     backgroundColor: c.bg,
     alignItems: 'center',
     justifyContent: 'center',
+    padding: space.xl,
+    gap: space.md,
   },
   rarityPill: {
     alignSelf: 'flex-start',
