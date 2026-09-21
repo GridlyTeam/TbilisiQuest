@@ -3,6 +3,7 @@ import {
   Map as MapLibreMap,
   Marker,
   UserLocation,
+  type CameraRef,
 } from '@maplibre/maplibre-react-native'
 import { useRouter } from 'expo-router'
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
@@ -59,6 +60,8 @@ export default function MapScreen() {
   const [drops, setDrops] = useState<NearbyDrop[]>([])
   const [loading, setLoading] = useState(true)
   const lastQuery = useRef<{ lat: number; lng: number } | null>(null)
+  const cameraRef = useRef<CameraRef>(null)
+  const centredOnce = useRef(false)
 
   const ka = locale === 'ka'
 
@@ -66,7 +69,7 @@ export default function MapScreen() {
     const { data, error } = await supabase.rpc('nearby_drops', {
       p_lat: lat,
       p_lng: lng,
-      p_radius: 5000,
+      p_radius: 30000,
     })
     setLoading(false)
     if (error) {
@@ -99,14 +102,35 @@ export default function MapScreen() {
     }
   }, [permission, load])
 
+  useEffect(() => {
+    if (!fix || centredOnce.current) return
+    centredOnce.current = true
+    cameraRef.current?.easeTo({
+      center: [fix.longitude, fix.latitude],
+      zoom: 13,
+      duration: 800,
+    })
+  }, [fix])
+
+  const recentre = useCallback(() => {
+    if (!fix) return
+    cameraRef.current?.easeTo({
+      center: [fix.longitude, fix.latitude],
+      zoom: 15,
+      duration: 500,
+    })
+  }, [fix])
+
   const revealed = drops.filter((d) => d.revealed).length
 
   return (
     <View style={styles.root}>
       <MapLibreMap style={StyleSheet.absoluteFill} mapStyle={c.mapStyle}>
         <Camera
-          center={fix ? [fix.longitude, fix.latitude] : TBILISI_CENTER}
-          zoom={14}
+          ref={cameraRef}
+          initialViewState={{ center: TBILISI_CENTER, zoom: 12 }}
+          minZoom={9}
+          maxZoom={18}
         />
         {permission === 'granted' && <UserLocation animated accuracy />}
 
@@ -165,7 +189,17 @@ export default function MapScreen() {
 
       {/* Always reachable, over the map and under the safety overlay. */}
       {!safety.blocked && (
-        <View style={styles.emergency}>
+        <View style={styles.controls}>
+          {fix && (
+            <Pressable
+              style={styles.recentre}
+              onPress={recentre}
+              accessibilityRole="button"
+              accessibilityLabel={ka ? 'ჩემს ადგილას' : 'Centre on me'}
+            >
+              <Text style={styles.recentreIcon}>◎</Text>
+            </Pressable>
+          )}
           <EmergencyButton />
         </View>
       )}
@@ -241,7 +275,7 @@ const makeStyles = (c: Palette) => StyleSheet.create({
 
   header: { position: 'absolute', top: 56, left: space.lg, right: space.lg },
   headerCard: {
-    backgroundColor: 'rgba(30,30,38,0.94)',
+    backgroundColor: c.surface,
     borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: c.border,
@@ -256,17 +290,35 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     bottom: space.xl,
     left: space.lg,
     right: space.lg,
-    backgroundColor: 'rgba(122,38,38,0.94)',
+    backgroundColor: c.bad,
     borderRadius: radius.md,
     padding: space.md,
   },
-  footerText: { color: c.text, fontSize: 13, textAlign: 'center' },
+  footerText: { color: '#FFFFFF', fontSize: 13, textAlign: 'center' },
 
-  emergency: {
+  controls: {
     position: 'absolute',
     bottom: space.lg,
     right: space.lg,
+    alignItems: 'flex-end',
+    gap: space.md,
   },
+  recentre: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: c.surface,
+    borderWidth: 1,
+    borderColor: c.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 5,
+  },
+  recentreIcon: { color: c.accentInk, fontSize: 22, fontWeight: '700' },
   loadingOverlay: {
     position: 'absolute',
     top: 0,
@@ -290,7 +342,7 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     marginTop: 4,
     alignSelf: 'center',
     maxWidth: 120,
-    backgroundColor: 'rgba(20,20,26,0.9)',
+    backgroundColor: c.surface,
     borderRadius: radius.sm,
     paddingHorizontal: 6,
     paddingVertical: 2,
