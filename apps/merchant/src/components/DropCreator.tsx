@@ -82,20 +82,52 @@ type Props = {
   onCreated?: (dropId: string) => void
 }
 
-const DEFAULTS: DropFormValues = {
-  titleKa: '',
-  titleEn: '',
-  rarity: 'common',
-  offer: 'percent_off',
-  discountPercent: 20,
-  faceValueGel: 5,
-  date: new Date().toISOString().slice(0, 10),
-  startTime: '14:00',
-  endTime: '17:00',
-  inventoryCap: 20,
-  earlyAccessLevel: 0,
-  earlyAccessMinutes: 0,
-  isBossChest: false,
+// ---------------------------------------------------------------------------
+// Local day helpers
+// ---------------------------------------------------------------------------
+// These work in the browser's timezone, which for a Tbilisi merchant on a
+// Tbilisi machine is the venue's timezone. The authoritative conversion to an
+// absolute instant still happens server-side in createDrop().
+
+function todayISO(): string {
+  const now = new Date()
+  return new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 10)
+}
+
+function addDays(iso: string, days: number): string {
+  const d = new Date(`${iso}T00:00:00`)
+  d.setDate(d.getDate() + days)
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+    .toISOString()
+    .slice(0, 10)
+}
+
+function windowHasPassed(dateISO: string, endTime: string): boolean {
+  return new Date(`${dateISO}T${endTime}:00`) <= new Date()
+}
+
+// Scheduling an off-peak slot that already ended today is never what the
+// merchant meant, so the form opens on the next occurrence of it instead.
+function makeDefaults(): DropFormValues {
+  const today = todayISO()
+  const date = windowHasPassed(today, '17:00') ? addDays(today, 1) : today
+  return {
+    titleKa: '',
+    titleEn: '',
+    rarity: 'common',
+    offer: 'percent_off',
+    discountPercent: 20,
+    faceValueGel: 5,
+    date,
+    startTime: '14:00',
+    endTime: '17:00',
+    inventoryCap: 20,
+    earlyAccessLevel: 0,
+    earlyAccessMinutes: 0,
+    isBossChest: false,
+  }
 }
 
 export default function DropCreator({
@@ -104,7 +136,7 @@ export default function DropCreator({
   subscriptionTier,
   onCreated,
 }: Props) {
-  const [values, setValues] = useState<DropFormValues>(DEFAULTS)
+  const [values, setValues] = useState<DropFormValues>(makeDefaults)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
   const [confirmed, setConfirmed] = useState(false)
@@ -130,6 +162,7 @@ export default function DropCreator({
   }, [values.offer, values.faceValueGel, values.discountPercent, values.inventoryCap])
 
   const needsConfirmation = projectedCost >= CONFIRM_THRESHOLD_GEL
+  const inThePast = windowHasPassed(values.date, values.endTime)
   const durationMinutes = useMemo(() => {
     const [sh, sm] = values.startTime.split(':').map(Number)
     const [eh, em] = values.endTime.split(':').map(Number)
@@ -167,7 +200,7 @@ export default function DropCreator({
         ...parsed.data,
       })
       onCreated?.(result.dropId)
-      setValues(DEFAULTS)
+      setValues(makeDefaults())
       setConfirmed(false)
     } catch (error) {
       setServerError(error instanceof Error ? error.message : 'Could not create drop')
@@ -292,6 +325,10 @@ export default function DropCreator({
                 onClick={() => {
                   set('startTime', preset.start)
                   set('endTime', preset.end)
+                  // Picking "Afternoon lull" at 19:00 means tomorrow's lull.
+                  if (windowHasPassed(values.date, preset.end)) {
+                    set('date', addDays(todayISO(), 1))
+                  }
                 }}
                 className={`rounded-full border px-4 py-1.5 text-sm transition ${
                   active
@@ -465,6 +502,19 @@ export default function DropCreator({
         </label>
       </section>
 
+      {inThePast && (
+        <div className="flex flex-wrap items-center gap-3 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-900">
+          <span>That window has already ended today.</span>
+          <button
+            type="button"
+            onClick={() => set('date', addDays(todayISO(), 1))}
+            className="rounded-md bg-amber-900 px-3 py-1 text-xs font-semibold text-white"
+          >
+            Use tomorrow
+          </button>
+        </div>
+      )}
+
       {serverError && (
         <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
           {serverError}
@@ -474,7 +524,7 @@ export default function DropCreator({
       <div className="flex items-center justify-end gap-3 border-t border-neutral-200 pt-6">
         <button
           type="submit"
-          disabled={submitting || (needsConfirmation && !confirmed)}
+          disabled={submitting || inThePast || (needsConfirmation && !confirmed)}
           className="rounded-xl bg-neutral-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-40"
         >
           {submitting ? 'Scheduling…' : 'Schedule drop'}
