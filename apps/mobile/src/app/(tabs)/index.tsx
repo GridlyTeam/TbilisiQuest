@@ -253,11 +253,11 @@ function DropMarker({ drop, ka }: { drop: NearbyDrop; ka: boolean }) {
         <Text style={styles.badgeText}>
           {soldOut
             ? ka
-              ? 'ამოიწურა'
-              : 'Gone'
+              ? 'ვაუჩერები ამოიწურა'
+              : 'No vouchers left'
             : ka
-              ? `${drop.remaining} დარჩა`
-              : `${drop.remaining} left`}
+              ? `${drop.remaining} ვაუჩერი დარჩა`
+              : `${drop.remaining} voucher${drop.remaining === 1 ? '' : 's'} left`}
         </Text>
       </View>
 
@@ -363,16 +363,15 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     elevation: 7,
   },
   badge: {
-    paddingHorizontal: 8,
+    paddingHorizontal: 9,
     paddingVertical: 3,
     borderRadius: radius.pill,
     marginBottom: 4,
-    minWidth: 46,
     alignItems: 'center',
   },
   badgeText: {
     color: '#12101C',
-    fontSize: 11,
+    fontSize: 10.5,
     fontWeight: '800',
   },
   badgeSoldOut: { color: c.textFaint },
