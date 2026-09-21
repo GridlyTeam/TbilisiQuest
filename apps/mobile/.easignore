@@ -1,0 +1,7 @@
+# Keep the upload small: EAS installs dependencies on its own builders, so
+# shipping node_modules just makes every build slower.
+node_modules/
+.expo/
+dist/
+web-build/
+*.log

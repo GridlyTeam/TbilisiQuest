@@ -53,13 +53,21 @@
       [
         "expo-camera",
         {
-          "cameraPermission": "Tbilisi Quest uses the camera to scan the code at the counter when you redeem a voucher."
+          "cameraPermission": "Tbilisi Quest uses the camera to scan the code at the counter when you redeem a voucher.",
+          "recordAudioAndroid": false
         }
       ]
     ],
     "experiments": {
       "typedRoutes": true,
       "reactCompiler": true
-    }
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "bb78eeb9-e781-4aec-8ee5-c10d5e8bfc5d"
+      }
+    },
+    "owner": "akalified"
   }
 }
