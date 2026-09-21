@@ -5,9 +5,19 @@ import { ActivityIndicator, View } from 'react-native'
 import type { Session } from '@supabase/supabase-js'
 
 import { supabase } from '../lib/supabase'
-import { colors } from '../lib/theme'
+import { ThemeProvider, useTheme } from '../lib/theme'
+
 
 export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <RootNavigator />
+    </ThemeProvider>
+  )
+}
+
+function RootNavigator() {
+  const { c } = useTheme()
   const [session, setSession] = useState<Session | null>(null)
   const [loading, setLoading] = useState(true)
   const segments = useSegments()
@@ -41,21 +51,21 @@ export default function RootLayout() {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, backgroundColor: colors.bg, justifyContent: 'center' }}>
-        <ActivityIndicator color={colors.accent} />
+      <View style={{ flex: 1, backgroundColor: c.bg, justifyContent: 'center' }}>
+        <ActivityIndicator color={c.accent} />
       </View>
     )
   }
 
   return (
     <>
-      <StatusBar style="light" />
+      <StatusBar style={c.isDark ? 'light' : 'dark'} />
       <Stack
         screenOptions={{
-          headerStyle: { backgroundColor: colors.bg },
-          headerTintColor: colors.text,
+          headerStyle: { backgroundColor: c.bg },
+          headerTintColor: c.text,
           headerTitleStyle: { fontWeight: '700' },
-          contentStyle: { backgroundColor: colors.bg },
+          contentStyle: { backgroundColor: c.bg },
         }}
       >
         <Stack.Screen name="(tabs)" options={{ headerShown: false }} />

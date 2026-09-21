@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, useMemo } from 'react'
 import {
   ActivityIndicator,
   FlatList,
@@ -12,7 +12,13 @@ import {
 import GeofencedScannerScreen from '../../screens/GeofencedScannerScreen'
 import { supabase } from '../../lib/supabase'
 import { useTranslation } from '../../lib/i18n'
-import { colors, radius, rarity, space, type Rarity } from '../../lib/theme'
+import { useTheme, useRarity, radius, space, type Palette, type Rarity } from '../../lib/theme'
+
+function useStyles() {
+  const { c } = useTheme()
+  return useMemo(() => makeStyles(c), [c])
+}
+
 
 type VoucherRow = {
   id: string
@@ -33,6 +39,9 @@ type VoucherRow = {
 }
 
 export default function VouchersScreen() {
+  const styles = useStyles()
+  const { c } = useTheme()
+  const rarity = useRarity()
   const { locale } = useTranslation()
   const [rows, setRows] = useState<VoucherRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -122,7 +131,7 @@ export default function VouchersScreen() {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={colors.accent} />
+        <ActivityIndicator color={c.accent} />
       </View>
     )
   }
@@ -140,7 +149,7 @@ export default function VouchersScreen() {
             setRefreshing(true)
             void load()
           }}
-          tintColor={colors.accent}
+          tintColor={c.accent}
         />
       }
       ListEmptyComponent={
@@ -183,37 +192,37 @@ export default function VouchersScreen() {
   )
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bg },
+const makeStyles = (c: Palette) => StyleSheet.create({
+  root: { flex: 1, backgroundColor: c.bg },
   content: { padding: space.lg, gap: space.md, flexGrow: 1 },
   centered: {
     flex: 1,
-    backgroundColor: colors.bg,
+    backgroundColor: c.bg,
     alignItems: 'center',
     justifyContent: 'center',
   },
   card: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: c.border,
     overflow: 'hidden',
   },
   cardUsed: { opacity: 0.45 },
   stripe: { width: 4, alignSelf: 'stretch' },
   cardBody: { flex: 1, padding: space.lg },
-  cardTitle: { color: colors.text, fontSize: 16, fontWeight: '700' },
-  cardVenue: { color: colors.textMuted, fontSize: 13, marginTop: 2 },
+  cardTitle: { color: c.text, fontSize: 16, fontWeight: '700' },
+  cardVenue: { color: c.textMuted, fontSize: 13, marginTop: 2 },
   cardAction: {
-    color: colors.accent,
+    color: c.accent,
     fontWeight: '700',
     fontSize: 13,
     paddingRight: space.lg,
   },
-  cardActionUsed: { color: colors.textFaint },
+  cardActionUsed: { color: c.textFaint },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.sm },
-  emptyTitle: { color: colors.text, fontSize: 17, fontWeight: '700' },
-  emptyBody: { color: colors.textMuted, fontSize: 14, textAlign: 'center' },
+  emptyTitle: { color: c.text, fontSize: 17, fontWeight: '700' },
+  emptyBody: { color: c.textMuted, fontSize: 14, textAlign: 'center' },
 })

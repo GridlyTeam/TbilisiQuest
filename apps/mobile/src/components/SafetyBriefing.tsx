@@ -1,9 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { Modal, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native'
 
 import { supabase } from '../lib/supabase'
 import { useTranslation } from '../lib/i18n'
-import { colors, radius, space } from '../lib/theme'
+import { useTheme, useRarity, radius, space, type Palette, type Rarity } from '../lib/theme'
+
+function useStyles() {
+  const { c } = useTheme()
+  return useMemo(() => makeStyles(c), [c])
+}
+
 
 /**
  * The traffic warning, shown once per calendar day before the first hunt.
@@ -17,6 +23,8 @@ import { colors, radius, space } from '../lib/theme'
  * clearing app data does not quietly reset it.
  */
 export default function SafetyBriefing() {
+  const styles = useStyles()
+  const { c } = useTheme()
   const { locale } = useTranslation()
   const [visible, setVisible] = useState(false)
   const ka = locale === 'ka'
@@ -99,33 +107,33 @@ export default function SafetyBriefing() {
   )
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   backdrop: {
     flex: 1,
-    backgroundColor: 'rgba(18,16,28,0.94)',
+    backgroundColor: c.overlay,
     justifyContent: 'center',
     padding: space.xl,
   },
   card: {
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: c.border,
     padding: space.xl,
     gap: space.lg,
     maxHeight: '80%',
   },
-  title: { color: colors.text, fontSize: 24, fontWeight: '800' },
+  title: { color: c.text, fontSize: 24, fontWeight: '800' },
   list: { flexGrow: 0 },
   listContent: { gap: space.lg },
   rule: { gap: 3 },
-  ruleHeading: { color: colors.accent, fontSize: 14, fontWeight: '800' },
-  ruleBody: { color: colors.textMuted, fontSize: 14, lineHeight: 20 },
+  ruleHeading: { color: c.accent, fontSize: 14, fontWeight: '800' },
+  ruleBody: { color: c.textMuted, fontSize: 14, lineHeight: 20 },
   button: {
-    backgroundColor: colors.accent,
+    backgroundColor: c.accent,
     borderRadius: radius.md,
     paddingVertical: space.lg,
     alignItems: 'center',
   },
-  buttonText: { color: colors.bg, fontSize: 16, fontWeight: '800' },
+  buttonText: { color: c.bg, fontSize: 16, fontWeight: '800' },
 })

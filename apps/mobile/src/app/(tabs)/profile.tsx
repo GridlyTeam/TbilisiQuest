@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, useMemo } from 'react'
 import {
   ActivityIndicator,
   Pressable,
@@ -10,12 +10,20 @@ import {
 
 import { supabase } from '../../lib/supabase'
 import { useTranslation } from '../../lib/i18n'
-import { colors, radius, space } from '../../lib/theme'
+import { useTheme, useRarity, radius, space, type Palette, type Rarity } from '../../lib/theme'
+
+function useStyles() {
+  const { c } = useTheme()
+  return useMemo(() => makeStyles(c), [c])
+}
+
 
 type Xp = { total_xp: number; level: number; current_streak_days: number }
 type Threshold = { level: number; min_total_xp: number }
 
 export default function ProfileScreen() {
+  const styles = useStyles()
+  const { c, mode, setMode } = useTheme()
   const { locale, setLocale } = useTranslation()
   const [xp, setXp] = useState<Xp | null>(null)
   const [thresholds, setThresholds] = useState<Threshold[]>([])
@@ -44,7 +52,7 @@ export default function ProfileScreen() {
   if (loading || !xp) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={colors.accent} />
+        <ActivityIndicator color={c.accent} />
       </View>
     )
   }
@@ -89,13 +97,39 @@ export default function ProfileScreen() {
         </View>
       </View>
 
+      <View style={styles.row}>
+        <Text style={styles.rowLabel}>{ka ? 'იერსახე' : 'Appearance'}</Text>
+        <View style={styles.segmented}>
+          {(['system', 'light', 'dark'] as const).map((option) => (
+            <Pressable
+              key={option}
+              onPress={() => setMode(option)}
+              style={[styles.segment, mode === option && styles.segmentActive]}
+            >
+              <Text
+                style={[
+                  styles.segmentText,
+                  mode === option && styles.segmentTextActive,
+                ]}
+              >
+                {option === 'system'
+                  ? ka ? 'ავტო' : 'Auto'
+                  : option === 'light'
+                    ? ka ? 'ღია' : 'Light'
+                    : ka ? 'მუქი' : 'Dark'}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      </View>
+
       <Pressable style={styles.row} onPress={() => setLocale(ka ? 'en' : 'ka')}>
         <Text style={styles.rowLabel}>{ka ? 'ენა' : 'Language'}</Text>
         <Text style={styles.rowValue}>{ka ? 'ქართული' : 'English'}</Text>
       </Pressable>
 
       <Pressable style={styles.row} onPress={() => supabase.auth.signOut()}>
-        <Text style={[styles.rowLabel, { color: colors.bad }]}>
+        <Text style={[styles.rowLabel, { color: c.bad }]}>
           {ka ? 'გამოსვლა' : 'Sign out'}
         </Text>
       </Pressable>
@@ -103,61 +137,76 @@ export default function ProfileScreen() {
   )
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bg },
+const makeStyles = (c: Palette) => StyleSheet.create({
+  root: { flex: 1, backgroundColor: c.bg },
   content: { padding: space.lg, gap: space.md },
   centered: {
     flex: 1,
-    backgroundColor: colors.bg,
+    backgroundColor: c.bg,
     alignItems: 'center',
     justifyContent: 'center',
   },
   levelCard: {
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: c.border,
     padding: space.xl,
     alignItems: 'center',
   },
   levelLabel: {
-    color: colors.textFaint,
+    color: c.textFaint,
     fontSize: 12,
     textTransform: 'uppercase',
     letterSpacing: 1.5,
   },
-  levelValue: { color: colors.accent, fontSize: 56, fontWeight: '800' },
+  levelValue: { color: c.accent, fontSize: 56, fontWeight: '800' },
   barTrack: {
     width: '100%',
     height: 8,
-    backgroundColor: colors.bg,
+    backgroundColor: c.bg,
     borderRadius: radius.pill,
     marginTop: space.md,
     overflow: 'hidden',
   },
-  barFill: { height: '100%', backgroundColor: colors.accent },
-  xpText: { color: colors.textMuted, fontSize: 13, marginTop: space.sm },
+  barFill: { height: '100%', backgroundColor: c.accent },
+  xpText: { color: c.textMuted, fontSize: 13, marginTop: space.sm },
   statRow: { flexDirection: 'row', gap: space.md },
   stat: {
     flex: 1,
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: c.border,
     padding: space.md,
     alignItems: 'center',
   },
-  statValue: { color: colors.text, fontSize: 22, fontWeight: '700' },
-  statLabel: { color: colors.textFaint, fontSize: 11, marginTop: 2 },
+  statValue: { color: c.text, fontSize: 22, fontWeight: '700' },
+  statLabel: { color: c.textFaint, fontSize: 11, marginTop: 2 },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: c.border,
     padding: space.lg,
   },
-  rowLabel: { color: colors.text, fontSize: 15, fontWeight: '600' },
-  rowValue: { color: colors.textMuted, fontSize: 15 },
+  rowLabel: { color: c.text, fontSize: 15, fontWeight: '600' },
+  segmented: {
+    flexDirection: 'row',
+    backgroundColor: c.bg,
+    borderRadius: radius.sm,
+    padding: 2,
+    gap: 2,
+  },
+  segment: {
+    paddingHorizontal: space.md,
+    paddingVertical: 6,
+    borderRadius: radius.sm - 2,
+  },
+  segmentActive: { backgroundColor: c.accent },
+  segmentText: { color: c.textMuted, fontSize: 13, fontWeight: '600' },
+  segmentTextActive: { color: c.bg },
+  rowValue: { color: c.textMuted, fontSize: 15 },
 })

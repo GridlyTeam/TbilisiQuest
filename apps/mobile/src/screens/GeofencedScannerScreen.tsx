@@ -24,7 +24,7 @@
 import { CameraView, useCameraPermissions } from 'expo-camera'
 import * as Haptics from 'expo-haptics'
 import * as Location from 'expo-location'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
 import {
   ActivityIndicator,
   Pressable,
@@ -34,7 +34,14 @@ import {
 } from 'react-native'
 
 import { useTranslation } from '../lib/i18n'
+import { useTheme, radius, space, type Palette } from '../lib/theme'
 import { supabase } from '../lib/supabase'
+
+function useStyles() {
+  const { c } = useTheme()
+  return useMemo(() => makeStyles(c), [c])
+}
+
 
 type Props = {
   voucher: {
@@ -116,6 +123,7 @@ export default function GeofencedScannerScreen({
   onRedeemed,
   onCancel,
 }: Props) {
+  const styles = useStyles()
   const { t, locale } = useTranslation()
   const [permission, requestPermission] = useCameraPermissions()
   const [phase, setPhase] = useState<Phase>({ kind: 'locating' })
@@ -301,6 +309,7 @@ function StatusPanel({
   phase: Phase
   t: (k: string, v?: Record<string, unknown>) => string
 }) {
+  const styles = useStyles()
   switch (phase.kind) {
     case 'locating':
       return (
@@ -359,25 +368,27 @@ function Panel({
   tone: 'neutral' | 'good' | 'warn' | 'bad'
   children: React.ReactNode
 }) {
+  const styles = useStyles()
   return <View style={[styles.panel, styles[tone]]}>{children}</View>
 }
 
 function Centered({ children }: { children: React.ReactNode }) {
+  const styles = useStyles()
   return <View style={[styles.root, styles.centered]}>{children}</View>
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: '#14141a' },
+const makeStyles = (c: Palette) => StyleSheet.create({
+  root: { flex: 1, backgroundColor: c.bg },
   centered: { alignItems: 'center', justifyContent: 'center', padding: 24, gap: 12 },
-  cameraPlaceholder: { backgroundColor: '#0d0d12' },
+  cameraPlaceholder: { backgroundColor: c.bg },
   overlay: { flex: 1, justifyContent: 'space-between', padding: 20 },
 
   header: { marginTop: 48, gap: 4 },
-  venue: { color: '#e8a33d', fontSize: 13, letterSpacing: 1.2, textTransform: 'uppercase' },
-  voucher: { color: '#fff', fontSize: 24, fontWeight: '700' },
+  venue: { color: c.accentInk, fontSize: 13, letterSpacing: 1.2, textTransform: 'uppercase' },
+  voucher: { color: c.text, fontSize: 24, fontWeight: '700' },
 
   reticle: { alignSelf: 'center', width: 240, height: 240 },
-  corner: { position: 'absolute', width: 36, height: 36, borderColor: '#e8a33d' },
+  corner: { position: 'absolute', width: 36, height: 36, borderColor: c.accent },
   topLeft: { top: 0, left: 0, borderTopWidth: 3, borderLeftWidth: 3 },
   topRight: { top: 0, right: 0, borderTopWidth: 3, borderRightWidth: 3 },
   bottomLeft: { bottom: 0, left: 0, borderBottomWidth: 3, borderLeftWidth: 3 },
@@ -392,25 +403,25 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     flexWrap: 'wrap',
   },
-  neutral: { backgroundColor: 'rgba(30,30,38,0.94)' },
+  neutral: { backgroundColor: c.surface },
   good: { backgroundColor: 'rgba(38,92,58,0.94)' },
   warn: { backgroundColor: 'rgba(120,84,20,0.94)' },
   bad: { backgroundColor: 'rgba(122,38,38,0.94)' },
-  panelTitle: { color: '#fff', fontSize: 16, fontWeight: '700', width: '100%' },
-  panelText: { color: '#d8d8e0', fontSize: 14 },
+  panelTitle: { color: c.text, fontSize: 16, fontWeight: '700', width: '100%' },
+  panelText: { color: c.textMuted, fontSize: 14 },
 
-  heading: { color: '#fff', fontSize: 20, fontWeight: '700', textAlign: 'center' },
-  body: { color: '#9a9aa8', fontSize: 15, textAlign: 'center', lineHeight: 21 },
+  heading: { color: c.text, fontSize: 20, fontWeight: '700', textAlign: 'center' },
+  body: { color: c.textMuted, fontSize: 15, textAlign: 'center', lineHeight: 21 },
 
   primaryButton: {
-    backgroundColor: '#e8a33d',
+    backgroundColor: c.accent,
     paddingVertical: 14,
     paddingHorizontal: 28,
     borderRadius: 12,
     marginTop: 8,
   },
-  primaryButtonText: { color: '#14141a', fontWeight: '700', fontSize: 16 },
+  primaryButtonText: { color: c.bg, fontWeight: '700', fontSize: 16 },
 
   cancelButton: { alignItems: 'center', paddingVertical: 12 },
-  cancelText: { color: '#9a9aa8', fontSize: 15 },
+  cancelText: { color: c.textMuted, fontSize: 15 },
 })

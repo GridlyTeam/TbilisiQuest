@@ -1,24 +1,26 @@
 import { Tabs } from 'expo-router'
 import { Text } from 'react-native'
 
-import { colors } from '../../lib/theme'
+import { useTheme, useRarity, radius, space, type Palette, type Rarity } from '../../lib/theme'
 import { useTranslation } from '../../lib/i18n'
 
+
 export default function TabsLayout() {
+  const { c } = useTheme()
   const { locale } = useTranslation()
   const ka = locale === 'ka'
 
   return (
     <Tabs
       screenOptions={{
-        headerStyle: { backgroundColor: colors.bg },
-        headerTintColor: colors.text,
+        headerStyle: { backgroundColor: c.bg },
+        headerTintColor: c.text,
         tabBarStyle: {
-          backgroundColor: colors.surface,
-          borderTopColor: colors.border,
+          backgroundColor: c.surface,
+          borderTopColor: c.border,
         },
-        tabBarActiveTintColor: colors.accent,
-        tabBarInactiveTintColor: colors.textFaint,
+        tabBarActiveTintColor: c.accent,
+        tabBarInactiveTintColor: c.textFaint,
       }}
     >
       <Tabs.Screen

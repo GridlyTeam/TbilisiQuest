@@ -1,6 +1,6 @@
 import { useLocalSearchParams, useRouter } from 'expo-router'
 import * as Haptics from 'expo-haptics'
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useState, useMemo } from 'react'
 import {
   ActivityIndicator,
   Pressable,
@@ -13,7 +13,13 @@ import {
 import { supabase } from '../../lib/supabase'
 import { useTranslation } from '../../lib/i18n'
 import { useLocation, distanceMeters } from '../../lib/useLocation'
-import { colors, radius, rarity, space, type Rarity } from '../../lib/theme'
+import { useTheme, useRarity, radius, space, type Palette, type Rarity } from '../../lib/theme'
+
+function useStyles() {
+  const { c } = useTheme()
+  return useMemo(() => makeStyles(c), [c])
+}
+
 
 type DropDetail = {
   id: string
@@ -50,6 +56,9 @@ function useCountdown(target: string | undefined) {
 }
 
 export default function DropDetailScreen() {
+  const styles = useStyles()
+  const { c } = useTheme()
+  const rarity = useRarity()
   const { id } = useLocalSearchParams<{ id: string }>()
   const router = useRouter()
   const { locale } = useTranslation()
@@ -144,7 +153,7 @@ export default function DropDetailScreen() {
   if (loading) {
     return (
       <View style={styles.centered}>
-        <ActivityIndicator color={colors.accent} />
+        <ActivityIndicator color={c.accent} />
       </View>
     )
   }
@@ -210,7 +219,7 @@ export default function DropDetailScreen() {
         disabled={!inRange || soldOut || notYetOpen || claiming}
       >
         {claiming ? (
-          <ActivityIndicator color={colors.bg} />
+          <ActivityIndicator color={c.bg} />
         ) : (
           <Text style={styles.claimText}>
             {soldOut
@@ -252,8 +261,10 @@ function Stat({
   value: string
   tone: 'good' | 'bad' | 'neutral'
 }) {
+  const styles = useStyles()
+  const { c } = useTheme()
   const color =
-    tone === 'good' ? colors.good : tone === 'bad' ? colors.bad : colors.text
+    tone === 'good' ? c.good : tone === 'bad' ? c.bad : c.text
   return (
     <View style={styles.stat}>
       <Text style={styles.statLabel}>{label}</Text>
@@ -280,12 +291,12 @@ function translateClaimError(raw: string, ka: boolean): string {
   }
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bg },
+const makeStyles = (c: Palette) => StyleSheet.create({
+  root: { flex: 1, backgroundColor: c.bg },
   content: { padding: space.xl, gap: space.md },
   centered: {
     flex: 1,
-    backgroundColor: colors.bg,
+    backgroundColor: c.bg,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -297,30 +308,30 @@ const styles = StyleSheet.create({
     paddingVertical: 4,
   },
   rarityText: { fontSize: 11, fontWeight: '800', letterSpacing: 1 },
-  title: { color: colors.text, fontSize: 28, fontWeight: '800' },
-  venue: { color: colors.accent, fontSize: 15, fontWeight: '600' },
-  description: { color: colors.textMuted, fontSize: 15, lineHeight: 22 },
+  title: { color: c.text, fontSize: 28, fontWeight: '800' },
+  venue: { color: c.accent, fontSize: 15, fontWeight: '600' },
+  description: { color: c.textMuted, fontSize: 15, lineHeight: 22 },
   statRow: { flexDirection: 'row', gap: space.md, marginTop: space.md },
   stat: {
     flex: 1,
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: c.border,
     padding: space.md,
   },
-  statLabel: { color: colors.textFaint, fontSize: 11, textTransform: 'uppercase' },
+  statLabel: { color: c.textFaint, fontSize: 11, textTransform: 'uppercase' },
   statValue: { fontSize: 18, fontWeight: '700', marginTop: 2 },
   claimButton: {
-    backgroundColor: colors.accent,
+    backgroundColor: c.accent,
     borderRadius: radius.md,
     paddingVertical: space.lg,
     alignItems: 'center',
     marginTop: space.lg,
   },
-  claimDisabled: { backgroundColor: colors.surfaceRaised },
-  claimText: { color: colors.bg, fontSize: 17, fontWeight: '800' },
-  hint: { color: colors.textFaint, fontSize: 13, textAlign: 'center' },
-  error: { color: colors.bad, fontSize: 14 },
-  muted: { color: colors.textMuted },
+  claimDisabled: { backgroundColor: c.surfaceRaised },
+  claimText: { color: c.bg, fontSize: 17, fontWeight: '800' },
+  hint: { color: c.textFaint, fontSize: 13, textAlign: 'center' },
+  error: { color: c.bad, fontSize: 14 },
+  muted: { color: c.textMuted },
 })

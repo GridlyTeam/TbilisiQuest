@@ -1,9 +1,16 @@
+import { useMemo } from 'react'
 import { StyleSheet, Text, View } from 'react-native'
 
 import { useTranslation } from '../lib/i18n'
-import { colors, radius, space } from '../lib/theme'
+import { useTheme, useRarity, radius, space, type Palette, type Rarity } from '../lib/theme'
 import type { SafetyState } from '../lib/useSafetyGate'
 import EmergencyButton from './EmergencyButton'
+
+function useStyles() {
+  const { c } = useTheme()
+  return useMemo(() => makeStyles(c), [c])
+}
+
 
 /**
  * Covers the map whenever play is blocked.
@@ -17,6 +24,7 @@ import EmergencyButton from './EmergencyButton'
  * needs emergency services is the moment they are moving fast.
  */
 export default function SafetyOverlay({ safety }: { safety: SafetyState }) {
+  const styles = useStyles()
   const { locale } = useTranslation()
   const ka = locale === 'ka'
 
@@ -80,14 +88,14 @@ function formatWait(minutes: number, ka: boolean): string {
   return ka ? `${h} სთ ${m} წთ-ში` : `${h}h ${m}m`
 }
 
-const styles = StyleSheet.create({
+const makeStyles = (c: Palette) => StyleSheet.create({
   root: {
     position: 'absolute',
     top: 0,
     bottom: 0,
     left: 0,
     right: 0,
-    backgroundColor: 'rgba(18,16,28,0.97)',
+    backgroundColor: c.overlay,
     alignItems: 'center',
     justifyContent: 'center',
     padding: space.xl,
@@ -95,19 +103,19 @@ const styles = StyleSheet.create({
   card: { alignItems: 'center', gap: space.md, maxWidth: 340 },
   icon: { fontSize: 48 },
   title: {
-    color: colors.text,
+    color: c.text,
     fontSize: 22,
     fontWeight: '800',
     textAlign: 'center',
   },
   body: {
-    color: colors.textMuted,
+    color: c.textMuted,
     fontSize: 15,
     lineHeight: 22,
     textAlign: 'center',
   },
   detail: {
-    color: colors.accent,
+    color: c.accent,
     fontSize: 14,
     fontWeight: '700',
     marginTop: space.xs,
@@ -115,7 +123,6 @@ const styles = StyleSheet.create({
   emergency: {
     position: 'absolute',
     bottom: space.xxl,
-    left: space.xl,
     right: space.xl,
   },
 })

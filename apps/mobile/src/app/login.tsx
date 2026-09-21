@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useMemo } from 'react'
 import {
   ActivityIndicator,
   KeyboardAvoidingView,
@@ -11,10 +11,18 @@ import {
 } from 'react-native'
 
 import { supabase } from '../lib/supabase'
-import { colors, radius, space } from '../lib/theme'
+import { useTheme, useRarity, radius, space, type Palette, type Rarity } from '../lib/theme'
 import { useTranslation } from '../lib/i18n'
 
+function useStyles() {
+  const { c } = useTheme()
+  return useMemo(() => makeStyles(c), [c])
+}
+
+
 export default function LoginScreen() {
+  const styles = useStyles()
+  const { c } = useTheme()
   const { locale, setLocale } = useTranslation()
   const [mode, setMode] = useState<'signin' | 'signup'>('signin')
   const [email, setEmail] = useState('')
@@ -75,7 +83,7 @@ export default function LoginScreen() {
           <TextInput
             style={styles.input}
             placeholder={ka ? 'ელფოსტა' : 'Email'}
-            placeholderTextColor={colors.textFaint}
+            placeholderTextColor={c.textFaint}
             autoCapitalize="none"
             keyboardType="email-address"
             value={email}
@@ -84,7 +92,7 @@ export default function LoginScreen() {
           <TextInput
             style={styles.input}
             placeholder={ka ? 'პაროლი' : 'Password'}
-            placeholderTextColor={colors.textFaint}
+            placeholderTextColor={c.textFaint}
             secureTextEntry
             value={password}
             onChangeText={setPassword}
@@ -99,7 +107,7 @@ export default function LoginScreen() {
             disabled={busy}
           >
             {busy ? (
-              <ActivityIndicator color={colors.bg} />
+              <ActivityIndicator color={c.bg} />
             ) : (
               <Text style={styles.primaryText}>
                 {mode === 'signin'
@@ -143,46 +151,46 @@ export default function LoginScreen() {
   )
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bg },
+const makeStyles = (c: Palette) => StyleSheet.create({
+  root: { flex: 1, backgroundColor: c.bg },
   inner: { flex: 1, justifyContent: 'center', padding: space.xl },
-  brand: { color: colors.text, fontSize: 32, fontWeight: '800', textAlign: 'center' },
+  brand: { color: c.text, fontSize: 32, fontWeight: '800', textAlign: 'center' },
   tagline: {
-    color: colors.accent,
+    color: c.accent,
     fontSize: 13,
     textAlign: 'center',
     marginTop: space.xs,
     marginBottom: space.xxl,
   },
   card: {
-    backgroundColor: colors.surface,
+    backgroundColor: c.surface,
     borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: c.border,
     padding: space.lg,
     gap: space.md,
   },
   input: {
-    backgroundColor: colors.bg,
+    backgroundColor: c.bg,
     borderRadius: radius.md,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: c.border,
     paddingHorizontal: space.md,
     paddingVertical: space.md,
-    color: colors.text,
+    color: c.text,
     fontSize: 16,
   },
   primary: {
-    backgroundColor: colors.accent,
+    backgroundColor: c.accent,
     borderRadius: radius.md,
     paddingVertical: space.md,
     alignItems: 'center',
   },
   disabled: { opacity: 0.5 },
-  primaryText: { color: colors.bg, fontWeight: '700', fontSize: 16 },
-  switch: { color: colors.textMuted, fontSize: 13, textAlign: 'center' },
-  error: { color: colors.bad, fontSize: 13 },
-  notice: { color: colors.good, fontSize: 13 },
+  primaryText: { color: c.bg, fontWeight: '700', fontSize: 16 },
+  switch: { color: c.textMuted, fontSize: 13, textAlign: 'center' },
+  error: { color: c.bad, fontSize: 13 },
+  notice: { color: c.good, fontSize: 13 },
   localeToggle: { marginTop: space.xl, alignSelf: 'center' },
-  localeText: { color: colors.textFaint, fontSize: 13 },
+  localeText: { color: c.textFaint, fontSize: 13 },
 })

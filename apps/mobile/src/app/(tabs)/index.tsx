@@ -5,7 +5,7 @@ import {
   UserLocation,
 } from '@maplibre/maplibre-react-native'
 import { useRouter } from 'expo-router'
-import { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
 import {
   ActivityIndicator,
   Pressable,
@@ -21,14 +21,13 @@ import { useSafetyGate } from '../../lib/useSafetyGate'
 import SafetyOverlay from '../../components/SafetyOverlay'
 import SafetyBriefing from '../../components/SafetyBriefing'
 import EmergencyButton from '../../components/EmergencyButton'
-import { colors, radius, rarity, space, type Rarity } from '../../lib/theme'
+import { useTheme, useRarity, radius, space, type Palette, type Rarity } from '../../lib/theme'
 
-/**
- * Free vector tiles, no account or API key. Dark to match the app and because
- * a dark basemap makes the rarity-coloured markers the brightest thing on
- * screen, which is exactly where attention should go.
- */
-const MAP_STYLE = 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json'
+function useStyles() {
+  const { c } = useTheme()
+  return useMemo(() => makeStyles(c), [c])
+}
+
 
 const TBILISI_CENTER: [number, number] = [44.7935, 41.6998]
 
@@ -51,6 +50,8 @@ type NearbyDrop = {
 }
 
 export default function MapScreen() {
+  const styles = useStyles()
+  const { c } = useTheme()
   const router = useRouter()
   const { locale } = useTranslation()
   const { fix, permission, error } = useLocation()
@@ -102,7 +103,7 @@ export default function MapScreen() {
 
   return (
     <View style={styles.root}>
-      <MapLibreMap style={StyleSheet.absoluteFill} mapStyle={MAP_STYLE}>
+      <MapLibreMap style={StyleSheet.absoluteFill} mapStyle={c.mapStyle}>
         <Camera
           center={fix ? [fix.longitude, fix.latitude] : TBILISI_CENTER}
           zoom={14}
@@ -140,8 +141,8 @@ export default function MapScreen() {
                 ? `${revealed} გახსნილი`
                 : `${revealed} revealed`
               : ka
-                ? 'მიუახლოვდი გასახსნელად'
-                : 'Walk closer to reveal'}
+                ? 'იდუმალი ნიშნები — მიუახლოვდი 100 მ-ზე'
+                : 'Mystery markers — get within 100 m'}
           </Text>
         </View>
       </View>
@@ -158,7 +159,7 @@ export default function MapScreen() {
 
       {loading && !safety.blocked && (
         <View style={styles.loadingOverlay} pointerEvents="none">
-          <ActivityIndicator color={colors.accent} />
+          <ActivityIndicator color={c.accent} />
         </View>
       )}
 
@@ -189,6 +190,9 @@ function DropMarker({
   ka: boolean
   onPress: () => void
 }) {
+  const styles = useStyles()
+  const { c } = useTheme()
+  const rarity = useRarity()
   const meta = rarity[drop.rarity] ?? rarity.common
   const size = drop.is_boss_chest ? 56 : 44
 
@@ -202,7 +206,7 @@ function DropMarker({
             height: size,
             borderRadius: size / 2,
             borderColor: meta.color,
-            backgroundColor: drop.revealed ? meta.color : colors.surface,
+            backgroundColor: drop.revealed ? meta.color : c.surface,
             shadowColor: meta.color,
           },
         ]}
@@ -210,7 +214,7 @@ function DropMarker({
         <Text
           style={[
             styles.markerText,
-            { color: drop.revealed ? colors.bg : meta.color },
+            { color: drop.revealed ? c.bg : meta.color },
           ]}
         >
           {drop.revealed
@@ -232,20 +236,20 @@ function DropMarker({
   )
 }
 
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: colors.bg },
+const makeStyles = (c: Palette) => StyleSheet.create({
+  root: { flex: 1, backgroundColor: c.bg },
 
   header: { position: 'absolute', top: 56, left: space.lg, right: space.lg },
   headerCard: {
     backgroundColor: 'rgba(30,30,38,0.94)',
     borderRadius: radius.lg,
     borderWidth: 1,
-    borderColor: colors.border,
+    borderColor: c.border,
     paddingHorizontal: space.lg,
     paddingVertical: space.md,
   },
-  headerTitle: { color: colors.text, fontSize: 16, fontWeight: '700' },
-  headerSub: { color: colors.textMuted, fontSize: 12, marginTop: 2 },
+  headerTitle: { color: c.text, fontSize: 16, fontWeight: '700' },
+  headerSub: { color: c.textMuted, fontSize: 12, marginTop: 2 },
 
   footer: {
     position: 'absolute',
@@ -256,12 +260,11 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     padding: space.md,
   },
-  footerText: { color: colors.text, fontSize: 13, textAlign: 'center' },
+  footerText: { color: c.text, fontSize: 13, textAlign: 'center' },
 
   emergency: {
     position: 'absolute',
     bottom: space.lg,
-    left: space.lg,
     right: space.lg,
   },
   loadingOverlay: {
@@ -292,5 +295,5 @@ const styles = StyleSheet.create({
     paddingHorizontal: 6,
     paddingVertical: 2,
   },
-  markerLabelText: { color: colors.text, fontSize: 10, fontWeight: '600' },
+  markerLabelText: { color: c.text, fontSize: 10, fontWeight: '600' },
 })
