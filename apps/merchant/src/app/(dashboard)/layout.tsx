@@ -53,7 +53,7 @@ values
     <div className="min-h-screen bg-neutral-50">
       <header className="border-b border-neutral-200 bg-white">
         <div className="mx-auto flex max-w-6xl items-center gap-6 px-4 py-3">
-          <span className="text-sm font-semibold tracking-tight">Tbilisi Quest</span>
+          <span className="text-sm font-semibold tracking-tight text-neutral-900">Tbilisi Quest</span>
 
           <nav className="flex items-center gap-1 text-sm">
             {showDrops && <NavLink href="/drops">Drops</NavLink>}

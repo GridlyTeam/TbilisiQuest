@@ -22,7 +22,7 @@ export default function LoginPage() {
     setNotice(null)
     setBusy(true)
 
-    const { error } =
+    const { data, error } =
       mode === 'signin'
         ? await supabase.auth.signInWithPassword({ email, password })
         : await supabase.auth.signUp({ email, password })
@@ -34,12 +34,17 @@ export default function LoginPage() {
       return
     }
 
-    if (mode === 'signup') {
-      // A brand new account has no merchant_users row yet, so it would land on
-      // an empty dashboard. Say so rather than letting them wonder.
+    // Whether signUp returns a session depends on the project's email
+    // confirmation setting. With confirmations on there is no session yet and
+    // redirecting would just bounce back to this page, so check rather than
+    // assume.
+    if (!data.session) {
       setNotice(
-        'Account created. An owner needs to link you to a venue before you can manage drops.',
+        'Account created. Check your email to confirm it, then sign in. ' +
+          '(To skip this in development, turn off email confirmations in ' +
+          'Supabase: Authentication -> Sign In / Providers -> Email.)',
       )
+      setMode('signin')
       return
     }
 
@@ -51,7 +56,7 @@ export default function LoginPage() {
     <main className="flex min-h-screen items-center justify-center bg-neutral-50 px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight">Tbilisi Quest</h1>
+          <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">Tbilisi Quest</h1>
           <p className="mt-1 text-sm text-neutral-500">Merchant portal</p>
         </div>
 
