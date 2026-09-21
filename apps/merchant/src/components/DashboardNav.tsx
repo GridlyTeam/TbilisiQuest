@@ -23,9 +23,9 @@ export default function DashboardNav({
   const venueName = locale === 'ka' ? venueNameKa : venueNameEn
 
   return (
-    <header className="border-b border-neutral-200 bg-white">
+    <header className="border-b border-line bg-surface">
       <div className="mx-auto flex max-w-6xl items-center gap-4 px-4 py-3">
-        <span className="text-sm font-semibold tracking-tight text-neutral-900">
+        <span className="text-sm font-semibold tracking-tight text-ink">
           Tbilisi Quest
         </span>
 
@@ -46,7 +46,7 @@ export default function DashboardNav({
         </nav>
 
         <div className="ml-auto flex items-center gap-2">
-          <span className="hidden text-xs text-neutral-500 sm:inline">
+          <span className="hidden text-xs text-muted sm:inline">
             {venueName} · {role}
           </span>
           <LanguageToggle />
@@ -71,8 +71,8 @@ function NavLink({
       href={href}
       className={`rounded-lg px-3 py-1.5 transition ${
         active
-          ? 'bg-neutral-900 text-white'
-          : 'text-neutral-600 hover:bg-neutral-100 hover:text-neutral-900'
+          ? 'bg-ink text-white'
+          : 'text-muted hover:bg-canvas hover:text-ink'
       }`}
     >
       {children}

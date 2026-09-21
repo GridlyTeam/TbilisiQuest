@@ -47,19 +47,19 @@ export default function AnalyticsView({ rows }: { rows: PerformanceRow[] }) {
       </section>
 
       <section>
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-neutral-400">
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-faint">
           {t('analytics.performance')}
         </h2>
 
         {rows.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-neutral-300 p-8 text-center text-sm text-neutral-500">
+          <p className="rounded-xl border border-dashed border-line-strong p-8 text-center text-sm text-muted">
             {t('analytics.empty')}
           </p>
         ) : (
-          <div className="overflow-x-auto rounded-xl border border-neutral-200 bg-white">
+          <div className="overflow-x-auto rounded-xl border border-line bg-surface">
             <table className="w-full text-sm">
               <thead>
-                <tr className="border-b border-neutral-200 text-left text-xs uppercase tracking-wide text-neutral-500">
+                <tr className="border-b border-line text-left text-xs uppercase tracking-wide text-muted">
                   <th className="px-4 py-3 font-medium">{t('analytics.colDrop')}</th>
                   <th className="px-4 py-3 text-right font-medium">{t('analytics.colSeen')}</th>
                   <th className="px-4 py-3 text-right font-medium">{t('analytics.colRevealed')}</th>
@@ -68,16 +68,16 @@ export default function AnalyticsView({ rows }: { rows: PerformanceRow[] }) {
                   <th className="px-4 py-3 text-right font-medium">{t('analytics.colConversion')}</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-neutral-100">
+              <tbody className="divide-y divide-line">
                 {rows.map((r) => (
                   <tr key={r.drop_id}>
-                    <td className="px-4 py-3 text-neutral-900">
+                    <td className="px-4 py-3 text-ink">
                       {(locale === 'ka' ? r.title_ka : r.title_en) ?? '—'}
                     </td>
-                    <td className="px-4 py-3 text-right tabular-nums text-neutral-500">
+                    <td className="px-4 py-3 text-right tabular-nums text-muted">
                       {r.map_views ?? 0}
                     </td>
-                    <td className="px-4 py-3 text-right tabular-nums text-neutral-500">
+                    <td className="px-4 py-3 text-right tabular-nums text-muted">
                       {r.reveals ?? 0}
                     </td>
                     <td className="px-4 py-3 text-right tabular-nums">{r.claimed ?? 0}</td>
@@ -96,7 +96,7 @@ export default function AnalyticsView({ rows }: { rows: PerformanceRow[] }) {
           </div>
         )}
 
-        <p className="mt-3 text-xs leading-relaxed text-neutral-500">
+        <p className="mt-3 text-xs leading-relaxed text-muted">
           {t('analytics.explainer')}
         </p>
       </section>
@@ -114,10 +114,10 @@ function Stat({
   hint: string
 }) {
   return (
-    <div className="rounded-xl border border-neutral-200 bg-white p-5">
-      <p className="text-xs uppercase tracking-wide text-neutral-500">{label}</p>
-      <p className="mt-2 text-2xl font-semibold tabular-nums text-neutral-900">{value}</p>
-      <p className="mt-1 text-xs text-neutral-400">{hint}</p>
+    <div className="rounded-xl border border-line bg-surface p-5">
+      <p className="text-xs uppercase tracking-wide text-muted">{label}</p>
+      <p className="mt-2 text-2xl font-semibold tabular-nums text-ink">{value}</p>
+      <p className="mt-1 text-xs text-faint">{hint}</p>
     </div>
   )
 }

@@ -73,9 +73,9 @@ const OFF_PEAK_PRESETS = [
 }>
 
 const RARITY_META = {
-  common: { labelKey: 'rarity.common', hintKey: 'rarity.commonHint', accent: '#7c8b9a' },
-  rare: { labelKey: 'rarity.rare', hintKey: 'rarity.rareHint', accent: '#4a8fd4' },
-  legendary: { labelKey: 'rarity.legendary', hintKey: 'rarity.legendaryHint', accent: '#e8a33d' },
+  common: { labelKey: 'rarity.common', hintKey: 'rarity.commonHint', accent: '#5D6B8A' },
+  rare: { labelKey: 'rarity.rare', hintKey: 'rarity.rareHint', accent: '#4C3A8C' },
+  legendary: { labelKey: 'rarity.legendary', hintKey: 'rarity.legendaryHint', accent: '#B76E1F' },
 } as const satisfies Record<string, { labelKey: MessageKey; hintKey: MessageKey; accent: string }>
 
 // Above this projected giveaway we make the merchant confirm explicitly.
@@ -236,10 +236,10 @@ export default function DropCreator({
   return (
     <form onSubmit={handleSubmit} className="mx-auto max-w-2xl space-y-8">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">
+        <h1 className="text-2xl font-semibold tracking-tight text-ink">
           {t('creator.title')}
         </h1>
-        <p className="mt-1 text-sm text-neutral-500">
+        <p className="mt-1 text-sm text-muted">
           {t('creator.timezoneNote', { tz: venueTimezone })}
         </p>
       </header>
@@ -261,7 +261,7 @@ export default function DropCreator({
                 className={`rounded-xl border p-3 text-left transition ${
                   active
                     ? 'border-transparent ring-2 ring-offset-2'
-                    : 'border-neutral-200 hover:border-neutral-300'
+                    : 'border-line hover:border-line-strong'
                 }`}
                 style={active ? { boxShadow: `inset 0 0 0 9999px ${meta.accent}14` } : undefined}
               >
@@ -271,7 +271,7 @@ export default function DropCreator({
                 >
                   {t(meta.labelKey)}
                 </span>
-                <span className="mt-0.5 block text-xs text-neutral-500">
+                <span className="mt-0.5 block text-xs text-muted">
                   {t(meta.hintKey)}
                 </span>
               </button>
@@ -359,8 +359,8 @@ export default function DropCreator({
                 }}
                 className={`rounded-full border px-4 py-1.5 text-sm transition ${
                   active
-                    ? 'border-neutral-900 bg-neutral-900 text-white'
-                    : 'border-neutral-200 text-neutral-700 hover:border-neutral-400'
+                    ? 'border-indigo bg-ink text-white'
+                    : 'border-line text-ink-soft hover:border-line-strong'
                 }`}
               >
                 {t(preset.labelKey)}
@@ -425,7 +425,7 @@ export default function DropCreator({
               max={100}
               value={values.inventoryCap}
               onChange={(e) => set('inventoryCap', Number(e.target.value))}
-              className="flex-1 accent-neutral-900"
+              className="flex-1 accent-indigo"
             />
             <input
               type="number"
@@ -441,22 +441,22 @@ export default function DropCreator({
         <div
           className={`rounded-xl border p-4 ${
             needsConfirmation
-              ? 'border-amber-300 bg-amber-50'
-              : 'border-neutral-200 bg-neutral-50'
+              ? 'border-warn-line bg-warn'
+              : 'border-line bg-canvas'
           }`}
         >
           <div className="flex items-baseline justify-between">
-            <span className="text-sm text-neutral-600">{t('creator.maxGiveaway')}</span>
+            <span className="text-sm text-muted">{t('creator.maxGiveaway')}</span>
             <span className="text-lg font-semibold tabular-nums">
               {projectedCost.toFixed(2)} ₾
             </span>
           </div>
-          <p className="mt-1 text-xs text-neutral-500">
+          <p className="mt-1 text-xs text-muted">
             {t('creator.giveawayNote', { count: values.inventoryCap })}
           </p>
 
           {needsConfirmation && (
-            <label className="mt-3 flex items-start gap-2 text-sm text-amber-900">
+            <label className="mt-3 flex items-start gap-2 text-sm text-warn-ink">
               <input
                 type="checkbox"
                 checked={confirmed}
@@ -506,8 +506,8 @@ export default function DropCreator({
         <label
           className={`flex items-start gap-3 rounded-xl border p-4 ${
             subscriptionTier === 'premium'
-              ? 'border-neutral-200'
-              : 'border-neutral-200 bg-neutral-50 opacity-60'
+              ? 'border-line'
+              : 'border-line bg-canvas opacity-60'
           }`}
         >
           <input
@@ -519,7 +519,7 @@ export default function DropCreator({
           />
           <span>
             <span className="block text-sm font-medium">{t('creator.bossChest')}</span>
-            <span className="mt-0.5 block text-xs text-neutral-500">
+            <span className="mt-0.5 block text-xs text-muted">
               {subscriptionTier === 'premium'
                 ? t('creator.bossChestOn')
                 : t('creator.bossChestOff')}
@@ -529,12 +529,12 @@ export default function DropCreator({
       </section>
 
       {inThePast && (
-        <div className="flex flex-wrap items-center gap-3 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-900">
+        <div className="flex flex-wrap items-center gap-3 rounded-lg bg-warn px-4 py-3 text-sm text-warn-ink">
           <span>{t('creator.windowPassed')}</span>
           <button
             type="button"
             onClick={() => set('date', addDays(todayISO(), 1))}
-            className="rounded-md bg-amber-900 px-3 py-1 text-xs font-semibold text-white"
+            className="rounded-md bg-warn-ink px-3 py-1 text-xs font-semibold text-white"
           >
             {t('creator.useTomorrow')}
           </button>
@@ -542,16 +542,16 @@ export default function DropCreator({
       )}
 
       {serverError && (
-        <p className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700">
+        <p className="rounded-lg bg-danger px-4 py-3 text-sm text-danger-ink">
           {serverError}
         </p>
       )}
 
-      <div className="flex items-center justify-end gap-3 border-t border-neutral-200 pt-6">
+      <div className="flex items-center justify-end gap-3 border-t border-line pt-6">
         <button
           type="submit"
           disabled={submitting || inThePast || (needsConfirmation && !confirmed)}
-          className="rounded-xl bg-neutral-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-40"
+          className="rounded-xl bg-ink px-6 py-3 text-sm font-semibold text-white transition hover:bg-ink-soft disabled:cursor-not-allowed disabled:opacity-40"
         >
           {submitting ? t('creator.submitting') : t('creator.submit')}
         </button>
@@ -564,11 +564,11 @@ export default function DropCreator({
 // Small presentational helpers
 // ---------------------------------------------------------------------------
 const inputClass =
-  'w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none transition focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900'
+  'w-full rounded-lg border border-line-strong px-3 py-2 text-sm outline-none transition focus:border-indigo focus:ring-1 focus:ring-indigo'
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
-    <h2 className="text-xs font-semibold uppercase tracking-widest text-neutral-400">
+    <h2 className="text-xs font-semibold uppercase tracking-widest text-faint">
       {children}
     </h2>
   )
@@ -587,12 +587,12 @@ function Field({
 }) {
   return (
     <label className="block space-y-1.5">
-      <span className="block text-sm font-medium text-neutral-800">{label}</span>
+      <span className="block text-sm font-medium text-ink">{label}</span>
       {children}
       {error ? (
-        <span className="block text-xs text-red-600">{error}</span>
+        <span className="block text-xs text-danger-ink">{error}</span>
       ) : hint ? (
-        <span className="block text-xs text-neutral-500">{hint}</span>
+        <span className="block text-xs text-muted">{hint}</span>
       ) : null}
     </label>
   )

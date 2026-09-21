@@ -71,13 +71,13 @@ export default function CounterQRStation({
   return (
     <div className="flex min-h-[70vh] flex-col items-center justify-center gap-8">
       <div className="text-center">
-        <h1 className="text-3xl font-semibold tracking-tight text-neutral-900">{venueName}</h1>
-        <p className="mt-2 text-neutral-500">{t('counter.instruction')}</p>
+        <h1 className="text-3xl font-semibold tracking-tight text-ink">{venueName}</h1>
+        <p className="mt-2 text-muted">{t('counter.instruction')}</p>
       </div>
 
-      <div className="rounded-3xl border border-neutral-200 bg-white p-8 shadow-sm">
+      <div className="rounded-3xl border border-line bg-surface p-8 shadow-sm">
         {error ? (
-          <div className="flex h-[300px] w-[300px] items-center justify-center text-center text-sm text-red-600">
+          <div className="flex h-[300px] w-[300px] items-center justify-center text-center text-sm text-danger-ink">
             {error}
           </div>
         ) : payload ? (
@@ -93,11 +93,11 @@ export default function CounterQRStation({
             bgColor="#ffffff"
           />
         ) : (
-          <div className="h-[300px] w-[300px] animate-pulse rounded-xl bg-neutral-100" />
+          <div className="h-[300px] w-[300px] animate-pulse rounded-xl bg-canvas" />
         )}
       </div>
 
-      <div className="flex items-center gap-3 text-sm text-neutral-500">
+      <div className="flex items-center gap-3 text-sm text-muted">
         <span className="relative flex h-2 w-2">
           <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
           <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
@@ -107,7 +107,7 @@ export default function CounterQRStation({
         </span>
       </div>
 
-      <p className="max-w-sm text-center text-xs leading-relaxed text-neutral-400">
+      <p className="max-w-sm text-center text-xs leading-relaxed text-faint">
         {t('counter.note')}
       </p>
     </div>

@@ -8,7 +8,7 @@ export default function LanguageToggle() {
   return (
     <button
       onClick={() => setLocale(locale === 'ka' ? 'en' : 'ka')}
-      className="rounded-lg border border-neutral-200 px-2.5 py-1.5 text-xs font-medium text-neutral-600 transition hover:bg-neutral-100"
+      className="rounded-lg border border-line px-2.5 py-1.5 text-xs font-medium text-muted transition hover:bg-canvas"
       // The label shows the language you would switch TO, which is the
       // convention people expect from a single-button toggle.
       aria-label={locale === 'ka' ? 'Switch to English' : 'ქართულზე გადართვა'}

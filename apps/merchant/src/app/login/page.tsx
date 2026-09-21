@@ -52,16 +52,16 @@ export default function LoginPage() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center bg-neutral-50 px-4">
+    <main className="flex min-h-screen items-center justify-center bg-canvas px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">Tbilisi Quest</h1>
-          <p className="mt-1 text-sm text-neutral-500">{t('nav.subtitle')}</p>
+          <h1 className="text-2xl font-semibold tracking-tight text-ink">Tbilisi Quest</h1>
+          <p className="mt-1 text-sm text-muted">{t('nav.subtitle')}</p>
         </div>
 
         <form
           onSubmit={handleSubmit}
-          className="space-y-4 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm"
+          className="space-y-4 rounded-2xl border border-line bg-surface p-6 shadow-sm"
         >
           <label className="block space-y-1.5">
             <span className="block text-sm font-medium">{t('auth.email')}</span>
@@ -71,7 +71,7 @@ export default function LoginPage() {
               autoComplete="email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
+              className="w-full rounded-lg border border-line-strong px-3 py-2 text-sm outline-none focus:border-indigo focus:ring-1 focus:ring-indigo"
             />
           </label>
 
@@ -84,15 +84,15 @@ export default function LoginPage() {
               autoComplete={mode === 'signin' ? 'current-password' : 'new-password'}
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              className="w-full rounded-lg border border-neutral-300 px-3 py-2 text-sm outline-none focus:border-neutral-900 focus:ring-1 focus:ring-neutral-900"
+              className="w-full rounded-lg border border-line-strong px-3 py-2 text-sm outline-none focus:border-indigo focus:ring-1 focus:ring-indigo"
             />
           </label>
 
           {error && (
-            <p className="rounded-lg bg-red-50 px-3 py-2 text-sm text-red-700">{error}</p>
+            <p className="rounded-lg bg-danger px-3 py-2 text-sm text-danger-ink">{error}</p>
           )}
           {notice && (
-            <p className="rounded-lg bg-emerald-50 px-3 py-2 text-sm text-emerald-800">
+            <p className="rounded-lg bg-live px-3 py-2 text-sm text-live-ink">
               {notice}
             </p>
           )}
@@ -100,7 +100,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={busy}
-            className="w-full rounded-lg bg-neutral-900 py-2.5 text-sm font-semibold text-white transition hover:bg-neutral-700 disabled:opacity-40"
+            className="w-full rounded-lg bg-ink py-2.5 text-sm font-semibold text-white transition hover:bg-ink-soft disabled:opacity-40"
           >
             {busy
               ? t('auth.working')
@@ -116,7 +116,7 @@ export default function LoginPage() {
               setError(null)
               setNotice(null)
             }}
-            className="w-full text-center text-xs text-neutral-500 hover:text-neutral-900"
+            className="w-full text-center text-xs text-muted hover:text-ink"
           >
             {mode === 'signin' ? t('auth.noAccount') : t('auth.haveAccount')}
           </button>

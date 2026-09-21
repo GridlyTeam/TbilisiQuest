@@ -1,26 +1,55 @@
 @import "tailwindcss";
 
 /*
- * The merchant portal is a light UI throughout: every surface is bg-white on
- * neutral-50. The Next starter's prefers-color-scheme override inverted the
- * text colour on devices set to dark mode, which made headings white on white
- * cards. Pinning the palette is the fix -- a real dark theme would mean
- * restyling every surface, not flipping two variables.
+ * Tbilisi Dusk — the merchant half of the palette.
+ *
+ * Same brand as the player app, applied at the opposite end: where the app
+ * glows amber on near-black, the portal stays muted on warm ivory. The person
+ * using this screen is deciding to give away real money, so it should read as
+ * an instrument, not a game.
+ *
+ * Note the two amber values. `accent` is for fills, stripes and marks; anything
+ * amber that carries TEXT uses `accent-ink`, which is darkened enough to pass
+ * WCAG AA on white. Using the bright one for text fails contrast outright.
  */
+@theme inline {
+  --color-canvas: #f3f1ee;
+  --color-surface: #ffffff;
+  --color-surface-sunk: #faf8f5;
+  --color-line: #e8e4df;
+  --color-line-strong: #dcd7d0;
+
+  --color-ink: #171526;
+  --color-ink-soft: #3a3447;
+  --color-muted: #6b6579;
+  --color-faint: #8b8497;
+
+  --color-indigo: #4c3a8c;
+  --color-indigo-soft: #eae6f5;
+  --color-rare: #6c6be8;
+
+  --color-accent: #e0913a;
+  --color-accent-ink: #b76e1f;
+
+  --color-live: #e4f0e8;
+  --color-live-ink: #2c6b43;
+  --color-warn: #fbf1e0;
+  --color-warn-line: #e6c98e;
+  --color-warn-ink: #7a5312;
+  --color-danger: #fdeceb;
+  --color-danger-ink: #a3271f;
+
+  --color-background: var(--color-canvas);
+  --color-foreground: var(--color-ink);
+}
+
 :root {
-  --background: #fafafa;
-  --foreground: #171717;
   color-scheme: light;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-}
-
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--color-canvas);
+  color: var(--color-ink);
   font-family: var(--font-sans), system-ui, "Segoe UI", sans-serif;
   -webkit-font-smoothing: antialiased;
 }

@@ -19,9 +19,9 @@ export type DropSummary = {
 }
 
 const RARITY_COLOR = {
-  common: '#7C8B9A',
-  rare: '#4A8FD4',
-  legendary: '#E8A33D',
+  common: '#5D6B8A',
+  rare: '#6C6BE8',
+  legendary: '#E0913A',
 } as const
 
 export default function DropsView({
@@ -53,16 +53,16 @@ export default function DropsView({
   return (
     <div className="space-y-12">
       <section>
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-neutral-400">
+        <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-faint">
           {t('drops.scheduled')}
         </h2>
 
         {drops.length === 0 ? (
-          <p className="rounded-xl border border-dashed border-neutral-300 p-8 text-center text-sm text-neutral-500">
+          <p className="rounded-xl border border-dashed border-line-strong p-8 text-center text-sm text-muted">
             {t('drops.empty')}
           </p>
         ) : (
-          <ul className="divide-y divide-neutral-200 overflow-hidden rounded-xl border border-neutral-200 bg-white">
+          <ul className="divide-y divide-line overflow-hidden rounded-xl border border-line bg-surface">
             {drops.map((drop) => (
               <DropRow key={drop.id} drop={drop} now={now} />
             ))}
@@ -70,7 +70,7 @@ export default function DropsView({
         )}
       </section>
 
-      <section className="rounded-2xl border border-neutral-200 bg-white p-6">
+      <section className="rounded-2xl border border-line bg-surface p-6">
         <DropCreator
           venueId={venueId}
           venueTimezone={venueTimezone}
@@ -103,14 +103,14 @@ function DropRow({ drop, now }: { drop: DropSummary; now: Date | null }) {
 
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
-          <span className="truncate text-sm font-medium text-neutral-900">{title}</span>
+          <span className="truncate text-sm font-medium text-ink">{title}</span>
           {drop.is_boss_chest && (
-            <span className="rounded bg-amber-100 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-amber-800">
+            <span className="rounded bg-warn px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-warn-ink">
               {t('drops.boss')}
             </span>
           )}
         </div>
-        <p className="mt-0.5 min-h-[1rem] text-xs text-neutral-500">
+        <p className="mt-0.5 min-h-[1rem] text-xs text-muted">
           {now == null
             ? null
             : `${starts.toLocaleString(intlLocale, {
@@ -126,19 +126,19 @@ function DropRow({ drop, now }: { drop: DropSummary; now: Date | null }) {
       </div>
 
       <div className="text-right">
-        <p className="text-sm font-semibold tabular-nums text-neutral-900">
+        <p className="text-sm font-semibold tabular-nums text-ink">
           {claimed} / {drop.inventory_cap}
         </p>
-        <p className="text-xs text-neutral-500">{t('drops.claimed')}</p>
+        <p className="text-xs text-muted">{t('drops.claimed')}</p>
       </div>
 
       <span
         className={`w-20 shrink-0 rounded-full px-2 py-1 text-center text-[11px] font-medium ${
           isLive
-            ? 'bg-emerald-100 text-emerald-800'
+            ? 'bg-live text-live-ink'
             : isPast
-              ? 'bg-neutral-100 text-neutral-500'
-              : 'bg-blue-100 text-blue-800'
+              ? 'bg-canvas text-muted'
+              : 'bg-indigo-soft text-indigo'
         }`}
       >
         {now == null
