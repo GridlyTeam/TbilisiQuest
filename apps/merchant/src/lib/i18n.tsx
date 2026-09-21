@@ -149,7 +149,7 @@ const catalogue = {
 
   // Counter
   'counter.instruction': {
-    ka: 'სთხოვე კლიენტს დაასკანიროს ეს კოდი',
+    ka: 'სთხოვე კლიენტს დაასკანეროს ეს კოდი',
     en: 'Ask the customer to scan this code to redeem',
   },
   'counter.refreshesIn': { ka: 'განახლდება {{seconds}} წამში', en: 'Refreshes in {{seconds}}s' },

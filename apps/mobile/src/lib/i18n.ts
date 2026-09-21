@@ -29,7 +29,7 @@ const catalogue = {
   'redeem.distanceM': { ka: '{{metres}} მეტრი დაშორებით', en: '{{metres}} m away' },
   'redeem.distanceKm': { ka: '{{km}} კმ დაშორებით', en: '{{km}} km away' },
   'redeem.scanCounterCode': {
-    ka: 'დაასკანირე კოდი',
+    ka: 'დაასკანერე კოდი',
     en: 'Scan the counter code',
   },
   'redeem.pointAtDisplay': {

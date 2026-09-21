@@ -1,5 +1,6 @@
 'use client'
 
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { useI18n } from '@/lib/i18n'
@@ -37,6 +38,18 @@ export default function DropsView({
   const { t } = useI18n()
   const router = useRouter()
 
+  // Anything derived from the current clock has to wait for the client.
+  // Rendering `new Date()` during SSR bakes the server's instant and timezone
+  // into the HTML, and the browser then renders a different one -- which is
+  // exactly the hydration mismatch React complains about. Locally the two
+  // happen to be close; on a UTC server they would differ by four hours.
+  const [now, setNow] = useState<Date | null>(null)
+  useEffect(() => {
+    setNow(new Date())
+    const id = setInterval(() => setNow(new Date()), 30_000)
+    return () => clearInterval(id)
+  }, [])
+
   return (
     <div className="space-y-12">
       <section>
@@ -51,7 +64,7 @@ export default function DropsView({
         ) : (
           <ul className="divide-y divide-neutral-200 overflow-hidden rounded-xl border border-neutral-200 bg-white">
             {drops.map((drop) => (
-              <DropRow key={drop.id} drop={drop} />
+              <DropRow key={drop.id} drop={drop} now={now} />
             ))}
           </ul>
         )}
@@ -69,15 +82,14 @@ export default function DropsView({
   )
 }
 
-function DropRow({ drop }: { drop: DropSummary }) {
+function DropRow({ drop, now }: { drop: DropSummary; now: Date | null }) {
   const { t, locale } = useI18n()
 
   const starts = new Date(drop.starts_at)
   const ends = new Date(drop.ends_at)
-  const now = new Date()
 
-  const isLive = now >= starts && now <= ends
-  const isPast = now > ends
+  const isLive = now != null && now >= starts && now <= ends
+  const isPast = now != null && now > ends
   const claimed = drop.inventory_cap - drop.remaining
   const title = locale === 'ka' ? drop.title_ka : drop.title_en
   const intlLocale = locale === 'ka' ? 'ka-GE' : 'en-GB'
@@ -98,15 +110,18 @@ function DropRow({ drop }: { drop: DropSummary }) {
             </span>
           )}
         </div>
-        <p className="mt-0.5 text-xs text-neutral-500">
-          {starts.toLocaleString(intlLocale, {
-            day: 'numeric',
-            month: 'short',
-            hour: '2-digit',
-            minute: '2-digit',
-          })}
-          {' – '}
-          {ends.toLocaleTimeString(intlLocale, { hour: '2-digit', minute: '2-digit' })}
+        <p className="mt-0.5 min-h-[1rem] text-xs text-neutral-500">
+          {now == null
+            ? null
+            : `${starts.toLocaleString(intlLocale, {
+                day: 'numeric',
+                month: 'short',
+                hour: '2-digit',
+                minute: '2-digit',
+              })} – ${ends.toLocaleTimeString(intlLocale, {
+                hour: '2-digit',
+                minute: '2-digit',
+              })}`}
         </p>
       </div>
 
@@ -126,7 +141,13 @@ function DropRow({ drop }: { drop: DropSummary }) {
               : 'bg-blue-100 text-blue-800'
         }`}
       >
-        {isLive ? t('drops.live') : isPast ? t('drops.ended') : t('drops.queued')}
+        {now == null
+          ? ' '
+          : isLive
+            ? t('drops.live')
+            : isPast
+              ? t('drops.ended')
+              : t('drops.queued')}
       </span>
     </li>
   )

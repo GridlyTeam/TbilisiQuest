@@ -18,7 +18,7 @@
  *      confirmation above a threshold.
  */
 
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { z } from 'zod'
 
 import { createDrop } from '../lib/actions'
@@ -116,9 +116,12 @@ function windowHasPassed(dateISO: string, endTime: string): boolean {
 
 // Scheduling an off-peak slot that already ended today is never what the
 // merchant meant, so the form opens on the next occurrence of it instead.
+//
+// `date` starts empty and is filled in after mount: reading the clock during
+// render would produce the server's date in the SSR markup and the browser's
+// date on hydration, which mismatches whenever the two disagree -- guaranteed
+// once this is served from a UTC host.
 function makeDefaults(): DropFormValues {
-  const today = todayISO()
-  const date = windowHasPassed(today, '17:00') ? addDays(today, 1) : today
   return {
     titleKa: '',
     titleEn: '',
@@ -126,7 +129,7 @@ function makeDefaults(): DropFormValues {
     offer: 'percent_off',
     discountPercent: 20,
     faceValueGel: 5,
-    date,
+    date: '',
     startTime: '14:00',
     endTime: '17:00',
     inventoryCap: 20,
@@ -144,6 +147,20 @@ export default function DropCreator({
 }: Props) {
   const { t } = useI18n()
   const [values, setValues] = useState<DropFormValues>(makeDefaults)
+  const [today, setToday] = useState('')
+
+  useEffect(() => {
+    const iso = todayISO()
+    setToday(iso)
+    setValues((prev) =>
+      prev.date
+        ? prev
+        : {
+            ...prev,
+            date: windowHasPassed(iso, prev.endTime) ? addDays(iso, 1) : iso,
+          },
+    )
+  }, [])
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
   const [confirmed, setConfirmed] = useState(false)
@@ -169,7 +186,7 @@ export default function DropCreator({
   }, [values.offer, values.faceValueGel, values.discountPercent, values.inventoryCap])
 
   const needsConfirmation = projectedCost >= CONFIRM_THRESHOLD_GEL
-  const inThePast = windowHasPassed(values.date, values.endTime)
+  const inThePast = values.date !== '' && windowHasPassed(values.date, values.endTime)
   const durationMinutes = useMemo(() => {
     const [sh, sm] = values.startTime.split(':').map(Number)
     const [eh, em] = values.endTime.split(':').map(Number)
@@ -361,7 +378,7 @@ export default function DropCreator({
               type="date"
               className={inputClass}
               value={values.date}
-              min={new Date().toISOString().slice(0, 10)}
+              min={today || undefined}
               onChange={(e) => set('date', e.target.value)}
             />
           </Field>
