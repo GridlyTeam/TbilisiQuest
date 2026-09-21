@@ -154,40 +154,58 @@ export default function GeofencedScannerScreen({
         return
       }
 
+      // Same seeding as the map: without it a stationary phone (or a static
+      // mock location) can sit on "locating" indefinitely, because a watch
+      // with a distanceInterval waits for movement.
+      try {
+        const seed =
+          (await Location.getLastKnownPositionAsync()) ??
+          (await Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.Balanced,
+          }))
+        if (seed && !cancelled) {
+          applyPosition(seed)
+        }
+      } catch {
+        // Fall through to the watch.
+      }
+
       subscription = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.BestForNavigation,
           distanceInterval: 2,
           timeInterval: 1500,
         },
-        (position) => {
-          if (cancelled) return
-          setFix(position)
-
-          const distanceM = haversineMeters(
-            position.coords.latitude,
-            position.coords.longitude,
-            venue.latitude,
-            venue.longitude,
-          )
-
-          setPhase((prev) => {
-            // Never yank the user out of a submit or a terminal error.
-            if (prev.kind === 'submitting') return prev
-            if (prev.kind === 'error' && !prev.retryable) return prev
-
-            // Accuracy padding: a 30m-accurate fix 25m away might really be at
-            // the door. Being strict here produces false rejections indoors,
-            // and the counter QR is the real proof anyway.
-            const padding = Math.min(position.coords.accuracy ?? 0, 30)
-            const inRange = distanceM - padding <= venue.claimRadiusM
-
-            return inRange
-              ? { kind: 'ready', distanceM }
-              : { kind: 'out_of_range', distanceM }
-          })
-        },
+        applyPosition,
       )
+    }
+
+    function applyPosition(position: Location.LocationObject) {
+      if (cancelled) return
+      setFix(position)
+
+      const distanceM = haversineMeters(
+        position.coords.latitude,
+        position.coords.longitude,
+        venue.latitude,
+        venue.longitude,
+      )
+
+      setPhase((prev) => {
+        // Never yank the user out of a submit or a terminal error.
+        if (prev.kind === 'submitting') return prev
+        if (prev.kind === 'error' && !prev.retryable) return prev
+
+        // Accuracy padding: a 30m-accurate fix 25m away might really be at
+        // the door. Being strict here produces false rejections indoors,
+        // and the counter QR is the real proof anyway.
+        const padding = Math.min(position.coords.accuracy ?? 0, 30)
+        const inRange = distanceM - padding <= venue.claimRadiusM
+
+        return inRange
+          ? { kind: 'ready', distanceM }
+          : { kind: 'out_of_range', distanceM }
+      })
     }
 
     void start()

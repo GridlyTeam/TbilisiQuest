@@ -44,6 +44,31 @@ export function useLocation(enabled = true): State {
 
       setState((s) => ({ ...s, permission: 'granted' }))
 
+      // Seed with whatever the device already knows. watchPositionAsync with a
+      // distanceInterval may not emit until the phone physically moves, which
+      // never happens with a static mock location -- and indoors a first fix
+      // can take a long time regardless.
+      try {
+        const last =
+          (await Location.getLastKnownPositionAsync()) ??
+          (await Location.getCurrentPositionAsync({
+            accuracy: Location.Accuracy.Balanced,
+          }))
+        if (!cancelled && last) {
+          setState({
+            fix: {
+              latitude: last.coords.latitude,
+              longitude: last.coords.longitude,
+              accuracy: last.coords.accuracy ?? 0,
+            },
+            error: null,
+            permission: 'granted',
+          })
+        }
+      } catch {
+        // No cached or immediate fix; the watch below may still deliver one.
+      }
+
       subscription = await Location.watchPositionAsync(
         {
           accuracy: Location.Accuracy.Balanced,
