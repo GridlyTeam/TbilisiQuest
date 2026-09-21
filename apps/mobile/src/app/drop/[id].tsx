@@ -12,7 +12,7 @@ import {
 
 import { supabase } from '../../lib/supabase'
 import { useTranslation } from '../../lib/i18n'
-import { useLocation, distanceMeters } from '../../lib/useLocation'
+import { useLocation } from '../../lib/useLocation'
 import { useTheme, useRarity, radius, space, type Palette, type Rarity } from '../../lib/theme'
 
 function useStyles() {
@@ -23,22 +23,25 @@ function useStyles() {
 
 type DropDetail = {
   id: string
-  title_ka: string
-  title_en: string
-  description_ka: string | null
-  description_en: string | null
   rarity: Rarity
-  offer: 'percent_off' | 'bogo' | 'free_item'
-  discount_percent: number | null
   starts_at: string
   ends_at: string
   claim_radius_m: number
   reveal_radius_m: number
-  venue_id: string
-  venues: { name_ka: string; name_en: string } | null
+  distance_m: number
+  revealed: boolean
+  remaining: number
+  in_claim_range: boolean
+  venue_name_ka: string | null
+  venue_name_en: string | null
+  title_ka: string | null
+  title_en: string | null
+  description_ka: string | null
+  description_en: string | null
+  offer: 'percent_off' | 'bogo' | 'free_item' | null
+  discount_percent: number | null
 }
 
-type VenueCoords = { lat: number; lng: number }
 
 function useCountdown(target: string | undefined) {
   const [now, setNow] = useState(() => Date.now())
@@ -65,8 +68,6 @@ export default function DropDetailScreen() {
   const { fix } = useLocation()
 
   const [drop, setDrop] = useState<DropDetail | null>(null)
-  const [venueCoords, setVenueCoords] = useState<VenueCoords | null>(null)
-  const [remaining, setRemaining] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [claiming, setClaiming] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -74,54 +75,30 @@ export default function DropDetailScreen() {
   const ka = locale === 'ka'
 
   const load = useCallback(async () => {
-    if (!id) return
-    const { data, error } = await supabase
-      .from('drops')
-      .select(
-        'id, title_ka, title_en, description_ka, description_en, rarity, offer, discount_percent, starts_at, ends_at, claim_radius_m, reveal_radius_m, venue_id, venues(name_ka, name_en)',
-      )
-      .eq('id', id)
-      .single()
+    if (!id || !fix) return
+    const { data, error } = await supabase.rpc('drop_detail', {
+      p_drop_id: id,
+      p_lat: fix.latitude,
+      p_lng: fix.longitude,
+    })
+
+    setLoading(false)
 
     if (error) {
       setError(error.message)
-      setLoading(false)
       return
     }
 
-    const detail = data as unknown as DropDetail
-    setDrop(detail)
-
-    // venue_coords exposes lat/lng as plain numbers; querying venues.location
-    // directly returns WKB hex, which is what broke the map markers.
-    const { data: coords } = await supabase
-      .from('venue_coords')
-      .select('lat, lng')
-      .eq('id', detail.venue_id)
-      .maybeSingle()
-
-    if (coords) setVenueCoords(coords as VenueCoords)
-
-    const { count } = await supabase
-      .from('vouchers')
-      .select('id', { count: 'exact', head: true })
-      .eq('drop_id', id)
-      .eq('status', 'available')
-
-    setRemaining(count ?? 0)
-    setLoading(false)
-  }, [id])
+    const row = Array.isArray(data) ? data[0] : data
+    setDrop((row as DropDetail) ?? null)
+  }, [id, fix])
 
   useEffect(() => {
     void load()
   }, [load])
 
-  const distance =
-    fix && venueCoords
-      ? distanceMeters(fix.latitude, fix.longitude, venueCoords.lat, venueCoords.lng)
-      : null
-
-  const inRange = distance != null && drop ? distance <= drop.claim_radius_m : false
+  const distance = drop?.distance_m ?? null
+  const inRange = drop?.in_claim_range ?? false
   const opensIn = useCountdown(drop?.starts_at)
   const endsIn = useCountdown(drop?.ends_at)
   const notYetOpen = opensIn != null
@@ -167,10 +144,12 @@ export default function DropDetailScreen() {
   }
 
   const meta = rarity[drop.rarity] ?? rarity.common
-  const title = ka ? drop.title_ka : drop.title_en
+  const title =
+    (ka ? drop.title_ka : drop.title_en) ??
+    (ka ? 'დაუდგენელი დროფი' : 'Unknown drop')
   const description = ka ? drop.description_ka : drop.description_en
-  const venueName = ka ? drop.venues?.name_ka : drop.venues?.name_en
-  const soldOut = remaining === 0
+  const venueName = ka ? drop.venue_name_ka : drop.venue_name_en
+  const soldOut = drop.remaining === 0
 
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
@@ -187,7 +166,7 @@ export default function DropDetailScreen() {
       <View style={styles.statRow}>
         <Stat
           label={ka ? 'დარჩა' : 'Left'}
-          value={remaining != null ? String(remaining) : '—'}
+          value={String(drop.remaining)}
           tone={soldOut ? 'bad' : 'good'}
         />
         <Stat
