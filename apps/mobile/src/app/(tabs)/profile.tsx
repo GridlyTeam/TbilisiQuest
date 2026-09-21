@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState, useMemo } from 'react'
+import { useCallback, useState, useMemo } from 'react'
+import { useFocusEffect } from 'expo-router'
 import {
   ActivityIndicator,
   Pressable,
@@ -45,9 +46,11 @@ export default function ProfileScreen() {
     setLoading(false)
   }, [])
 
-  useEffect(() => {
-    void load()
-  }, [load])
+  useFocusEffect(
+    useCallback(() => {
+      void load()
+    }, [load]),
+  )
 
   if (loading || !xp) {
     return (

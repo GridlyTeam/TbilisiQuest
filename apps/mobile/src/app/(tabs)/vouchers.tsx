@@ -1,4 +1,5 @@
-import { useCallback, useEffect, useState, useMemo } from 'react'
+import { useCallback, useState, useMemo } from 'react'
+import { useFocusEffect } from 'expo-router'
 import {
   ActivityIndicator,
   FlatList,
@@ -89,9 +90,15 @@ export default function VouchersScreen() {
     }
   }, [])
 
-  useEffect(() => {
-    void load()
-  }, [load])
+  // Tabs stay mounted, so a plain mount effect never re-runs after the claim
+  // screen routes here -- the list would still show whatever it held when the
+  // tab was first opened. Reloading on focus is what makes a fresh claim
+  // appear immediately.
+  useFocusEffect(
+    useCallback(() => {
+      void load()
+    }, [load]),
+  )
 
   if (scanning) {
     const venue = scanning.drops?.venues
