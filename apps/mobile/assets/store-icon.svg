@@ -1,0 +1,107 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <!-- Three light values stand in for a render: a lit front, a shaded side,
+         a bright top. Gradients rather than flat fills are what stop it
+         reading as a sticker. -->
+    <linearGradient id="front" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3E3660"/>
+      <stop offset="1" stop-color="#282343"/>
+    </linearGradient>
+    <linearGradient id="side" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#231E3B"/>
+      <stop offset="1" stop-color="#181430"/>
+    </linearGradient>
+    <linearGradient id="roof" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#5A47A4"/>
+      <stop offset="1" stop-color="#3C2E70"/>
+    </linearGradient>
+    <linearGradient id="awning" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#F2AC55"/>
+      <stop offset="1" stop-color="#C9761F"/>
+    </linearGradient>
+    <linearGradient id="awningSide" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#C0701D"/>
+      <stop offset="1" stop-color="#9C5813"/>
+    </linearGradient>
+
+    <!-- The window is the scene's only light source, which is what makes the
+         shop read as open rather than as a closed box. -->
+    <radialGradient id="glow" cx="0.5" cy="0.42" r="0.78">
+      <stop offset="0" stop-color="#FFE3B8"/>
+      <stop offset="0.55" stop-color="#F4B667"/>
+      <stop offset="1" stop-color="#D98A32"/>
+    </radialGradient>
+    <radialGradient id="spill" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#E0913A" stop-opacity="0.5"/>
+      <stop offset="1" stop-color="#E0913A" stop-opacity="0"/>
+    </radialGradient>
+    <radialGradient id="shadow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#000000" stop-opacity="0.42"/>
+      <stop offset="1" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- Whole scene nudged so the mass sits centred in the square. -->
+  <g transform="translate(-14,-22)">
+
+    <ellipse cx="256" cy="402" rx="148" ry="32" fill="url(#shadow)"/>
+    <!-- Warm light pooling on the pavement in front of the window. -->
+    <ellipse cx="206" cy="390" rx="92" ry="24" fill="url(#spill)"/>
+
+    <!-- ===== Body ===== -->
+    <path d="M330 220 L392 184 L392 350 L330 386 Z" fill="url(#side)"/>
+    <path d="M152 220 L214 184 L392 184 L330 220 Z" fill="url(#roof)"/>
+    <path d="M152 220 L330 220 L330 386 L152 386 Z" fill="url(#front)"/>
+    <!-- Catch light along the front top edge. -->
+    <path d="M152 220 L330 220 L330 225 L152 225 Z" fill="#6A57BE" opacity="0.55"/>
+
+    <!-- ===== Roof railing =====
+         The railed flat top of an old Tbilisi street front, drawn as a solid
+         band with slots cut out so it reads as one object rather than a row
+         of separate posts. -->
+    <path d="M160 192 L322 192 L322 200 L160 200 Z" fill="#6B5AB8"/>
+    <path d="M164 200 L318 200 L318 218 L164 218 Z" fill="#4C3A8C"/>
+    <g fill="#2A2350">
+      <rect x="176" y="204" width="9" height="11" rx="3"/>
+      <rect x="199" y="204" width="9" height="11" rx="3"/>
+      <rect x="222" y="204" width="9" height="11" rx="3"/>
+      <rect x="245" y="204" width="9" height="11" rx="3"/>
+      <rect x="268" y="204" width="9" height="11" rx="3"/>
+      <rect x="291" y="204" width="9" height="11" rx="3"/>
+    </g>
+
+    <!-- ===== Awning =====
+         The side panel follows the building's own (+62,-36) projection so it
+         stays welded to the corner instead of flying off. -->
+    <path d="M330 242 L362 224 L348 258 L318 276 Z" fill="url(#awningSide)"/>
+    <path d="M146 242 L334 242 L318 282 L160 282 Z" fill="url(#awning)"/>
+    <g fill="#B4681A">
+      <circle cx="172" cy="282" r="10"/>
+      <circle cx="201" cy="282" r="10"/>
+      <circle cx="230" cy="282" r="10"/>
+      <circle cx="259" cy="282" r="10"/>
+      <circle cx="288" cy="282" r="10"/>
+      <circle cx="314" cy="281" r="10"/>
+    </g>
+    <g fill="#FFD49A" opacity="0.42">
+      <path d="M184 242 L204 242 L192 282 L173 282 Z"/>
+      <path d="M240 242 L260 242 L250 282 L231 282 Z"/>
+      <path d="M300 242 L320 242 L312 282 L293 282 Z"/>
+    </g>
+
+    <!-- ===== Window ===== -->
+    <rect x="170" y="302" width="98" height="66" rx="11" fill="#141029"/>
+    <rect x="177" y="309" width="84" height="52" rx="7" fill="url(#glow)"/>
+    <g stroke="#141029" stroke-width="5" stroke-linecap="round">
+      <line x1="219" y1="309" x2="219" y2="361"/>
+      <line x1="177" y1="335" x2="261" y2="335"/>
+    </g>
+
+    <!-- ===== Door ===== -->
+    <path d="M284 306 L318 306 L318 386 L284 386 Z" fill="#141029"/>
+    <path d="M290 312 L312 312 L312 386 L290 386 Z" fill="#5A47A4"/>
+    <circle cx="295" cy="350" r="4.5" fill="#E0913A"/>
+
+    <path d="M276 386 L326 386 L334 396 L268 396 Z" fill="#221D3C"/>
+  </g>
+</svg>
