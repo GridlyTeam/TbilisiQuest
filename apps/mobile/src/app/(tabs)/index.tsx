@@ -95,11 +95,23 @@ export default function MapScreen() {
     }
   }, [fix, load, safety.blocked])
 
-  // Without a fix we still want a populated map, so fall back to the city centre.
+  // Without a fix we still want a populated map, so fall back to the city
+  // centre -- for a refused permission, and also when permission was granted
+  // but no fix arrives. Indoors a phone can take a long time to see satellites,
+  // and previously that left the map empty with no explanation.
   useEffect(() => {
     if (permission === 'denied') {
       void load(TBILISI_CENTER[1], TBILISI_CENTER[0])
+      return
     }
+
+    const timer = setTimeout(() => {
+      if (!lastQuery.current) {
+        void load(TBILISI_CENTER[1], TBILISI_CENTER[0])
+      }
+    }, 6000)
+
+    return () => clearTimeout(timer)
   }, [permission, load])
 
   useEffect(() => {
@@ -159,6 +171,13 @@ export default function MapScreen() {
                 ? `${drops.length} დროფი ახლოს`
                 : `${drops.length} drops nearby`}
           </Text>
+          {!loading && drops.length === 0 && (
+            <Text style={styles.headerWarn}>
+              {ka
+                ? 'აქტიური დროფი არ არის — შეამოწმე დრო და მიმოხილვა'
+                : 'No live drops right now'}
+            </Text>
+          )}
           <Text style={styles.headerSub}>
             {revealed > 0
               ? ka
@@ -284,6 +303,7 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   },
   headerTitle: { color: c.text, fontSize: 16, fontWeight: '700' },
   headerSub: { color: c.textMuted, fontSize: 12, marginTop: 2 },
+  headerWarn: { color: c.accentInk, fontSize: 12, marginTop: 2, fontWeight: '600' },
 
   footer: {
     position: 'absolute',
