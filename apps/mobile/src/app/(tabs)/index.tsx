@@ -48,6 +48,19 @@ type NearbyDrop = {
   discount_percent: number | null
   lat: number
   lng: number
+  /** Metres within which the true position lies. Zero once revealed. */
+  uncertainty_m: number
+}
+
+/**
+ * Web-Mercator ground resolution. A circle drawn at this size covers the same
+ * patch of city at every zoom, so zooming in magnifies the uncertainty instead
+ * of narrowing it -- which is what previously gave the exact spot away.
+ */
+function metresToPixels(metres: number, latitude: number, zoom: number): number {
+  const metresPerPixel =
+    (156543.03392 * Math.cos((latitude * Math.PI) / 180)) / Math.pow(2, zoom)
+  return metres / metresPerPixel
 }
 
 export default function MapScreen() {
@@ -61,6 +74,7 @@ export default function MapScreen() {
   const [loading, setLoading] = useState(true)
   const lastQuery = useRef<{ lat: number; lng: number } | null>(null)
   const cameraRef = useRef<CameraRef>(null)
+  const [zoom, setZoom] = useState(12)
   const centredOnce = useRef(false)
 
   const ka = locale === 'ka'
@@ -137,7 +151,18 @@ export default function MapScreen() {
 
   return (
     <View style={styles.root}>
-      <MapLibreMap style={StyleSheet.absoluteFill} mapStyle={c.mapStyle}>
+      <MapLibreMap
+        style={StyleSheet.absoluteFill}
+        mapStyle={c.mapStyle}
+        onRegionIsChanging={(e) => {
+          const next = e.nativeEvent?.zoom
+          if (typeof next === 'number') setZoom(next)
+        }}
+        onRegionDidChange={(e) => {
+          const next = e.nativeEvent?.zoom
+          if (typeof next === 'number') setZoom(next)
+        }}
+      >
         <Camera
           ref={cameraRef}
           initialViewState={{ center: TBILISI_CENTER, zoom: 12 }}
@@ -153,6 +178,7 @@ export default function MapScreen() {
               <DropMarker
                 drop={drop}
                 ka={ka}
+                zoom={zoom}
                 onPress={() => router.push(`/drop/${drop.id}`)}
               />
             </Marker>
@@ -237,17 +263,30 @@ export default function MapScreen() {
 function DropMarker({
   drop,
   ka,
+  zoom,
   onPress,
 }: {
   drop: NearbyDrop
   ka: boolean
+  zoom: number
   onPress: () => void
 }) {
   const styles = useStyles()
   const { c } = useTheme()
   const rarity = useRarity()
   const meta = rarity[drop.rarity] ?? rarity.common
-  const size = drop.is_boss_chest ? 56 : 44
+
+  // A revealed drop is a pin: fixed size, exact position. An unrevealed one is
+  // an area of uncertainty, so its circle is drawn to scale and shrinks only as
+  // the player physically closes in and the server narrows the cell.
+  const size = drop.revealed
+    ? drop.is_boss_chest
+      ? 56
+      : 44
+    : Math.max(
+        32,
+        Math.min(280, metresToPixels(drop.uncertainty_m * 2, drop.lat, zoom)),
+      )
 
   return (
     <Pressable onPress={onPress} hitSlop={8}>
