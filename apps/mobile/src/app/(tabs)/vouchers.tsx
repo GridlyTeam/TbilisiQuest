@@ -28,7 +28,6 @@ type VoucherRow = {
       id: string
       name_ka: string
       name_en: string
-      location: unknown
     } | null
   } | null
 }
@@ -39,6 +38,9 @@ export default function VouchersScreen() {
   const [loading, setLoading] = useState(true)
   const [refreshing, setRefreshing] = useState(false)
   const [scanning, setScanning] = useState<VoucherRow | null>(null)
+  const [coordsByVenue, setCoordsByVenue] = useState<
+    Record<string, { lat: number; lng: number }>
+  >({})
 
   const ka = locale === 'ka'
 
@@ -46,7 +48,7 @@ export default function VouchersScreen() {
     const { data, error } = await supabase
       .from('vouchers')
       .select(
-        'id, redemption_code, status, hold_expires_at, drops(title_ka, title_en, rarity, claim_radius_m, venues(id, name_ka, name_en, location))',
+        'id, redemption_code, status, hold_expires_at, drops(title_ka, title_en, rarity, claim_radius_m, venues(id, name_ka, name_en))',
       )
       .in('status', ['held', 'redeemed'])
       .order('claimed_at', { ascending: false })
@@ -58,7 +60,24 @@ export default function VouchersScreen() {
       console.warn('vouchers load failed', error.message)
       return
     }
-    setRows((data ?? []) as unknown as VoucherRow[])
+    const list = (data ?? []) as unknown as VoucherRow[]
+    setRows(list)
+
+    // Coordinates come from venue_coords as plain numbers: querying
+    // venues.location directly returns WKB hex, which the scanner cannot use.
+    const ids = [...new Set(list.map((r) => r.drops?.venues?.id).filter(Boolean))]
+    if (ids.length > 0) {
+      const { data: coords } = await supabase
+        .from('venue_coords')
+        .select('id, lat, lng')
+        .in('id', ids as string[])
+
+      const map: Record<string, { lat: number; lng: number }> = {}
+      for (const c of coords ?? []) {
+        map[c.id as string] = { lat: c.lat as number, lng: c.lng as number }
+      }
+      setCoordsByVenue(map)
+    }
   }, [])
 
   useEffect(() => {
@@ -67,13 +86,7 @@ export default function VouchersScreen() {
 
   if (scanning) {
     const venue = scanning.drops?.venues
-    const coords = (() => {
-      const loc = venue?.location as unknown
-      if (loc && typeof loc === 'object' && 'coordinates' in loc) {
-        return (loc as { coordinates: [number, number] }).coordinates
-      }
-      return null
-    })()
+    const coords = venue ? coordsByVenue[venue.id] : undefined
 
     if (!venue || !coords) {
       setScanning(null)
@@ -93,8 +106,8 @@ export default function VouchersScreen() {
           id: venue.id,
           nameKa: venue.name_ka,
           nameEn: venue.name_en,
-          latitude: coords[1],
-          longitude: coords[0],
+          latitude: coords.lat,
+          longitude: coords.lng,
           claimRadiusM: scanning.drops?.claim_radius_m ?? 20,
         }}
         onRedeemed={() => {

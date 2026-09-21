@@ -29,8 +29,10 @@ type DropDetail = {
   claim_radius_m: number
   reveal_radius_m: number
   venue_id: string
-  venues: { name_ka: string; name_en: string; location: unknown } | null
+  venues: { name_ka: string; name_en: string } | null
 }
+
+type VenueCoords = { lat: number; lng: number }
 
 function useCountdown(target: string | undefined) {
   const [now, setNow] = useState(() => Date.now())
@@ -54,6 +56,7 @@ export default function DropDetailScreen() {
   const { fix } = useLocation()
 
   const [drop, setDrop] = useState<DropDetail | null>(null)
+  const [venueCoords, setVenueCoords] = useState<VenueCoords | null>(null)
   const [remaining, setRemaining] = useState<number | null>(null)
   const [loading, setLoading] = useState(true)
   const [claiming, setClaiming] = useState(false)
@@ -66,7 +69,7 @@ export default function DropDetailScreen() {
     const { data, error } = await supabase
       .from('drops')
       .select(
-        'id, title_ka, title_en, description_ka, description_en, rarity, offer, discount_percent, starts_at, ends_at, claim_radius_m, reveal_radius_m, venue_id, venues(name_ka, name_en, location)',
+        'id, title_ka, title_en, description_ka, description_en, rarity, offer, discount_percent, starts_at, ends_at, claim_radius_m, reveal_radius_m, venue_id, venues(name_ka, name_en)',
       )
       .eq('id', id)
       .single()
@@ -77,7 +80,18 @@ export default function DropDetailScreen() {
       return
     }
 
-    setDrop(data as unknown as DropDetail)
+    const detail = data as unknown as DropDetail
+    setDrop(detail)
+
+    // venue_coords exposes lat/lng as plain numbers; querying venues.location
+    // directly returns WKB hex, which is what broke the map markers.
+    const { data: coords } = await supabase
+      .from('venue_coords')
+      .select('lat, lng')
+      .eq('id', detail.venue_id)
+      .maybeSingle()
+
+    if (coords) setVenueCoords(coords as VenueCoords)
 
     const { count } = await supabase
       .from('vouchers')
@@ -93,17 +107,9 @@ export default function DropDetailScreen() {
     void load()
   }, [load])
 
-  const venueCoords = (() => {
-    const loc = drop?.venues?.location as unknown
-    if (loc && typeof loc === 'object' && 'coordinates' in loc) {
-      return (loc as { coordinates: [number, number] }).coordinates
-    }
-    return null
-  })()
-
   const distance =
     fix && venueCoords
-      ? distanceMeters(fix.latitude, fix.longitude, venueCoords[1], venueCoords[0])
+      ? distanceMeters(fix.latitude, fix.longitude, venueCoords.lat, venueCoords.lng)
       : null
 
   const inRange = distance != null && drop ? distance <= drop.claim_radius_m : false

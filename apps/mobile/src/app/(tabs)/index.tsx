@@ -46,17 +46,8 @@ type NearbyDrop = {
   title_ka: string | null
   title_en: string | null
   discount_percent: number | null
-  location: { coordinates: [number, number] } | string
-}
-
-/** PostGIS geography comes back as GeoJSON or WKB hex depending on the client. */
-function coordsOf(drop: NearbyDrop): [number, number] | null {
-  const loc = drop.location as unknown
-  if (loc && typeof loc === 'object' && 'coordinates' in loc) {
-    const c = (loc as { coordinates: [number, number] }).coordinates
-    if (Array.isArray(c) && c.length === 2) return c
-  }
-  return null
+  lat: number
+  lng: number
 }
 
 export default function MapScreen() {
@@ -119,10 +110,9 @@ export default function MapScreen() {
         {permission === 'granted' && <UserLocation animated accuracy />}
 
         {drops.map((drop) => {
-          const coords = coordsOf(drop)
-          if (!coords) return null
+          if (drop.lat == null || drop.lng == null) return null
           return (
-            <Marker key={drop.id} lngLat={coords}>
+            <Marker key={drop.id} lngLat={[drop.lng, drop.lat]}>
               <DropMarker
                 drop={drop}
                 ka={ka}
