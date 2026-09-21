@@ -18,7 +18,7 @@ export default async function DropsPage() {
   const { data: drops } = await supabase
     .from('drops')
     .select(
-      'id, title_ka, title_en, rarity, starts_at, ends_at, inventory_cap, is_boss_chest',
+      'id, title_ka, title_en, rarity, starts_at, ends_at, inventory_cap, is_boss_chest, safety_reviewed_at',
     )
     .eq('venue_id', venue.venueId)
     .order('starts_at', { ascending: false })

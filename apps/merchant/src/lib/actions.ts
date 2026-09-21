@@ -105,3 +105,33 @@ export async function createDrop(input: CreateDropInput) {
   revalidatePath('/drops')
   return { dropId: drop.id as string }
 }
+
+/**
+ * Record that a human has checked a drop's surroundings.
+ *
+ * "Every search radius is checked by hand before it goes live" only means
+ * something if the check is attributable, so this records who signed it off and
+ * when. RLS restricts the update to staff at that venue; the reviewer id comes
+ * from the session rather than the request body.
+ */
+export async function markDropReviewed(dropId: string, notes?: string) {
+  const supabase = await createServerSupabase()
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+  if (!user) throw new Error('Not signed in')
+
+  const { error } = await supabase
+    .from('drops')
+    .update({
+      safety_reviewed_at: new Date().toISOString(),
+      safety_reviewed_by: user.id,
+      safety_notes: notes ?? null,
+    })
+    .eq('id', dropId)
+
+  if (error) throw new Error(error.message)
+
+  revalidatePath('/drops')
+}

@@ -17,6 +17,10 @@ import {
 import { supabase } from '../../lib/supabase'
 import { useTranslation } from '../../lib/i18n'
 import { useLocation } from '../../lib/useLocation'
+import { useSafetyGate } from '../../lib/useSafetyGate'
+import SafetyOverlay from '../../components/SafetyOverlay'
+import SafetyBriefing from '../../components/SafetyBriefing'
+import EmergencyButton from '../../components/EmergencyButton'
 import { colors, radius, rarity, space, type Rarity } from '../../lib/theme'
 
 /**
@@ -59,6 +63,7 @@ export default function MapScreen() {
   const router = useRouter()
   const { locale } = useTranslation()
   const { fix, permission, error } = useLocation()
+  const safety = useSafetyGate(fix)
   const [drops, setDrops] = useState<NearbyDrop[]>([])
   const [loading, setLoading] = useState(true)
   const lastQuery = useRef<{ lat: number; lng: number } | null>(null)
@@ -82,7 +87,7 @@ export default function MapScreen() {
   // Refetch when the player has actually moved. Re-querying on every GPS tick
   // would hammer the API while standing still and change nothing.
   useEffect(() => {
-    if (!fix) return
+    if (!fix || safety.blocked) return
     const prev = lastQuery.current
     const moved =
       !prev ||
@@ -93,7 +98,7 @@ export default function MapScreen() {
       lastQuery.current = { lat: fix.latitude, lng: fix.longitude }
       void load(fix.latitude, fix.longitude)
     }
-  }, [fix, load])
+  }, [fix, load, safety.blocked])
 
   // Without a fix we still want a populated map, so fall back to the city centre.
   useEffect(() => {
@@ -161,11 +166,21 @@ export default function MapScreen() {
         </View>
       )}
 
-      {loading && (
+      {loading && !safety.blocked && (
         <View style={styles.loadingOverlay} pointerEvents="none">
           <ActivityIndicator color={colors.accent} />
         </View>
       )}
+
+      {/* Always reachable, over the map and under the safety overlay. */}
+      {!safety.blocked && (
+        <View style={styles.emergency}>
+          <EmergencyButton />
+        </View>
+      )}
+
+      <SafetyOverlay safety={safety} />
+      <SafetyBriefing />
     </View>
   )
 }
@@ -253,6 +268,12 @@ const styles = StyleSheet.create({
   },
   footerText: { color: colors.text, fontSize: 13, textAlign: 'center' },
 
+  emergency: {
+    position: 'absolute',
+    bottom: space.lg,
+    left: space.lg,
+    right: space.lg,
+  },
   loadingOverlay: {
     position: 'absolute',
     top: 0,

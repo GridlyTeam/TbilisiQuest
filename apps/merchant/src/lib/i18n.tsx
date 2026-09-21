@@ -68,6 +68,14 @@ const catalogue = {
     en: "Your role doesn't include drop management. Head to the Counter tab.",
   },
 
+  'drops.awaitingReview': { ka: 'შემოწმების მოლოდინში', en: 'Awaiting safety check' },
+  'drops.reviewAction': { ka: 'უსაფრთხოება შემოწმებულია', en: 'Mark as checked' },
+  'drops.reviewHint': {
+    ka: 'დროფი რუკაზე არ გამოჩნდება, სანამ ადგილს ხელით არ შეამოწმებ: გზები, კიბეები, სამშენებლო უბნები.',
+    en: 'A drop stays hidden from the map until someone has checked its surroundings by hand: roads, stairs, building sites.',
+  },
+  'drops.reviewed': { ka: 'შემოწმებული', en: 'Checked' },
+
   // Drop creator
   'creator.title': { ka: 'დროფის დაგეგმვა', en: 'Schedule a drop' },
   'creator.timezoneNote': {

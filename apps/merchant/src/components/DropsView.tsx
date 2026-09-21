@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { useI18n } from '@/lib/i18n'
+import { markDropReviewed } from '@/lib/actions'
 import DropCreator from './DropCreator'
 
 export type DropSummary = {
@@ -16,6 +17,7 @@ export type DropSummary = {
   inventory_cap: number
   is_boss_chest: boolean
   remaining: number
+  safety_reviewed_at: string | null
 }
 
 const RARITY_COLOR = {
@@ -53,9 +55,10 @@ export default function DropsView({
   return (
     <div className="space-y-12">
       <section>
-        <h2 className="mb-4 text-xs font-semibold uppercase tracking-widest text-faint">
+        <h2 className="mb-1 text-xs font-semibold uppercase tracking-widest text-faint">
           {t('drops.scheduled')}
         </h2>
+        <p className="mb-4 text-xs leading-relaxed text-muted">{t('drops.reviewHint')}</p>
 
         {drops.length === 0 ? (
           <p className="rounded-xl border border-dashed border-line-strong p-8 text-center text-sm text-muted">
@@ -84,6 +87,8 @@ export default function DropsView({
 
 function DropRow({ drop, now }: { drop: DropSummary; now: Date | null }) {
   const { t, locale } = useI18n()
+  const [reviewing, setReviewing] = useState(false)
+  const reviewed = drop.safety_reviewed_at != null
 
   const starts = new Date(drop.starts_at)
   const ends = new Date(drop.ends_at)
@@ -132,8 +137,28 @@ function DropRow({ drop, now }: { drop: DropSummary; now: Date | null }) {
         <p className="text-xs text-muted">{t('drops.claimed')}</p>
       </div>
 
+      {reviewed ? null : (
+        <button
+          onClick={async () => {
+            setReviewing(true)
+            try {
+              await markDropReviewed(drop.id)
+            } finally {
+              setReviewing(false)
+            }
+          }}
+          disabled={reviewing}
+          className="shrink-0 rounded-lg bg-warn-ink px-3 py-1.5 text-[11px] font-semibold text-white transition hover:opacity-90 disabled:opacity-40"
+        >
+          {t('drops.reviewAction')}
+        </button>
+      )}
+
       <span
         className={`w-20 shrink-0 rounded-full px-2 py-1 text-center text-[11px] font-medium ${
+          !reviewed
+            ? 'bg-warn text-warn-ink'
+            : 
           isLive
             ? 'bg-live text-live-ink'
             : isPast
