@@ -174,13 +174,12 @@ export default function MapScreen() {
         {drops.map((drop) => {
           if (drop.lat == null || drop.lng == null) return null
           return (
-            <Marker key={drop.id} lngLat={[drop.lng, drop.lat]}>
-              <DropMarker
-                drop={drop}
-                ka={ka}
-                zoom={zoom}
-                onPress={() => router.push(`/drop/${drop.id}`)}
-              />
+            <Marker
+              key={drop.id}
+              lngLat={[drop.lng, drop.lat]}
+              onPress={() => router.push(`/drop/${drop.id}`)}
+            >
+              <DropMarker drop={drop} ka={ka} zoom={zoom} />
             </Marker>
           )
         })}
@@ -264,12 +263,10 @@ function DropMarker({
   drop,
   ka,
   zoom,
-  onPress,
 }: {
   drop: NearbyDrop
   ka: boolean
   zoom: number
-  onPress: () => void
 }) {
   const styles = useStyles()
   const { c } = useTheme()
@@ -289,7 +286,7 @@ function DropMarker({
       )
 
   return (
-    <Pressable onPress={onPress} hitSlop={8}>
+    <View>
       <View
         style={[
           styles.marker,
@@ -330,7 +327,7 @@ function DropMarker({
           </Text>
         </View>
       )}
-    </Pressable>
+    </View>
   )
 }
 
