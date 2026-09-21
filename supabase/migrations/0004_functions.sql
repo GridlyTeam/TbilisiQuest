@@ -34,7 +34,7 @@ create or replace function public.materialise_drop_inventory(p_drop_id uuid)
 returns int
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 declare
   v_cap      int;
@@ -92,7 +92,7 @@ returns table (
 language plpgsql
 stable
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 declare
   v_point geography := st_setsrid(st_makepoint(p_lng, p_lat), 4326)::geography;
@@ -170,7 +170,7 @@ returns table (
 )
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 declare
   v_user_id    uuid := auth.uid();
@@ -283,7 +283,7 @@ returns text
 language plpgsql
 stable
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 declare
   v_secret bytea;
@@ -319,7 +319,7 @@ returns table (
 )
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 declare
   v_user_id  uuid := auth.uid();
@@ -409,7 +409,7 @@ create or replace function public.release_expired_holds()
 returns int
 language plpgsql
 security definer
-set search_path = public
+set search_path = public, extensions
 as $$
 declare
   v_count int;

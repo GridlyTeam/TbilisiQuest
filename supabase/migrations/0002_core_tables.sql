@@ -1,5 +1,10 @@
 -- Tbilisi Quest :: 0002 :: core domain tables
 
+-- Supabase installs pgcrypto into the `extensions` schema rather than public,
+-- so gen_random_bytes() is not on the default search_path. Widening it here
+-- keeps the DDL below readable instead of schema-qualifying every call.
+set search_path = public, extensions;
+
 -- ---------------------------------------------------------------------------
 -- users
 -- ---------------------------------------------------------------------------
