@@ -9,6 +9,7 @@ import { useRouter } from 'expo-router'
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
 import {
   ActivityIndicator,
+  Image,
   Pressable,
   StyleSheet,
   Text,
@@ -37,7 +38,6 @@ type NearbyDrop = {
   rarity: Rarity
   is_boss_chest: boolean
   distance_m: number
-  revealed: boolean
   starts_at: string
   ends_at: string
   remaining: number
@@ -48,19 +48,6 @@ type NearbyDrop = {
   discount_percent: number | null
   lat: number
   lng: number
-  /** Metres within which the true position lies. Zero once revealed. */
-  uncertainty_m: number
-}
-
-/**
- * Web-Mercator ground resolution. A circle drawn at this size covers the same
- * patch of city at every zoom, so zooming in magnifies the uncertainty instead
- * of narrowing it -- which is what previously gave the exact spot away.
- */
-function metresToPixels(metres: number, latitude: number, zoom: number): number {
-  const metresPerPixel =
-    (156543.03392 * Math.cos((latitude * Math.PI) / 180)) / Math.pow(2, zoom)
-  return metres / metresPerPixel
 }
 
 export default function MapScreen() {
@@ -74,7 +61,6 @@ export default function MapScreen() {
   const [loading, setLoading] = useState(true)
   const lastQuery = useRef<{ lat: number; lng: number } | null>(null)
   const cameraRef = useRef<CameraRef>(null)
-  const [zoom, setZoom] = useState(12)
   const centredOnce = useRef(false)
 
   const ka = locale === 'ka'
@@ -147,21 +133,13 @@ export default function MapScreen() {
     })
   }, [fix])
 
-  const revealed = drops.filter((d) => d.revealed).length
+
 
   return (
     <View style={styles.root}>
       <MapLibreMap
         style={StyleSheet.absoluteFill}
         mapStyle={c.mapStyle}
-        onRegionIsChanging={(e) => {
-          const next = e.nativeEvent?.zoom
-          if (typeof next === 'number') setZoom(next)
-        }}
-        onRegionDidChange={(e) => {
-          const next = e.nativeEvent?.zoom
-          if (typeof next === 'number') setZoom(next)
-        }}
       >
         <Camera
           ref={cameraRef}
@@ -179,7 +157,7 @@ export default function MapScreen() {
               lngLat={[drop.lng, drop.lat]}
               onPress={() => router.push(`/drop/${drop.id}`)}
             >
-              <DropMarker drop={drop} ka={ka} zoom={zoom} />
+              <DropMarker drop={drop} ka={ka} />
             </Marker>
           )
         })}
@@ -204,13 +182,9 @@ export default function MapScreen() {
             </Text>
           )}
           <Text style={styles.headerSub}>
-            {revealed > 0
-              ? ka
-                ? `${revealed} გახსნილი`
-                : `${revealed} revealed`
-              : ka
-                ? 'იდუმალი ნიშნები — მიუახლოვდი 100 მ-ზე'
-                : 'Mystery markers — get within 100 m'}
+            {ka
+              ? 'მიუახლოვდი 20 მ-ზე ასაღებად'
+              : 'Get within 20 m to claim'}
           </Text>
         </View>
       </View>
@@ -255,75 +229,62 @@ export default function MapScreen() {
 }
 
 /**
- * Fog of war made visual: an unrevealed drop shows only a rarity-tinted question
- * mark. The server has already stripped the venue and offer from the payload,
- * so there is nothing to render even if someone patched this component.
+ * Every drop is a storefront now: the icon carries the shop, the rarity ring
+ * carries how good the offer is, and the badge carries scarcity. Scarcity is
+ * the thing that actually moves someone off a sofa, so it gets the loudest
+ * treatment of the three.
  */
-function DropMarker({
-  drop,
-  ka,
-  zoom,
-}: {
-  drop: NearbyDrop
-  ka: boolean
-  zoom: number
-}) {
+function DropMarker({ drop, ka }: { drop: NearbyDrop; ka: boolean }) {
   const styles = useStyles()
-  const { c } = useTheme()
   const rarity = useRarity()
   const meta = rarity[drop.rarity] ?? rarity.common
-
-  // A revealed drop is a pin: fixed size, exact position. An unrevealed one is
-  // an area of uncertainty, so its circle is drawn to scale and shrinks only as
-  // the player physically closes in and the server narrows the cell.
-  const size = drop.revealed
-    ? drop.is_boss_chest
-      ? 56
-      : 44
-    : Math.max(
-        32,
-        Math.min(280, metresToPixels(drop.uncertainty_m * 2, drop.lat, zoom)),
-      )
+  const size = drop.is_boss_chest ? 74 : 58
+  const venueName = (ka ? drop.venue_name_ka : drop.venue_name_en) ?? ''
+  const soldOut = drop.remaining === 0
 
   return (
-    <View>
+    <View style={styles.markerWrap}>
       <View
         style={[
-          styles.marker,
+          styles.badge,
+          { backgroundColor: soldOut ? styles.badgeSoldOut.color : meta.color },
+        ]}
+      >
+        <Text style={styles.badgeText}>
+          {soldOut
+            ? ka
+              ? 'ამოიწურა'
+              : 'Gone'
+            : ka
+              ? `${drop.remaining} დარჩა`
+              : `${drop.remaining} left`}
+        </Text>
+      </View>
+
+      <View
+        style={[
+          styles.iconRing,
           {
             width: size,
             height: size,
             borderRadius: size / 2,
             borderColor: meta.color,
-            // Undiscovered drops carry their rarity colour at low opacity, so
-            // the tint is legible while the map still reads through it.
-            // Revealing fills the circle solid, making discovery a visible
-            // change rather than a text swap.
-            backgroundColor: drop.revealed ? meta.color : meta.fill,
             shadowColor: meta.color,
-            shadowOpacity: drop.revealed ? 0.8 : 0.45,
+            opacity: soldOut ? 0.45 : 1,
           },
         ]}
       >
-        <Text
-          style={[
-            styles.markerText,
-            { color: drop.revealed ? c.bg : meta.color },
-            !drop.revealed && styles.markerTextGhost,
-          ]}
-        >
-          {drop.revealed
-            ? drop.discount_percent
-              ? `${drop.discount_percent}%`
-              : '★'
-            : '?'}
-        </Text>
+        <Image
+          source={require('../../../assets/store-icon-192.png')}
+          style={{ width: size * 0.82, height: size * 0.82 }}
+          resizeMode="contain"
+        />
       </View>
 
-      {drop.revealed && (
+      {venueName.length > 0 && (
         <View style={styles.markerLabel}>
           <Text style={styles.markerLabelText} numberOfLines={1}>
-            {(ka ? drop.venue_name_ka : drop.venue_name_en) ?? ''}
+            {venueName}
           </Text>
         </View>
       )}
@@ -391,17 +352,30 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     justifyContent: 'center',
   },
 
-  marker: {
+  markerWrap: { alignItems: 'center' },
+  iconRing: {
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    shadowRadius: 8,
-    elevation: 6,
+    backgroundColor: c.surface,
+    shadowOpacity: 0.55,
+    shadowRadius: 10,
+    elevation: 7,
   },
-  markerText: { fontWeight: '800', fontSize: 14 },
-  // A question mark with weight but not full presence: legible against either
-  // basemap without competing with revealed markers.
-  markerTextGhost: { opacity: 0.85, fontSize: 18 },
+  badge: {
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: radius.pill,
+    marginBottom: 4,
+    minWidth: 46,
+    alignItems: 'center',
+  },
+  badgeText: {
+    color: '#12101C',
+    fontSize: 11,
+    fontWeight: '800',
+  },
+  badgeSoldOut: { color: c.textFaint },
   markerLabel: {
     marginTop: 4,
     alignSelf: 'center',

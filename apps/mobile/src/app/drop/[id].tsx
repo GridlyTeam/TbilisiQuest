@@ -29,7 +29,6 @@ type DropDetail = {
   claim_radius_m: number
   reveal_radius_m: number
   distance_m: number
-  revealed: boolean
   remaining: number
   in_claim_range: boolean
   own_voucher: 'none' | 'held' | 'redeemed' | string
@@ -183,9 +182,7 @@ export default function DropDetailScreen() {
   }
 
   const meta = rarity[drop.rarity] ?? rarity.common
-  const title =
-    (ka ? drop.title_ka : drop.title_en) ??
-    (ka ? 'დაუდგენელი დროფი' : 'Unknown drop')
+  const title = (ka ? drop.title_ka : drop.title_en) ?? ''
   const description = ka ? drop.description_ka : drop.description_en
   const venueName = ka ? drop.venue_name_ka : drop.venue_name_en
   const soldOut = drop.remaining === 0
