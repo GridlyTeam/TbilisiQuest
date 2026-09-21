@@ -298,11 +298,11 @@ function DropMarker({
             height: size,
             borderRadius: size / 2,
             borderColor: meta.color,
-            // Undiscovered drops are a ring of light with the map showing
-            // through: present enough to walk toward, empty enough to read as
-            // unknown. Revealed ones fill in, so discovery is a visible change
-            // rather than a text swap.
-            backgroundColor: drop.revealed ? meta.color : 'transparent',
+            // Undiscovered drops carry their rarity colour at low opacity, so
+            // the tint is legible while the map still reads through it.
+            // Revealing fills the circle solid, making discovery a visible
+            // change rather than a text swap.
+            backgroundColor: drop.revealed ? meta.color : meta.fill,
             shadowColor: meta.color,
             shadowOpacity: drop.revealed ? 0.8 : 0.45,
           },

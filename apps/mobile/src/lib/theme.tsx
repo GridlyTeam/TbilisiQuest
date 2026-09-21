@@ -84,14 +84,48 @@ const light: Palette = {
 export const rarityFor = (p: Palette) =>
   p.isDark
     ? {
-        common: { color: '#8A93A8', glow: 'rgba(138,147,168,0.35)', label: { ka: 'ჩვეულებრივი', en: 'Common' } },
-        rare: { color: '#6C6BE8', glow: 'rgba(108,107,232,0.55)', label: { ka: 'იშვიათი', en: 'Rare' } },
-        legendary: { color: '#E0913A', glow: 'rgba(224,145,58,0.65)', label: { ka: 'ლეგენდარული', en: 'Legendary' } },
+        common: {
+          color: '#8A93A8',
+          // `fill` tints an undiscovered drop's circle: the rarity is readable
+          // at a glance, but the map stays visible underneath so the marker
+          // reads as an area rather than a pin.
+          fill: 'rgba(138,147,168,0.30)',
+          glow: 'rgba(138,147,168,0.35)',
+          label: { ka: 'ჩვეულებრივი', en: 'Common' },
+        },
+        rare: {
+          color: '#6C6BE8',
+          fill: 'rgba(108,107,232,0.32)',
+          glow: 'rgba(108,107,232,0.55)',
+          label: { ka: 'იშვიათი', en: 'Rare' },
+        },
+        legendary: {
+          color: '#E0913A',
+          fill: 'rgba(224,145,58,0.34)',
+          glow: 'rgba(224,145,58,0.65)',
+          label: { ka: 'ლეგენდარული', en: 'Legendary' },
+        },
       }
     : {
-        common: { color: '#5D6B8A', glow: 'rgba(93,107,138,0.25)', label: { ka: 'ჩვეულებრივი', en: 'Common' } },
-        rare: { color: '#4C3A8C', glow: 'rgba(76,58,140,0.25)', label: { ka: 'იშვიათი', en: 'Rare' } },
-        legendary: { color: '#B76E1F', glow: 'rgba(183,110,31,0.3)', label: { ka: 'ლეგენდარული', en: 'Legendary' } },
+        common: {
+          color: '#5D6B8A',
+          // Slightly stronger on light: a pale tint over pale tiles disappears.
+          fill: 'rgba(93,107,138,0.26)',
+          glow: 'rgba(93,107,138,0.25)',
+          label: { ka: 'ჩვეულებრივი', en: 'Common' },
+        },
+        rare: {
+          color: '#4C3A8C',
+          fill: 'rgba(76,58,140,0.26)',
+          glow: 'rgba(76,58,140,0.25)',
+          label: { ka: 'იშვიათი', en: 'Rare' },
+        },
+        legendary: {
+          color: '#B76E1F',
+          fill: 'rgba(183,110,31,0.28)',
+          glow: 'rgba(183,110,31,0.3)',
+          label: { ka: 'ლეგენდარული', en: 'Legendary' },
+        },
       }
 
 export type Rarity = 'common' | 'rare' | 'legendary'
