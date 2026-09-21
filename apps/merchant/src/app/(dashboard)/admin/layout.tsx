@@ -37,6 +37,9 @@ values ('<your-auth-uid>');`}
           <Link href="/admin/venues" className="rounded-lg px-3 py-1.5 text-muted transition hover:bg-canvas hover:text-ink">
             Venues
           </Link>
+          <Link href="/admin/players" className="rounded-lg px-3 py-1.5 text-muted transition hover:bg-canvas hover:text-ink">
+            Players
+          </Link>
           <Link href="/admin/zones" className="rounded-lg px-3 py-1.5 text-muted transition hover:bg-canvas hover:text-ink">
             Safety zones
           </Link>

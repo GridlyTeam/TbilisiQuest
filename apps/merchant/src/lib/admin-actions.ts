@@ -164,3 +164,72 @@ export async function updateSafetyConfig(input: {
   if (error) throw new Error(error.message)
   revalidatePath('/admin/config')
 }
+
+// ---------------------------------------------------------------------------
+// Players
+// ---------------------------------------------------------------------------
+export type Player = {
+  user_id: string
+  email: string
+  display_name: string | null
+  locale: string
+  status: 'active' | 'suspended' | 'banned'
+  status_reason: string | null
+  created_at: string
+  last_seen_at: string | null
+  level: number
+  total_xp: number
+  streak_days: number
+  claimed: number
+  redeemed: number
+  last_activity: string | null
+}
+
+export type PlayerActivity = {
+  occurred_at: string
+  kind: string
+  detail: string | null
+  venue_name: string | null
+}
+
+export async function searchPlayers(query: string): Promise<Player[]> {
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase.rpc('admin_search_players', {
+    p_query: query,
+    p_limit: 50,
+  })
+  if (error) throw new Error(error.message)
+  return (data ?? []) as Player[]
+}
+
+export async function loadPlayerActivity(
+  userId: string,
+): Promise<PlayerActivity[]> {
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase.rpc('admin_player_activity', {
+    p_user_id: userId,
+    p_limit: 50,
+  })
+  if (error) throw new Error(error.message)
+  return (data ?? []) as PlayerActivity[]
+}
+
+/**
+ * Suspending or banning also releases any vouchers the account is holding, so
+ * a restricted player is not sitting on a merchant's inventory. That happens
+ * inside the RPC rather than here, so a direct database call cannot skip it.
+ */
+export async function setPlayerStatus(
+  userId: string,
+  status: 'active' | 'suspended' | 'banned',
+  reason?: string,
+) {
+  const supabase = await createServerSupabase()
+  const { error } = await supabase.rpc('admin_set_player_status', {
+    p_user_id: userId,
+    p_status: status,
+    p_reason: reason ?? null,
+  })
+  if (error) throw new Error(error.message)
+  revalidatePath('/admin/players')
+}
