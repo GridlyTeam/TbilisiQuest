@@ -1,0 +1,206 @@
+import { useCallback, useEffect, useState } from 'react'
+import {
+  ActivityIndicator,
+  FlatList,
+  Pressable,
+  RefreshControl,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native'
+
+import GeofencedScannerScreen from '../../screens/GeofencedScannerScreen'
+import { supabase } from '../../lib/supabase'
+import { useTranslation } from '../../lib/i18n'
+import { colors, radius, rarity, space, type Rarity } from '../../lib/theme'
+
+type VoucherRow = {
+  id: string
+  redemption_code: string
+  status: 'held' | 'redeemed' | 'expired' | 'released' | 'available'
+  hold_expires_at: string | null
+  drops: {
+    title_ka: string
+    title_en: string
+    rarity: Rarity
+    claim_radius_m: number
+    venues: {
+      id: string
+      name_ka: string
+      name_en: string
+      location: unknown
+    } | null
+  } | null
+}
+
+export default function VouchersScreen() {
+  const { locale } = useTranslation()
+  const [rows, setRows] = useState<VoucherRow[]>([])
+  const [loading, setLoading] = useState(true)
+  const [refreshing, setRefreshing] = useState(false)
+  const [scanning, setScanning] = useState<VoucherRow | null>(null)
+
+  const ka = locale === 'ka'
+
+  const load = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('vouchers')
+      .select(
+        'id, redemption_code, status, hold_expires_at, drops(title_ka, title_en, rarity, claim_radius_m, venues(id, name_ka, name_en, location))',
+      )
+      .in('status', ['held', 'redeemed'])
+      .order('claimed_at', { ascending: false })
+      .limit(50)
+
+    setLoading(false)
+    setRefreshing(false)
+    if (error) {
+      console.warn('vouchers load failed', error.message)
+      return
+    }
+    setRows((data ?? []) as unknown as VoucherRow[])
+  }, [])
+
+  useEffect(() => {
+    void load()
+  }, [load])
+
+  if (scanning) {
+    const venue = scanning.drops?.venues
+    const coords = (() => {
+      const loc = venue?.location as unknown
+      if (loc && typeof loc === 'object' && 'coordinates' in loc) {
+        return (loc as { coordinates: [number, number] }).coordinates
+      }
+      return null
+    })()
+
+    if (!venue || !coords) {
+      setScanning(null)
+      return null
+    }
+
+    return (
+      <GeofencedScannerScreen
+        voucher={{
+          id: scanning.id,
+          redemptionCode: scanning.redemption_code,
+          titleKa: scanning.drops?.title_ka ?? '',
+          titleEn: scanning.drops?.title_en ?? '',
+          holdExpiresAt: scanning.hold_expires_at ?? '',
+        }}
+        venue={{
+          id: venue.id,
+          nameKa: venue.name_ka,
+          nameEn: venue.name_en,
+          latitude: coords[1],
+          longitude: coords[0],
+          claimRadiusM: scanning.drops?.claim_radius_m ?? 20,
+        }}
+        onRedeemed={() => {
+          setScanning(null)
+          void load()
+        }}
+        onCancel={() => setScanning(null)}
+      />
+    )
+  }
+
+  if (loading) {
+    return (
+      <View style={styles.centered}>
+        <ActivityIndicator color={colors.accent} />
+      </View>
+    )
+  }
+
+  return (
+    <FlatList
+      style={styles.root}
+      contentContainerStyle={styles.content}
+      data={rows}
+      keyExtractor={(row) => row.id}
+      refreshControl={
+        <RefreshControl
+          refreshing={refreshing}
+          onRefresh={() => {
+            setRefreshing(true)
+            void load()
+          }}
+          tintColor={colors.accent}
+        />
+      }
+      ListEmptyComponent={
+        <View style={styles.empty}>
+          <Text style={styles.emptyTitle}>
+            {ka ? 'ვაუჩერები არ გაქვს' : 'No vouchers yet'}
+          </Text>
+          <Text style={styles.emptyBody}>
+            {ka
+              ? 'იპოვე დროფი რუკაზე და მიუახლოვდი'
+              : 'Find a drop on the map and walk up to it'}
+          </Text>
+        </View>
+      }
+      renderItem={({ item }) => {
+        const meta = rarity[item.drops?.rarity ?? 'common']
+        const redeemed = item.status === 'redeemed'
+        return (
+          <Pressable
+            style={[styles.card, redeemed && styles.cardUsed]}
+            disabled={redeemed}
+            onPress={() => setScanning(item)}
+          >
+            <View style={[styles.stripe, { backgroundColor: meta.color }]} />
+            <View style={styles.cardBody}>
+              <Text style={styles.cardTitle} numberOfLines={1}>
+                {ka ? item.drops?.title_ka : item.drops?.title_en}
+              </Text>
+              <Text style={styles.cardVenue} numberOfLines={1}>
+                {ka ? item.drops?.venues?.name_ka : item.drops?.venues?.name_en}
+              </Text>
+            </View>
+            <Text style={[styles.cardAction, redeemed && styles.cardActionUsed]}>
+              {redeemed ? (ka ? 'გამოყენებული' : 'Used') : ka ? 'სკანირება' : 'Scan'}
+            </Text>
+          </Pressable>
+        )
+      }}
+    />
+  )
+}
+
+const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: colors.bg },
+  content: { padding: space.lg, gap: space.md, flexGrow: 1 },
+  centered: {
+    flex: 1,
+    backgroundColor: colors.bg,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  card: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.surface,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: 'hidden',
+  },
+  cardUsed: { opacity: 0.45 },
+  stripe: { width: 4, alignSelf: 'stretch' },
+  cardBody: { flex: 1, padding: space.lg },
+  cardTitle: { color: colors.text, fontSize: 16, fontWeight: '700' },
+  cardVenue: { color: colors.textMuted, fontSize: 13, marginTop: 2 },
+  cardAction: {
+    color: colors.accent,
+    fontWeight: '700',
+    fontSize: 13,
+    paddingRight: space.lg,
+  },
+  cardActionUsed: { color: colors.textFaint },
+  empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.sm },
+  emptyTitle: { color: colors.text, fontSize: 17, fontWeight: '700' },
+  emptyBody: { color: colors.textMuted, fontSize: 14, textAlign: 'center' },
+})
