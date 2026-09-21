@@ -12,11 +12,13 @@ export default function DashboardNav({
   venueNameEn,
   role,
   showManagement,
+  isAdmin = false,
 }: {
   venueNameKa: string
   venueNameEn: string
   role: string
   showManagement: boolean
+  isAdmin?: boolean
 }) {
   const { t, locale } = useI18n()
   const pathname = usePathname()
@@ -41,6 +43,11 @@ export default function DashboardNav({
           {showManagement && (
             <NavLink href="/analytics" active={pathname === '/analytics'}>
               {t('nav.analytics')}
+            </NavLink>
+          )}
+          {isAdmin && (
+            <NavLink href="/admin/venues" active={pathname.startsWith('/admin')}>
+              Operator
             </NavLink>
           )}
         </nav>

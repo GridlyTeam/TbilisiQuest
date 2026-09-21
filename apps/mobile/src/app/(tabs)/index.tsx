@@ -259,8 +259,13 @@ function DropMarker({
             height: size,
             borderRadius: size / 2,
             borderColor: meta.color,
-            backgroundColor: drop.revealed ? meta.color : c.surface,
+            // Undiscovered drops are a ring of light with the map showing
+            // through: present enough to walk toward, empty enough to read as
+            // unknown. Revealed ones fill in, so discovery is a visible change
+            // rather than a text swap.
+            backgroundColor: drop.revealed ? meta.color : 'transparent',
             shadowColor: meta.color,
+            shadowOpacity: drop.revealed ? 0.8 : 0.45,
           },
         ]}
       >
@@ -268,6 +273,7 @@ function DropMarker({
           style={[
             styles.markerText,
             { color: drop.revealed ? c.bg : meta.color },
+            !drop.revealed && styles.markerTextGhost,
           ]}
         >
           {drop.revealed
@@ -353,11 +359,13 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 2,
-    shadowOpacity: 0.8,
     shadowRadius: 8,
     elevation: 6,
   },
   markerText: { fontWeight: '800', fontSize: 14 },
+  // A question mark with weight but not full presence: legible against either
+  // basemap without competing with revealed markers.
+  markerTextGhost: { opacity: 0.85, fontSize: 18 },
   markerLabel: {
     marginTop: 4,
     alignSelf: 'center',
