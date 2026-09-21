@@ -73,21 +73,24 @@ export default function VouchersScreen() {
     const list = (data ?? []) as unknown as VoucherRow[]
     setRows(list)
 
-    // Coordinates come from venue_coords as plain numbers: querying
-    // venues.location directly returns WKB hex, which the scanner cannot use.
-    const ids = [...new Set(list.map((r) => r.drops?.venues?.id).filter(Boolean))]
-    if (ids.length > 0) {
-      const { data: coords } = await supabase
-        .from('venue_coords')
-        .select('id, lat, lng')
-        .in('id', ids as string[])
-
-      const map: Record<string, { lat: number; lng: number }> = {}
-      for (const c of coords ?? []) {
-        map[c.id as string] = { lat: c.lat as number, lng: c.lng as number }
-      }
-      setCoordsByVenue(map)
-    }
+    // venue_coords is operator-only. voucher_venue returns a position only for
+    // a voucher this player actually holds, so holding one is what earns the
+    // venue's location.
+    const map: Record<string, { lat: number; lng: number }> = {}
+    await Promise.all(
+      list.map(async (row) => {
+        const venueId = row.drops?.venues?.id
+        if (!venueId || map[venueId]) return
+        const { data: venue } = await supabase.rpc('voucher_venue', {
+          p_voucher_id: row.id,
+        })
+        const found = Array.isArray(venue) ? venue[0] : venue
+        if (found) {
+          map[venueId] = { lat: found.lat as number, lng: found.lng as number }
+        }
+      }),
+    )
+    setCoordsByVenue(map)
   }, [])
 
   // Tabs stay mounted, so a plain mount effect never re-runs after the claim
