@@ -32,6 +32,7 @@ type DropDetail = {
   revealed: boolean
   remaining: number
   in_claim_range: boolean
+  own_voucher: 'none' | 'held' | 'redeemed' | string
   venue_name_ka: string | null
   venue_name_en: string | null
   title_ka: string | null
@@ -188,6 +189,10 @@ export default function DropDetailScreen() {
   const description = ka ? drop.description_ka : drop.description_en
   const venueName = ka ? drop.venue_name_ka : drop.venue_name_en
   const soldOut = drop.remaining === 0
+  const alreadyHeld = drop.own_voucher === 'held'
+  const alreadyRedeemed = drop.own_voucher === 'redeemed'
+  const owned = alreadyHeld || alreadyRedeemed
+  const blocked = owned || !inRange || soldOut || notYetOpen || claiming
 
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
@@ -228,18 +233,23 @@ export default function DropDetailScreen() {
       {error && <Text style={styles.error}>{error}</Text>}
 
       <Pressable
-        style={[
-          styles.claimButton,
-          (!inRange || soldOut || notYetOpen || claiming) && styles.claimDisabled,
-        ]}
+        style={[styles.claimButton, blocked && styles.claimDisabled]}
         onPress={claim}
-        disabled={!inRange || soldOut || notYetOpen || claiming}
+        disabled={blocked}
       >
         {claiming ? (
           <ActivityIndicator color={c.bg} />
         ) : (
-          <Text style={styles.claimText}>
-            {soldOut
+          <Text style={[styles.claimText, blocked && styles.claimTextDisabled]}>
+            {alreadyRedeemed
+              ? ka
+                ? 'უკვე გამოყენებულია'
+                : 'Already redeemed'
+              : alreadyHeld
+                ? ka
+                  ? 'ვაუჩერი აღებულია'
+                  : 'In your vouchers'
+                : soldOut
               ? ka
                 ? 'ამოიწურა'
                 : 'Sold out'
@@ -258,7 +268,7 @@ export default function DropDetailScreen() {
         )}
       </Pressable>
 
-      {!inRange && !soldOut && distance != null && (
+      {!inRange && !soldOut && !owned && distance != null && (
         <Text style={styles.hint}>
           {ka
             ? `უნდა იყო ${drop.claim_radius_m} მეტრში`
@@ -348,8 +358,13 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     alignItems: 'center',
     marginTop: space.lg,
   },
-  claimDisabled: { backgroundColor: c.surfaceRaised },
+  claimDisabled: {
+    backgroundColor: c.surfaceRaised,
+    borderWidth: 1,
+    borderColor: c.border,
+  },
   claimText: { color: c.bg, fontSize: 17, fontWeight: '800' },
+  claimTextDisabled: { color: c.text },
   hint: { color: c.textFaint, fontSize: 13, textAlign: 'center' },
   error: { color: c.bad, fontSize: 14 },
   muted: { color: c.textMuted },
