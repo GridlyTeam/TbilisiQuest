@@ -72,6 +72,20 @@ const OFF_PEAK_PRESETS = [
   end: string
 }>
 
+/**
+ * What each tier is allowed to be.
+ *
+ * Rarity is the player-facing promise: a glowing amber marker says "major
+ * deal", and players stop walking toward them the moment that stops being
+ * true. Matching database constraint in migration 0017 -- the form is the
+ * explanation, not the enforcement.
+ */
+const RARITY_RULES = {
+  common: { offers: ['percent_off'], min: 5, max: 40, defaultPct: 20 },
+  rare: { offers: ['bogo', 'percent_off'], min: 41, max: 69, defaultPct: 50 },
+  legendary: { offers: ['free_item', 'percent_off'], min: 70, max: 100, defaultPct: 100 },
+} as const
+
 const RARITY_META = {
   common: { labelKey: 'rarity.common', hintKey: 'rarity.commonHint', accent: '#5D6B8A' },
   rare: { labelKey: 'rarity.rare', hintKey: 'rarity.rareHint', accent: '#4C3A8C' },
@@ -256,7 +270,21 @@ export default function DropCreator({
               <button
                 key={key}
                 type="button"
-                onClick={() => set('rarity', key)}
+                onClick={() => {
+                  const rules = RARITY_RULES[key]
+                  setValues((prev) => ({
+                    ...prev,
+                    rarity: key,
+                    // Keep the current offer only if this tier permits it.
+                    offer: (rules.offers as readonly string[]).includes(prev.offer)
+                      ? prev.offer
+                      : (rules.offers[0] as DropFormValues['offer']),
+                    discountPercent: Math.min(
+                      rules.max,
+                      Math.max(rules.min, prev.discountPercent ?? rules.defaultPct),
+                    ),
+                  }))
+                }}
                 aria-pressed={active}
                 className={`rounded-xl border p-3 text-left transition ${
                   active
@@ -312,11 +340,15 @@ export default function DropCreator({
           </Field>
 
           {values.offer === 'percent_off' && (
-            <Field label={t('creator.discountPct')} error={errors.discountPercent && t(errors.discountPercent as MessageKey)}>
+            <Field
+              label={t('creator.discountPct')}
+              hint={`${RARITY_RULES[values.rarity].min}–${RARITY_RULES[values.rarity].max}%`}
+              error={errors.discountPercent && t(errors.discountPercent as MessageKey)}
+            >
               <input
                 type="number"
-                min={1}
-                max={100}
+                min={RARITY_RULES[values.rarity].min}
+                max={RARITY_RULES[values.rarity].max}
                 className={inputClass}
                 value={values.discountPercent ?? ''}
                 onChange={(e) => set('discountPercent', Number(e.target.value))}

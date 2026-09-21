@@ -151,9 +151,9 @@ const catalogue = {
   'rarity.common': { ka: 'ჩვეულებრივი', en: 'Common' },
   'rarity.rare': { ka: 'იშვიათი', en: 'Rare' },
   'rarity.legendary': { ka: 'ლეგენდარული', en: 'Legendary' },
-  'rarity.commonHint': { ka: 'მცირე ფასდაკლება', en: 'Small percentage off' },
-  'rarity.rareHint': { ka: 'ორი ერთის ფასად', en: 'Buy one get one free' },
-  'rarity.legendaryHint': { ka: 'უფასო პროდუქტი ან დიდი შეთავაზება', en: 'Free item or major deal' },
+  'rarity.commonHint': { ka: 'ფასდაკლება 5–40%', en: '5–40% off' },
+  'rarity.rareHint': { ka: '1+1 ან 41–69%', en: 'Buy one get one, or 41–69%' },
+  'rarity.legendaryHint': { ka: 'უფასო ან 70–100%', en: 'Free item, or 70–100%' },
 
   // Counter
   'counter.instruction': {
