@@ -22,6 +22,7 @@ import { useMemo, useState } from 'react'
 import { z } from 'zod'
 
 import { createDrop } from '../lib/actions'
+import { useI18n, type MessageKey } from '@/lib/i18n'
 
 // ---------------------------------------------------------------------------
 // Validation
@@ -30,15 +31,15 @@ import { createDrop } from '../lib/actions'
 // this exists so the merchant gets feedback before a round trip.
 const dropSchema = z
   .object({
-    titleKa: z.string().min(2, 'Georgian title is required'),
-    titleEn: z.string().min(2, 'English title is required'),
+    titleKa: z.string().min(2, 'creator.errTitleKa'),
+    titleEn: z.string().min(2, 'creator.errTitleEn'),
     descriptionKa: z.string().max(280).optional(),
     descriptionEn: z.string().max(280).optional(),
     rarity: z.enum(['common', 'rare', 'legendary']),
     offer: z.enum(['percent_off', 'bogo', 'free_item']),
     discountPercent: z.number().int().min(1).max(100).optional(),
     faceValueGel: z.number().min(0).max(10000),
-    date: z.string().min(1, 'Pick a date'),
+    date: z.string().min(1, 'creator.errDate'),
     startTime: z.string().regex(/^\d{2}:\d{2}$/),
     endTime: z.string().regex(/^\d{2}:\d{2}$/),
     inventoryCap: z.number().int().min(1).max(500),
@@ -47,11 +48,11 @@ const dropSchema = z
     isBossChest: z.boolean(),
   })
   .refine((v) => v.endTime > v.startTime, {
-    message: 'End time must be after start time',
+    message: 'creator.errEndAfterStart',
     path: ['endTime'],
   })
   .refine((v) => v.offer !== 'percent_off' || v.discountPercent != null, {
-    message: 'Set a discount percentage',
+    message: 'creator.errDiscount',
     path: ['discountPercent'],
   })
 
@@ -61,16 +62,21 @@ export type DropFormValues = z.infer<typeof dropSchema>
 // Off-peak presets
 // ---------------------------------------------------------------------------
 const OFF_PEAK_PRESETS = [
-  { key: 'afternoon', label: 'Afternoon lull', start: '14:00', end: '17:00' },
-  { key: 'morning', label: 'Late morning', start: '10:00', end: '12:00' },
-  { key: 'lateEvening', label: 'Late evening', start: '21:00', end: '23:00' },
-] as const
+  { key: 'afternoon', labelKey: 'creator.presetAfternoon', start: '14:00', end: '17:00' },
+  { key: 'morning', labelKey: 'creator.presetMorning', start: '10:00', end: '12:00' },
+  { key: 'lateEvening', labelKey: 'creator.presetEvening', start: '21:00', end: '23:00' },
+] as const satisfies ReadonlyArray<{
+  key: string
+  labelKey: MessageKey
+  start: string
+  end: string
+}>
 
 const RARITY_META = {
-  common: { label: 'Common', hint: 'Small percentage off', accent: '#7c8b9a' },
-  rare: { label: 'Rare', hint: 'Buy one get one free', accent: '#4a8fd4' },
-  legendary: { label: 'Legendary', hint: 'Free item or major deal', accent: '#e8a33d' },
-} as const
+  common: { labelKey: 'rarity.common', hintKey: 'rarity.commonHint', accent: '#7c8b9a' },
+  rare: { labelKey: 'rarity.rare', hintKey: 'rarity.rareHint', accent: '#4a8fd4' },
+  legendary: { labelKey: 'rarity.legendary', hintKey: 'rarity.legendaryHint', accent: '#e8a33d' },
+} as const satisfies Record<string, { labelKey: MessageKey; hintKey: MessageKey; accent: string }>
 
 // Above this projected giveaway we make the merchant confirm explicitly.
 const CONFIRM_THRESHOLD_GEL = 500
@@ -136,6 +142,7 @@ export default function DropCreator({
   subscriptionTier,
   onCreated,
 }: Props) {
+  const { t } = useI18n()
   const [values, setValues] = useState<DropFormValues>(makeDefaults)
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [submitting, setSubmitting] = useState(false)
@@ -184,7 +191,7 @@ export default function DropCreator({
     }
 
     if (needsConfirmation && !confirmed) {
-      setServerError('Confirm the projected giveaway before scheduling.')
+      setServerError(t('creator.confirmFirst'))
       return
     }
 
@@ -203,7 +210,7 @@ export default function DropCreator({
       setValues(makeDefaults())
       setConfirmed(false)
     } catch (error) {
-      setServerError(error instanceof Error ? error.message : 'Could not create drop')
+      setServerError(error instanceof Error ? error.message : t('creator.confirmFirst'))
     } finally {
       setSubmitting(false)
     }
@@ -212,16 +219,17 @@ export default function DropCreator({
   return (
     <form onSubmit={handleSubmit} className="mx-auto max-w-2xl space-y-8">
       <header>
-        <h1 className="text-2xl font-semibold tracking-tight">Schedule a drop</h1>
+        <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">
+          {t('creator.title')}
+        </h1>
         <p className="mt-1 text-sm text-neutral-500">
-          Times are in {venueTimezone}. Vouchers are reserved the moment the drop
-          goes live.
+          {t('creator.timezoneNote', { tz: venueTimezone })}
         </p>
       </header>
 
       {/* ---- Offer ---------------------------------------------------- */}
       <section className="space-y-4">
-        <SectionTitle>Offer</SectionTitle>
+        <SectionTitle>{t('creator.sectionOffer')}</SectionTitle>
 
         <div className="grid grid-cols-3 gap-3">
           {(Object.keys(RARITY_META) as Array<keyof typeof RARITY_META>).map((key) => {
@@ -244,16 +252,18 @@ export default function DropCreator({
                   className="block text-sm font-semibold"
                   style={{ color: meta.accent }}
                 >
-                  {meta.label}
+                  {t(meta.labelKey)}
                 </span>
-                <span className="mt-0.5 block text-xs text-neutral-500">{meta.hint}</span>
+                <span className="mt-0.5 block text-xs text-neutral-500">
+                  {t(meta.hintKey)}
+                </span>
               </button>
             )
           })}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
-          <Field label="Title (English)" error={errors.titleEn}>
+          <Field label={t('creator.titleEn')} error={errors.titleEn && t(errors.titleEn as MessageKey)}>
             <input
               className={inputClass}
               value={values.titleEn}
@@ -261,7 +271,7 @@ export default function DropCreator({
               placeholder="Half-price filter coffee"
             />
           </Field>
-          <Field label="სათაური (ქართული)" error={errors.titleKa}>
+          <Field label={t('creator.titleKa')} error={errors.titleKa && t(errors.titleKa as MessageKey)}>
             <input
               className={inputClass}
               value={values.titleKa}
@@ -272,20 +282,20 @@ export default function DropCreator({
         </div>
 
         <div className="grid grid-cols-3 gap-4">
-          <Field label="Offer type">
+          <Field label={t('creator.offerType')}>
             <select
               className={inputClass}
               value={values.offer}
               onChange={(e) => set('offer', e.target.value as DropFormValues['offer'])}
             >
-              <option value="percent_off">Percentage off</option>
-              <option value="bogo">Buy one get one</option>
-              <option value="free_item">Free item</option>
+              <option value="percent_off">{t('creator.percentOff')}</option>
+              <option value="bogo">{t('creator.bogo')}</option>
+              <option value="free_item">{t('creator.freeItem')}</option>
             </select>
           </Field>
 
           {values.offer === 'percent_off' && (
-            <Field label="Discount %" error={errors.discountPercent}>
+            <Field label={t('creator.discountPct')} error={errors.discountPercent && t(errors.discountPercent as MessageKey)}>
               <input
                 type="number"
                 min={1}
@@ -297,7 +307,7 @@ export default function DropCreator({
             </Field>
           )}
 
-          <Field label="Item value (GEL)" hint="Used for ROI reporting">
+          <Field label={t('creator.itemValue')} hint={t('creator.itemValueHint')}>
             <input
               type="number"
               min={0}
@@ -312,7 +322,7 @@ export default function DropCreator({
 
       {/* ---- Schedule -------------------------------------------------- */}
       <section className="space-y-4">
-        <SectionTitle>When</SectionTitle>
+        <SectionTitle>{t('creator.sectionWhen')}</SectionTitle>
 
         <div className="flex flex-wrap gap-2">
           {OFF_PEAK_PRESETS.map((preset) => {
@@ -336,7 +346,7 @@ export default function DropCreator({
                     : 'border-neutral-200 text-neutral-700 hover:border-neutral-400'
                 }`}
               >
-                {preset.label}
+                {t(preset.labelKey)}
                 <span className="ml-2 tabular-nums opacity-60">
                   {preset.start}–{preset.end}
                 </span>
@@ -346,7 +356,7 @@ export default function DropCreator({
         </div>
 
         <div className="grid grid-cols-3 gap-4">
-          <Field label="Date" error={errors.date}>
+          <Field label={t('creator.date')} error={errors.date && t(errors.date as MessageKey)}>
             <input
               type="date"
               className={inputClass}
@@ -355,7 +365,7 @@ export default function DropCreator({
               onChange={(e) => set('date', e.target.value)}
             />
           </Field>
-          <Field label="Start" error={errors.startTime}>
+          <Field label={t('creator.start')} error={errors.startTime && t(errors.startTime as MessageKey)}>
             <input
               type="time"
               className={inputClass}
@@ -364,9 +374,13 @@ export default function DropCreator({
             />
           </Field>
           <Field
-            label="End"
-            error={errors.endTime}
-            hint={durationMinutes > 0 ? `${durationMinutes} min window` : undefined}
+            label={t('creator.end')}
+            error={errors.endTime && t(errors.endTime as MessageKey)}
+            hint={
+              durationMinutes > 0
+                ? t('creator.duration', { minutes: durationMinutes })
+                : undefined
+            }
           >
             <input
               type="time"
@@ -380,12 +394,12 @@ export default function DropCreator({
 
       {/* ---- Inventory ------------------------------------------------- */}
       <section className="space-y-4">
-        <SectionTitle>How many</SectionTitle>
+        <SectionTitle>{t('creator.sectionHowMany')}</SectionTitle>
 
         <Field
-          label="Inventory cap"
-          error={errors.inventoryCap}
-          hint="A hard limit. Once these are gone the drop disappears from the map."
+          label={t('creator.cap')}
+          error={errors.inventoryCap && t(errors.inventoryCap as MessageKey)}
+          hint={t('creator.capHint')}
         >
           <div className="flex items-center gap-4">
             <input
@@ -415,15 +429,13 @@ export default function DropCreator({
           }`}
         >
           <div className="flex items-baseline justify-between">
-            <span className="text-sm text-neutral-600">
-              Maximum you could give away
-            </span>
+            <span className="text-sm text-neutral-600">{t('creator.maxGiveaway')}</span>
             <span className="text-lg font-semibold tabular-nums">
-              {projectedCost.toFixed(2)} GEL
+              {projectedCost.toFixed(2)} ₾
             </span>
           </div>
           <p className="mt-1 text-xs text-neutral-500">
-            {values.inventoryCap} vouchers, assuming every one is redeemed.
+            {t('creator.giveawayNote', { count: values.inventoryCap })}
           </p>
 
           {needsConfirmation && (
@@ -435,8 +447,7 @@ export default function DropCreator({
                 className="mt-0.5"
               />
               <span>
-                I understand this drop could cost up to{' '}
-                {projectedCost.toFixed(2)} GEL.
+                {t('creator.confirmCost', { amount: projectedCost.toFixed(2) })}
               </span>
             </label>
           )}
@@ -445,12 +456,12 @@ export default function DropCreator({
 
       {/* ---- Gamification ---------------------------------------------- */}
       <section className="space-y-4">
-        <SectionTitle>Player perks</SectionTitle>
+        <SectionTitle>{t('creator.sectionPerks')}</SectionTitle>
 
         <div className="grid grid-cols-2 gap-4">
           <Field
-            label="Early access from level"
-            hint="0 disables early access"
+            label={t('creator.earlyAccessLevel')}
+            hint={t('creator.earlyAccessHint')}
           >
             <input
               type="number"
@@ -461,7 +472,7 @@ export default function DropCreator({
               onChange={(e) => set('earlyAccessLevel', Number(e.target.value))}
             />
           </Field>
-          <Field label="Minutes early">
+          <Field label={t('creator.earlyMinutes')}>
             <input
               type="number"
               min={0}
@@ -490,13 +501,11 @@ export default function DropCreator({
             className="mt-1"
           />
           <span>
-            <span className="block text-sm font-medium">
-              Highlight as a Boss Chest
-            </span>
+            <span className="block text-sm font-medium">{t('creator.bossChest')}</span>
             <span className="mt-0.5 block text-xs text-neutral-500">
               {subscriptionTier === 'premium'
-                ? 'Oversized marker with a glow effect on the player map.'
-                : 'Available on the Premium plan.'}
+                ? t('creator.bossChestOn')
+                : t('creator.bossChestOff')}
             </span>
           </span>
         </label>
@@ -504,13 +513,13 @@ export default function DropCreator({
 
       {inThePast && (
         <div className="flex flex-wrap items-center gap-3 rounded-lg bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          <span>That window has already ended today.</span>
+          <span>{t('creator.windowPassed')}</span>
           <button
             type="button"
             onClick={() => set('date', addDays(todayISO(), 1))}
             className="rounded-md bg-amber-900 px-3 py-1 text-xs font-semibold text-white"
           >
-            Use tomorrow
+            {t('creator.useTomorrow')}
           </button>
         </div>
       )}
@@ -527,7 +536,7 @@ export default function DropCreator({
           disabled={submitting || inThePast || (needsConfirmation && !confirmed)}
           className="rounded-xl bg-neutral-900 px-6 py-3 text-sm font-semibold text-white transition hover:bg-neutral-700 disabled:cursor-not-allowed disabled:opacity-40"
         >
-          {submitting ? 'Scheduling…' : 'Schedule drop'}
+          {submitting ? t('creator.submitting') : t('creator.submit')}
         </button>
       </div>
     </form>

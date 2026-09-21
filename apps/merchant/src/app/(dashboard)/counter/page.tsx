@@ -5,5 +5,11 @@ export default async function CounterPage() {
   const venue = await resolveVenue()
   if (!venue) return null
 
-  return <CounterQRStation venueId={venue.venueId} venueName={venue.nameEn} />
+  return (
+    <CounterQRStation
+      venueId={venue.venueId}
+      venueNameKa={venue.nameKa}
+      venueNameEn={venue.nameEn}
+    />
+  )
 }

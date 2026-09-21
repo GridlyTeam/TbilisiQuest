@@ -4,10 +4,13 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase-client'
+import { useI18n } from '@/lib/i18n'
+import LanguageToggle from '@/components/LanguageToggle'
 
 export default function LoginPage() {
   const router = useRouter()
   const supabase = createClient()
+  const { t } = useI18n()
 
   const [mode, setMode] = useState<'signin' | 'signup'>('signin')
   const [email, setEmail] = useState('')
@@ -39,11 +42,7 @@ export default function LoginPage() {
     // redirecting would just bounce back to this page, so check rather than
     // assume.
     if (!data.session) {
-      setNotice(
-        'Account created. Check your email to confirm it, then sign in. ' +
-          '(To skip this in development, turn off email confirmations in ' +
-          'Supabase: Authentication -> Sign In / Providers -> Email.)',
-      )
+      setNotice(t('auth.confirmEmail'))
       setMode('signin')
       return
     }
@@ -57,7 +56,7 @@ export default function LoginPage() {
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
           <h1 className="text-2xl font-semibold tracking-tight text-neutral-900">Tbilisi Quest</h1>
-          <p className="mt-1 text-sm text-neutral-500">Merchant portal</p>
+          <p className="mt-1 text-sm text-neutral-500">{t('nav.subtitle')}</p>
         </div>
 
         <form
@@ -65,7 +64,7 @@ export default function LoginPage() {
           className="space-y-4 rounded-2xl border border-neutral-200 bg-white p-6 shadow-sm"
         >
           <label className="block space-y-1.5">
-            <span className="block text-sm font-medium">Email</span>
+            <span className="block text-sm font-medium">{t('auth.email')}</span>
             <input
               type="email"
               required
@@ -77,7 +76,7 @@ export default function LoginPage() {
           </label>
 
           <label className="block space-y-1.5">
-            <span className="block text-sm font-medium">Password</span>
+            <span className="block text-sm font-medium">{t('auth.password')}</span>
             <input
               type="password"
               required
@@ -103,7 +102,11 @@ export default function LoginPage() {
             disabled={busy}
             className="w-full rounded-lg bg-neutral-900 py-2.5 text-sm font-semibold text-white transition hover:bg-neutral-700 disabled:opacity-40"
           >
-            {busy ? 'Working…' : mode === 'signin' ? 'Sign in' : 'Create account'}
+            {busy
+              ? t('auth.working')
+              : mode === 'signin'
+                ? t('auth.signIn')
+                : t('auth.createAccount')}
           </button>
 
           <button
@@ -115,11 +118,13 @@ export default function LoginPage() {
             }}
             className="w-full text-center text-xs text-neutral-500 hover:text-neutral-900"
           >
-            {mode === 'signin'
-              ? "Don't have an account? Sign up"
-              : 'Already have an account? Sign in'}
+            {mode === 'signin' ? t('auth.noAccount') : t('auth.haveAccount')}
           </button>
         </form>
+
+        <div className="mt-6 flex justify-center">
+          <LanguageToggle />
+        </div>
       </div>
     </main>
   )

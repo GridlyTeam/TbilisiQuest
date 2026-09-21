@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { QRCodeSVG } from 'qrcode.react'
 
 import { createClient } from '@/lib/supabase-client'
+import { useI18n } from '@/lib/i18n'
 
 /**
  * The tablet screen that sits on the counter.
@@ -18,11 +19,15 @@ import { createClient } from '@/lib/supabase-client'
  */
 export default function CounterQRStation({
   venueId,
-  venueName,
+  venueNameKa,
+  venueNameEn,
 }: {
   venueId: string
-  venueName: string
+  venueNameKa: string
+  venueNameEn: string
 }) {
+  const { t, locale } = useI18n()
+  const venueName = locale === 'ka' ? venueNameKa : venueNameEn
   const [code, setCode] = useState<string | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [secondsLeft, setSecondsLeft] = useState(30)
@@ -66,10 +71,8 @@ export default function CounterQRStation({
   return (
     <div className="flex min-h-[70vh] flex-col items-center justify-center gap-8">
       <div className="text-center">
-        <h1 className="text-3xl font-semibold tracking-tight">{venueName}</h1>
-        <p className="mt-2 text-neutral-500">
-          Ask the customer to scan this code to redeem
-        </p>
+        <h1 className="text-3xl font-semibold tracking-tight text-neutral-900">{venueName}</h1>
+        <p className="mt-2 text-neutral-500">{t('counter.instruction')}</p>
       </div>
 
       <div className="rounded-3xl border border-neutral-200 bg-white p-8 shadow-sm">
@@ -100,13 +103,12 @@ export default function CounterQRStation({
           <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
         </span>
         <span className="tabular-nums">
-          Refreshes in {secondsLeft}s
+          {t('counter.refreshesIn', { seconds: secondsLeft })}
         </span>
       </div>
 
       <p className="max-w-sm text-center text-xs leading-relaxed text-neutral-400">
-        Leave this screen open on the counter. The code changes every 30 seconds,
-        so a photo of it stops working almost immediately.
+        {t('counter.note')}
       </p>
     </div>
   )
