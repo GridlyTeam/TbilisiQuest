@@ -300,3 +300,51 @@ export async function loadVenueDrops(venueId: string): Promise<VenueDropRow[]> {
   if (error) throw new Error(error.message)
   return (data ?? []) as VenueDropRow[]
 }
+
+// ---------------------------------------------------------------------------
+// Player reports
+// ---------------------------------------------------------------------------
+export type Report = {
+  id: string
+  kind: 'unsafe_location' | 'venue_problem' | 'wrong_place' | 'other'
+  note: string | null
+  report_state: 'open' | 'reviewed' | 'actioned' | 'dismissed'
+  created_at: string
+  reporter_email: string
+  reporter_status: 'active' | 'suspended' | 'banned'
+  drop_id: string | null
+  drop_title: string | null
+  venue_id: string | null
+  venue_name: string | null
+  lat: number | null
+  lng: number | null
+  distance_m: number | string | null
+  admin_notes: string | null
+}
+
+export async function loadReports(
+  status?: Report['report_state'],
+): Promise<Report[]> {
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase.rpc('admin_list_reports', {
+    p_status: status ?? null,
+    p_limit: 100,
+  })
+  if (error) throw new Error(error.message)
+  return (data ?? []) as Report[]
+}
+
+export async function setReportStatus(
+  reportId: string,
+  status: Report['report_state'],
+  notes?: string,
+) {
+  const supabase = await createServerSupabase()
+  const { error } = await supabase.rpc('admin_set_report_status', {
+    p_report_id: reportId,
+    p_status: status,
+    p_notes: notes ?? null,
+  })
+  if (error) throw new Error(error.message)
+  revalidatePath('/admin/reports')
+}

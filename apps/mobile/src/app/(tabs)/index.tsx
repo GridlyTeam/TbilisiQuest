@@ -22,7 +22,7 @@ import { useLocation, distanceMeters } from '../../lib/useLocation'
 import { useSafetyGate } from '../../lib/useSafetyGate'
 import SafetyOverlay from '../../components/SafetyOverlay'
 import SafetyBriefing from '../../components/SafetyBriefing'
-import EmergencyButton from '../../components/EmergencyButton'
+import SafetyButton from '../../components/SafetyButton'
 import { useTheme, useRarity, radius, space, type Palette, type Rarity } from '../../lib/theme'
 
 function useStyles() {
@@ -253,7 +253,7 @@ export default function MapScreen() {
               <Text style={styles.recentreIcon}>◎</Text>
             </Pressable>
           )}
-          <EmergencyButton />
+          <SafetyButton fix={fix} />
         </View>
       )}
 

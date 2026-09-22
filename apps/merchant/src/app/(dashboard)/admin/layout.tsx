@@ -40,6 +40,9 @@ values ('<your-auth-uid>');`}
           <Link href="/admin/analytics" className="rounded-lg px-3 py-1.5 text-muted transition hover:bg-canvas hover:text-ink">
             Analytics
           </Link>
+          <Link href="/admin/reports" className="rounded-lg px-3 py-1.5 text-muted transition hover:bg-canvas hover:text-ink">
+            Reports
+          </Link>
           <Link href="/admin/players" className="rounded-lg px-3 py-1.5 text-muted transition hover:bg-canvas hover:text-ink">
             Players
           </Link>

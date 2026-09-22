@@ -4,7 +4,7 @@ import { StyleSheet, Text, View } from 'react-native'
 import { useTranslation } from '../lib/i18n'
 import { useTheme, useRarity, radius, space, type Palette, type Rarity } from '../lib/theme'
 import type { SafetyState } from '../lib/useSafetyGate'
-import EmergencyButton from './EmergencyButton'
+import SafetyButton from './SafetyButton'
 
 function useStyles() {
   const { c } = useTheme()
@@ -20,8 +20,8 @@ function useStyles() {
  * anyway" — an override would be used exactly by the people it is meant to
  * protect.
  *
- * The 112 button stays reachable underneath, because the moment someone most
- * needs emergency services is the moment they are moving fast.
+ * The safety button stays reachable underneath, because the moment someone
+ * most needs it is the moment play is blocked.
  */
 export default function SafetyOverlay({ safety }: { safety: SafetyState }) {
   const styles = useStyles()
@@ -75,7 +75,7 @@ export default function SafetyOverlay({ safety }: { safety: SafetyState }) {
       </View>
 
       <View style={styles.emergency}>
-        <EmergencyButton />
+        <SafetyButton />
       </View>
     </View>
   )
