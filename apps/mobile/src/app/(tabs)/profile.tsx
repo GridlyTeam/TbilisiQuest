@@ -11,6 +11,7 @@ import {
 
 import { supabase } from '../../lib/supabase'
 import { useTranslation, LOCALES } from '../../lib/i18n'
+import InviteCard from '../../components/InviteCard'
 import { useTheme, useRarity, radius, space, type Palette, type Rarity } from '../../lib/theme'
 
 function useStyles() {
@@ -99,6 +100,8 @@ export default function ProfileScreen() {
           <Text style={styles.statLabel}>{ka ? 'სულ XP' : 'Total XP'}</Text>
         </View>
       </View>
+
+      <InviteCard />
 
       <View style={styles.row}>
         <Text style={styles.rowLabel}>{ka ? 'იერსახე' : 'Appearance'}</Text>

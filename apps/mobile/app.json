@@ -56,7 +56,8 @@
           "cameraPermission": "Tbilisi Quest uses the camera to scan the code at the counter when you redeem a voucher.",
           "recordAudioAndroid": false
         }
-      ]
+      ],
+      "expo-sharing"
     ],
     "experiments": {
       "typedRoutes": true,

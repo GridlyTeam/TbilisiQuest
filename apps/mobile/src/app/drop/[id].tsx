@@ -145,6 +145,7 @@ export default function DropDetailScreen() {
       titleEn: drop.title_en,
       venueKa: drop.venue_name_ka,
       venueEn: drop.venue_name_en,
+      headline: offerHeadline(drop.offer, drop.discount_percent, ka),
     })
   }
 
@@ -308,6 +309,21 @@ function Stat({
       <Text style={[styles.statValue, { color }]}>{value}</Text>
     </View>
   )
+}
+
+/**
+ * The one line on the share card. Kept to a few characters on purpose: it is
+ * read at arm's length from someone else's story, not studied.
+ */
+function offerHeadline(
+  offer: DropDetail['offer'],
+  percent: number | null,
+  ka: boolean,
+): string | null {
+  if (offer === 'percent_off' && percent) return `-${percent}%`
+  if (offer === 'bogo') return '1+1'
+  if (offer === 'free_item') return ka ? 'უფასოდ' : 'FREE'
+  return null
 }
 
 function translateClaimError(raw: string, ka: boolean): string {

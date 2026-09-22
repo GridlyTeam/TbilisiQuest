@@ -1,5 +1,5 @@
 import * as Haptics from 'expo-haptics'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Image, Modal, Pressable, StyleSheet, Text, View } from 'react-native'
 import Animated, {
   Easing,
@@ -13,6 +13,11 @@ import Animated, {
 } from 'react-native-reanimated'
 
 import { useTranslation } from '../lib/i18n'
+import {
+  ShareCardCanvas,
+  shareCard,
+  useReferralCode,
+} from './ShareCard'
 import {
   useTheme,
   useRarity,
@@ -48,6 +53,8 @@ export type ClaimedDrop = {
   titleEn: string | null
   venueKa: string | null
   venueEn: string | null
+  /** The number that makes someone stop scrolling: "-30%", "1+1", "FREE". */
+  headline: string | null
 }
 
 type Phase = 'charge' | 'burst' | 'card'
@@ -81,6 +88,9 @@ export default function ClaimReveal({
 
   const meta = rarity[drop.rarity] ?? rarity.common
   const [phase, setPhase] = useState<Phase>('charge')
+  const cardRef = useRef<View>(null)
+  const referralCode = useReferralCode()
+  const [sharing, setSharing] = useState(false)
   const [dismissable, setDismissable] = useState(false)
 
   const crateScale = useSharedValue(0.2)
@@ -260,8 +270,40 @@ export default function ClaimReveal({
                 {ka ? 'ჩემი ვაუჩერები' : 'My vouchers'}
               </Text>
             </Pressable>
+
+            {/* Offered at the moment someone is most pleased with themselves,
+                which is the only moment anyone shares anything. */}
+            <Pressable
+              style={[styles.secondary, sharing && styles.secondaryBusy]}
+              disabled={sharing}
+              onPress={async () => {
+                setSharing(true)
+                try {
+                  await shareCard(cardRef)
+                } finally {
+                  setSharing(false)
+                }
+              }}
+            >
+              <Text style={styles.secondaryText}>
+                {sharing
+                  ? ka ? 'მზადდება…' : 'Preparing…'
+                  : ka ? 'გაზიარება' : 'Share this'}
+              </Text>
+            </Pressable>
           </Animated.View>
         )}
+
+        <ShareCardCanvas
+          ref={cardRef}
+          code={referralCode}
+          data={{
+            rarity: drop.rarity,
+            title,
+            venue,
+            headline: drop.headline,
+          }}
+        />
 
         {!dismissable && <View style={styles.tapBlocker} pointerEvents="none" />}
         {dismissable && phase === 'card' && (
@@ -399,6 +441,17 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     alignItems: 'center',
   },
   buttonText: { color: '#08060F', fontSize: 16, fontWeight: '800' },
+  secondary: {
+    marginTop: space.sm,
+    alignSelf: 'stretch',
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: c.border,
+    paddingVertical: space.md,
+    alignItems: 'center',
+  },
+  secondaryBusy: { opacity: 0.6 },
+  secondaryText: { color: c.text, fontSize: 15, fontWeight: '700' },
   tapBlocker: { ...StyleSheet.absoluteFill },
   dismiss: { position: 'absolute', bottom: space.xxl, fontSize: 12 },
 })
