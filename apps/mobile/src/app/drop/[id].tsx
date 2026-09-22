@@ -259,10 +259,22 @@ export default function DropDetailScreen() {
 
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
-      <View style={[styles.rarityPill, { backgroundColor: meta.glow, borderColor: meta.color }]}>
-        <Text style={[styles.rarityText, { color: meta.color }]}>
-          {meta.label[ka ? 'ka' : 'en'].toUpperCase()}
-        </Text>
+      <View style={styles.pillRow}>
+        <View style={[styles.rarityPill, { backgroundColor: meta.glow, borderColor: meta.color }]}>
+          <Text style={[styles.rarityText, { color: meta.color }]}>
+            {meta.label[ka ? 'ka' : 'en'].toUpperCase()}
+          </Text>
+        </View>
+
+        {/* A glowing dot for a drop that is open right now. Taken from the
+            dashboard design, where it is the one thing on the page that says
+            "go now" rather than "some time". */}
+        {!notYetOpen && !soldOut && (
+          <View style={styles.livePill}>
+            <View style={styles.liveDot} />
+            <Text style={styles.liveText}>{ka ? 'აქტიური' : 'LIVE'}</Text>
+          </View>
+        )}
       </View>
 
       <Text style={styles.title}>{title}</Text>
@@ -487,6 +499,24 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     justifyContent: 'center',
     padding: space.xl,
     gap: space.md,
+  },
+  pillRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  livePill: { flexDirection: 'row', alignItems: 'center', gap: 6 },
+  liveDot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: c.good,
+    shadowColor: c.good,
+    shadowOpacity: 1,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 0 },
+  },
+  liveText: {
+    color: c.good,
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 1.4,
   },
   rarityPill: {
     alignSelf: 'flex-start',

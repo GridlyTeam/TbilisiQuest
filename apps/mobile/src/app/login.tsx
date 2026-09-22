@@ -74,6 +74,12 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <View style={styles.inner}>
+        <View style={styles.markWrap}>
+          <View style={styles.mark}>
+            <View style={styles.markCore} />
+          </View>
+        </View>
+
         <Text style={styles.brand}>Tbilisi Quest</Text>
         <Text style={styles.tagline}>
           {ka ? 'იპოვე ფასდაკლებები ქალაქში' : 'Hunt discounts across the city'}
@@ -174,7 +180,32 @@ export default function LoginScreen() {
 const makeStyles = (c: Palette) => StyleSheet.create({
   root: { flex: 1, backgroundColor: c.bg },
   inner: { flex: 1, justifyContent: 'center', padding: space.xl },
-  brand: { color: c.text, fontSize: 32, fontWeight: '800', textAlign: 'center' },
+  markWrap: { alignItems: 'center', marginBottom: space.lg },
+  // Rotated rounded square with an indigo core, from the dashboard design's
+  // logo mark -- the one piece of the identity that is not type.
+  mark: {
+    width: 44,
+    height: 44,
+    borderWidth: 2.5,
+    borderColor: c.text,
+    borderRadius: 12,
+    transform: [{ rotate: '45deg' }],
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  markCore: {
+    width: 15,
+    height: 15,
+    borderRadius: 3,
+    backgroundColor: c.indigo,
+  },
+  brand: {
+    color: c.text,
+    fontSize: 34,
+    fontWeight: '900',
+    letterSpacing: -1,
+    textAlign: 'center',
+  },
   tagline: {
     color: c.accent,
     fontSize: 13,

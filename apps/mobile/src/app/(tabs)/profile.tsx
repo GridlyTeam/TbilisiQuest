@@ -97,6 +97,36 @@ export default function ProfileScreen() {
         </Text>
       </View>
 
+      {/* The week, with the days this streak covers filled in. Straight from
+          the dashboard design -- a number alone says less than seven dots
+          with a gap in them. */}
+      <View style={styles.streakCard}>
+        <Text style={styles.streakLabel}>{ka ? 'შენი სერია' : 'Your streak'}</Text>
+        <Text style={styles.streakNumber}>
+          {String(xp.current_streak_days).padStart(2, '0')}
+          <Text style={styles.streakUnit}>{ka ? ' დღე' : ' days'}</Text>
+        </Text>
+
+        <View style={styles.week}>
+          {weekDays(ka).map((day, index) => {
+            // index 6 is today; fill backwards for as long as the streak runs.
+            const covered = 6 - index < xp.current_streak_days
+            return (
+              <Text
+                key={`${day}-${index}`}
+                style={[
+                  styles.weekDay,
+                  covered && styles.weekDayOn,
+                  index === 6 && styles.weekDayToday,
+                ]}
+              >
+                {day}
+              </Text>
+            )
+          })}
+        </View>
+      </View>
+
       <View style={styles.statRow}>
         <View style={styles.stat}>
           <Text style={styles.statValue}>{redeemed}</Text>
@@ -189,6 +219,15 @@ export default function ProfileScreen() {
   )
 }
 
+/** The last seven day initials, ending today. */
+function weekDays(ka: boolean): string[] {
+  const ge = ['კ', 'ო', 'ს', 'ო', 'ხ', 'პ', 'შ']
+  const en = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+  const names = ka ? ge : en
+  const today = new Date().getDay()
+  return Array.from({ length: 7 }, (_, i) => names[(today - 6 + i + 7) % 7])
+}
+
 const makeStyles = (c: Palette) => StyleSheet.create({
   root: { flex: 1, backgroundColor: c.bg },
   content: { padding: space.lg, gap: space.md },
@@ -231,6 +270,41 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   },
   barFill: { height: '100%', backgroundColor: c.accent },
   xpText: { color: c.textMuted, fontSize: 13, marginTop: space.sm },
+  streakCard: {
+    backgroundColor: c.surface,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: c.border,
+    padding: space.lg,
+  },
+  streakLabel: {
+    color: c.textFaint,
+    fontSize: font.eyebrow.fontSize,
+    fontWeight: font.eyebrow.fontWeight,
+    letterSpacing: font.eyebrow.letterSpacing,
+    textTransform: 'uppercase',
+  },
+  streakNumber: {
+    color: c.accent,
+    fontSize: 46,
+    fontWeight: '900',
+    letterSpacing: -2,
+    marginTop: space.sm,
+  },
+  streakUnit: {
+    color: c.textMuted,
+    fontSize: 13,
+    fontWeight: '700',
+    letterSpacing: 0,
+  },
+  week: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginTop: space.md,
+  },
+  weekDay: { color: c.textFaint, fontSize: 12, fontWeight: '600' },
+  weekDayOn: { color: c.accent, fontWeight: '900' },
+  weekDayToday: { textDecorationLine: 'underline' },
   statRow: { flexDirection: 'row', gap: space.md },
   stat: {
     flex: 1,

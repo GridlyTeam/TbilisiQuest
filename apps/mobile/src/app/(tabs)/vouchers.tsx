@@ -202,6 +202,12 @@ export default function VouchersScreen() {
             onPress={() => setScanning(item)}
           >
             <View style={[styles.stripe, { backgroundColor: meta.color }]} />
+            {/* Soft rarity bloom in the corner. Lifted from the dashboard
+                design: it is what stops a list of bordered rectangles from
+                reading as a spreadsheet. */}
+            {!redeemed && (
+              <View style={[styles.glow, { backgroundColor: meta.glow }]} />
+            )}
 
             <View style={styles.cardBody}>
               <Text style={[styles.cardRarity, { color: meta.color }]}>
@@ -262,6 +268,15 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     overflow: 'hidden',
   },
   cardUsed: { opacity: 0.4 },
+  glow: {
+    position: 'absolute',
+    width: 150,
+    height: 150,
+    borderRadius: 75,
+    top: -80,
+    right: -45,
+    opacity: 0.5,
+  },
   stripe: { width: 5, alignSelf: 'stretch' },
   cardBody: { flex: 1, padding: space.lg, gap: 1 },
   cardRarity: {
