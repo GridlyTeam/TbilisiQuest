@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { createClient } from '@/lib/supabase-client'
@@ -14,6 +14,16 @@ export default function LoginPage() {
   const { t } = useI18n()
 
   const [mode, setMode] = useState<'signin' | 'signup'>('signin')
+
+  // The landing page links straight to registration, so the form opens on the
+  // tab the visitor asked for. Read after mount rather than with
+  // useSearchParams(): that hook opts the route out of prerendering unless it
+  // is wrapped in Suspense, and this is a detail, not a reason to restructure
+  // the page.
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    if (params.get('mode') === 'signup') setMode('signup')
+  }, [])
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [busy, setBusy] = useState(false)
