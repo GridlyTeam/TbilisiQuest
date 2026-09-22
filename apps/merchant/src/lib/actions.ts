@@ -32,6 +32,9 @@ type CreateDropInput = {
   earlyAccessLevel: number
   earlyAccessMinutes: number
   isBossChest: boolean
+  /** 1 is an ordinary drop; above that, this many players must be at the venue
+   *  together before anyone can claim. */
+  squadSize: number
 }
 
 export async function createDrop(input: CreateDropInput) {
@@ -82,6 +85,7 @@ export async function createDrop(input: CreateDropInput) {
       early_access_level: input.earlyAccessLevel,
       early_access_minutes: input.earlyAccessMinutes,
       is_boss_chest: isBossChest,
+      squad_size: input.squadSize,
       status: 'scheduled',
     })
     .select('id')

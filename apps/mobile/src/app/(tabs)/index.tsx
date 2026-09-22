@@ -56,6 +56,7 @@ type NearbyDrop = {
   title_ka: string | null
   title_en: string | null
   discount_percent: number | null
+  squad_size: number
   lat: number
   lng: number
 }
@@ -289,6 +290,7 @@ function DropMarker({ drop, ka }: { drop: NearbyDrop; ka: boolean }) {
   const size = drop.is_boss_chest ? 74 : 58
   const venueName = (ka ? drop.venue_name_ka : drop.venue_name_en) ?? ''
   const soldOut = drop.remaining === 0
+  const squad = (drop.squad_size ?? 1) > 1
 
   return (
     <View style={styles.markerWrap}>
@@ -327,6 +329,15 @@ function DropMarker({ drop, ka }: { drop: NearbyDrop; ka: boolean }) {
           style={{ width: size * 0.82, height: size * 0.82 }}
           resizeMode="contain"
         />
+
+        {/* Corner pill rather than another line of text: a squad drop has to
+            be recognisable at a glance from across the map, before anyone
+            walks anywhere. */}
+        {squad && (
+          <View style={[styles.squadPip, { borderColor: meta.color }]}>
+            <Text style={styles.squadPipText}>{drop.squad_size}x</Text>
+          </View>
+        )}
       </View>
 
       {venueName.length > 0 && (
@@ -448,6 +459,22 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     fontWeight: '800',
   },
   badgeSoldOut: { color: c.textFaint },
+  squadPip: {
+    position: 'absolute',
+    right: -4,
+    bottom: -2,
+    backgroundColor: c.bg,
+    borderWidth: 1.5,
+    borderRadius: radius.pill,
+    paddingHorizontal: 6,
+    paddingVertical: 1,
+  },
+  squadPipText: {
+    color: c.text,
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 0.2,
+  },
   markerLabel: {
     marginTop: 4,
     alignSelf: 'center',

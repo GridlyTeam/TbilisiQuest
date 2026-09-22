@@ -47,6 +47,10 @@ type DropDetail = {
   title_en: string | null
   description_ka: string | null
   description_en: string | null
+  squad_size: number
+  squad_present: number
+  squad_ready: boolean
+  squad_allowed: boolean
   offer: 'percent_off' | 'bogo' | 'free_item' | null
   discount_percent: number | null
 }
@@ -118,6 +122,41 @@ export default function DropDetailScreen() {
   useEffect(() => {
     void load()
   }, [load])
+
+  // Presence is a heartbeat, not a one-off: a check-in goes stale after four
+  // minutes, so standing at a squad drop waiting for friends has to keep
+  // renewing it or the squad silently falls apart while everyone is present.
+  const isSquad = (drop?.squad_size ?? 1) > 1
+  useEffect(() => {
+    if (!isSquad || !drop?.in_claim_range || !fix || !drop.squad_allowed) return
+
+    let cancelled = false
+    async function beat() {
+      const { data } = await supabase.rpc('squad_checkin', {
+        p_drop_id: id,
+        p_lat: fix!.latitude,
+        p_lng: fix!.longitude,
+      })
+      const row = Array.isArray(data) ? data[0] : data
+      if (cancelled || !row) return
+      setDrop((prev) =>
+        prev
+          ? {
+              ...prev,
+              squad_present: row.present as number,
+              squad_ready: row.ready as boolean,
+            }
+          : prev,
+      )
+    }
+
+    void beat()
+    const timer = setInterval(beat, 20_000)
+    return () => {
+      cancelled = true
+      clearInterval(timer)
+    }
+  }, [isSquad, drop?.in_claim_range, drop?.squad_allowed, fix, id])
 
   const distance = drop?.distance_m ?? null
   const inRange = drop?.in_claim_range ?? false
@@ -207,7 +246,9 @@ export default function DropDetailScreen() {
   const alreadyHeld = drop.own_voucher === 'held'
   const alreadyRedeemed = drop.own_voucher === 'redeemed'
   const owned = alreadyHeld || alreadyRedeemed
-  const blocked = owned || !inRange || soldOut || notYetOpen || claiming
+  const squadBlocked = isSquad && (!drop.squad_allowed || !drop.squad_ready)
+  const blocked =
+    owned || !inRange || soldOut || notYetOpen || claiming || squadBlocked
 
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
@@ -245,6 +286,41 @@ export default function DropDetailScreen() {
         />
       </View>
 
+      {isSquad && (
+        <View style={[styles.squad, { borderColor: meta.color }]}>
+          <Text style={styles.squadLabel}>
+            {ka ? 'ჯგუფური დროფი' : 'Squad drop'}
+          </Text>
+
+          {!drop.squad_allowed ? (
+            <Text style={styles.squadBody}>
+              {ka
+                ? 'ჯგუფური დროფები 16 წლიდანაა.'
+                : 'Squad drops are for ages 16 and up.'}
+            </Text>
+          ) : (
+            <>
+              <Text style={[styles.squadCount, { color: meta.color }]}>
+                {drop.squad_present} / {drop.squad_size}
+              </Text>
+              <Text style={styles.squadBody}>
+                {drop.squad_ready
+                  ? ka
+                    ? 'ჯგუფი შეიკრიბა - აიღეთ ვაუჩერები!'
+                    : 'Squad complete — grab your vouchers!'
+                  : !inRange
+                    ? ka
+                      ? `საჭიროა ${drop.squad_size} ადამიანი ერთდროულად ადგილზე`
+                      : `Needs ${drop.squad_size} people at the venue at once`
+                    : ka
+                      ? 'დაელოდე მეგობრებს - ყველამ უნდა მოაღწიოს ადგილზე'
+                      : 'Waiting for friends — everyone has to be here'}
+              </Text>
+            </>
+          )}
+        </View>
+      )}
+
       {error && <Text style={styles.error}>{error}</Text>}
 
       <Pressable
@@ -276,13 +352,21 @@ export default function DropDetailScreen() {
                 ? ka
                   ? 'ჯერ არ დაწყებულა'
                   : 'Not open yet'
-                : inRange
+                : !inRange
                   ? ka
-                    ? 'აიღე ვაუჩერი'
-                    : 'Claim voucher'
-                  : ka
                     ? 'მიუახლოვდი'
-                    : 'Get closer to claim'}
+                    : 'Get closer to claim'
+                  : squadBlocked
+                    ? !drop.squad_allowed
+                      ? ka
+                        ? '16 წლიდან'
+                        : 'Ages 16+'
+                      : ka
+                        ? `საჭიროა კიდევ ${drop.squad_size - drop.squad_present}`
+                        : `Waiting for ${drop.squad_size - drop.squad_present} more`
+                    : ka
+                      ? 'აიღე ვაუჩერი'
+                      : 'Claim voucher'}
           </Text>
         )}
       </Pressable>
@@ -406,6 +490,23 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     textTransform: 'uppercase',
   },
   statValue: { fontSize: 21, fontWeight: '900', letterSpacing: -0.5, marginTop: 3 },
+  squad: {
+    backgroundColor: c.surface,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    padding: space.lg,
+    marginTop: space.md,
+    gap: 2,
+  },
+  squadLabel: {
+    color: c.textFaint,
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+  },
+  squadCount: { fontSize: 32, fontWeight: '900', letterSpacing: -1 },
+  squadBody: { color: c.textMuted, fontSize: 13, lineHeight: 18 },
   claimButton: {
     backgroundColor: c.accent,
     borderRadius: radius.md,

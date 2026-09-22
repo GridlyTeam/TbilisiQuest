@@ -43,6 +43,7 @@ const dropSchema = z
     startTime: z.string().regex(/^\d{2}:\d{2}$/),
     endTime: z.string().regex(/^\d{2}:\d{2}$/),
     inventoryCap: z.number().int().min(1).max(500),
+    squadSize: z.number().int().min(1).max(8),
     earlyAccessLevel: z.number().int().min(0).max(15),
     earlyAccessMinutes: z.number().int().min(0).max(120),
     isBossChest: z.boolean(),
@@ -147,6 +148,7 @@ function makeDefaults(): DropFormValues {
     startTime: '14:00',
     endTime: '17:00',
     inventoryCap: 20,
+    squadSize: 1,
     earlyAccessLevel: 0,
     earlyAccessMinutes: 0,
     isBossChest: false,
@@ -534,6 +536,43 @@ export default function DropCreator({
             />
           </Field>
         </div>
+
+        {/* Squad size. Sits beside the boss chest because both answer the same
+            question -- how big an event is this -- and a merchant choosing one
+            should see the other. */}
+        <label className="flex items-start gap-3 rounded-xl border border-line p-4">
+          <input
+            type="checkbox"
+            checked={values.squadSize > 1}
+            onChange={(e) => set('squadSize', e.target.checked ? 3 : 1)}
+            className="mt-1"
+          />
+          <span className="flex-1">
+            <span className="block text-sm font-medium">
+              ჯგუფური დროფი / Squad drop
+            </span>
+            <span className="mt-0.5 block text-xs text-muted">
+              რამდენიმე მომხმარებელი ერთდროულად უნდა იყოს ადგილზე. ერთი ყიდვის
+              ნაცვლად — რამდენიმე.
+            </span>
+
+            {values.squadSize > 1 && (
+              <span className="mt-2 flex items-center gap-2">
+                <input
+                  type="number"
+                  min={2}
+                  max={8}
+                  value={values.squadSize}
+                  onChange={(e) =>
+                    set('squadSize', Math.min(8, Math.max(2, Number(e.target.value))))
+                  }
+                  className="w-20 rounded-lg border border-line-strong bg-surface px-3 py-1.5 text-sm text-neutral-900"
+                />
+                <span className="text-xs text-muted">ადამიანი ერთდროულად</span>
+              </span>
+            )}
+          </span>
+        </label>
 
         <label
           className={`flex items-start gap-3 rounded-xl border p-4 ${
