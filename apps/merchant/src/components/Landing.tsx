@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
+import { CountUp, useReveal } from './landing-motion'
 import '../app/landing.css'
 
 /**
@@ -218,6 +219,15 @@ export default function Landing({ stats }: { stats: PublicStats | null }) {
   // until the map is worth boasting about.
   const showStats = stats != null && stats.venues >= 3
 
+  // One per section: each fades up as it arrives rather than the whole page
+  // animating at once, which reads as a loading screen.
+  const statsReveal = useReveal<HTMLElement>()
+  const howReveal = useReveal<HTMLElement>()
+  const rarityReveal = useReveal<HTMLElement>()
+  const bizReveal = useReveal<HTMLElement>()
+  const faqReveal = useReveal<HTMLElement>()
+  const safetyReveal = useReveal<HTMLElement>()
+
   return (
     <main
       className={[
@@ -276,6 +286,13 @@ export default function Landing({ stats }: { stats: PublicStats | null }) {
         </div>
       </header>
 
+      {/* Two slow-drifting blooms behind everything. Pure decoration, so it
+          is inert to pointers and disappears under prefers-reduced-motion. */}
+      <div className="aurora" aria-hidden="true">
+        <span />
+        <span />
+      </div>
+
       <div className="content">
         <section className="hero">
           <div className="hero-copy">
@@ -311,23 +328,32 @@ export default function Landing({ stats }: { stats: PublicStats | null }) {
         </section>
 
         {showStats && (
-          <section className="stats">
+          <section
+            className={`stats ${statsReveal.className}`}
+            ref={statsReveal.ref}
+          >
             <div>
-              <b>{stats.venues}</b>
+              <b>
+                <CountUp value={stats.venues} />
+              </b>
               <span>{t.statVenues}</span>
             </div>
             <div>
-              <b>{stats.live_drops}</b>
+              <b>
+                <CountUp value={stats.live_drops} />
+              </b>
               <span>{t.statDrops}</span>
             </div>
             <div>
-              <b>{stats.vouchers_today}</b>
+              <b>
+                <CountUp value={stats.vouchers_today} />
+              </b>
               <span>{t.statVouchers}</span>
             </div>
           </section>
         )}
 
-        <section id="how">
+        <section id="how" className={howReveal.className} ref={howReveal.ref}>
           <p className="eyebrow">{t.stepsEyebrow}</p>
           <div className="steps">
             {t.steps.map((step) => (
@@ -340,7 +366,7 @@ export default function Landing({ stats }: { stats: PublicStats | null }) {
           </div>
         </section>
 
-        <section>
+        <section className={rarityReveal.className} ref={rarityReveal.ref}>
           <p className="eyebrow">{t.rarityEyebrow}</p>
           <div className="rarities">
             {t.rarities.map((r) => (
@@ -353,7 +379,10 @@ export default function Landing({ stats }: { stats: PublicStats | null }) {
           </div>
         </section>
 
-        <section className="panel">
+        <section
+          className={`panel ${bizReveal.className}`}
+          ref={bizReveal.ref}
+        >
           <p className="eyebrow amber">{t.bizEyebrow}</p>
           <h2>{t.bizTitle}</h2>
           <p>{t.bizBody}</p>
@@ -364,7 +393,7 @@ export default function Landing({ stats }: { stats: PublicStats | null }) {
           </div>
         </section>
 
-        <section>
+        <section className={faqReveal.className} ref={faqReveal.ref}>
           <p className="eyebrow">{t.faqEyebrow}</p>
           <div className="faq">
             {t.faq.map(([q, a]) => (
@@ -376,7 +405,10 @@ export default function Landing({ stats }: { stats: PublicStats | null }) {
           </div>
         </section>
 
-        <section className="panel safety">
+        <section
+          className={`panel safety ${safetyReveal.className}`}
+          ref={safetyReveal.ref}
+        >
           <p className="eyebrow">{t.safetyEyebrow}</p>
           <h2>{t.safetyTitle}</h2>
           <p>{t.safetyBody}</p>
