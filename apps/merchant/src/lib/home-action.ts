@@ -22,7 +22,7 @@ export async function resolveHome(): Promise<string> {
 
   if (memberships.length > 0) return '/drops'
   if (admin) return '/admin/venues'
-  // A player: nothing behind the login is for them yet. The web stats page
-  // comes next; until then the landing page is the honest destination.
-  return '/?player=1'
+  // A registered business with no venue yet: send them to the application
+  // form, or to its "we are reviewing" state if they have already sent one.
+  return '/apply'
 }

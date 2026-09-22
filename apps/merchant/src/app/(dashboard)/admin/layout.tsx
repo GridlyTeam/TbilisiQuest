@@ -34,6 +34,9 @@ values ('<your-auth-uid>');`}
           Operator
         </span>
         <nav className="flex gap-1 text-sm">
+          <Link href="/admin/applications" className="rounded-lg px-3 py-1.5 text-muted transition hover:bg-canvas hover:text-ink">
+            Applications
+          </Link>
           <Link href="/admin/venues" className="rounded-lg px-3 py-1.5 text-muted transition hover:bg-canvas hover:text-ink">
             Venues
           </Link>

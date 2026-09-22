@@ -43,7 +43,11 @@ export async function middleware(request: NextRequest) {
   // allowlist rather than a list of guarded prefixes, so a route added later
   // is private by default.
   const path = request.nextUrl.pathname
-  const isAuthRoute = path.startsWith('/login')
+  // Two front doors on purpose: merchants sign in at /login, operators at
+  // /admin/login. Same accounts and the same database checks behind them --
+  // the separation is so a merchant never lands on an operator screen and a
+  // shared laptop does not offer the admin area to whoever opens it.
+  const isAuthRoute = path === '/login' || path === '/admin/login'
   const isPublic =
     isAuthRoute ||
     path === '/' ||
@@ -52,7 +56,7 @@ export async function middleware(request: NextRequest) {
 
   if (!user && !isPublic) {
     const url = request.nextUrl.clone()
-    url.pathname = '/login'
+    url.pathname = path.startsWith('/admin') ? '/admin/login' : '/login'
     return NextResponse.redirect(url)
   }
 
@@ -61,7 +65,7 @@ export async function middleware(request: NextRequest) {
   // read it or send it to someone.
   if (user && isAuthRoute) {
     const url = request.nextUrl.clone()
-    url.pathname = '/drops'
+    url.pathname = path === '/admin/login' ? '/admin/venues' : '/drops'
     return NextResponse.redirect(url)
   }
 
