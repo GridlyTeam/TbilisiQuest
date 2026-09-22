@@ -565,3 +565,95 @@
 .landing.ka .faq summary {
   font-size: 16px;
 }
+
+/* ---- theme toggle ------------------------------------------------------ */
+.landing .theme-toggle {
+  width: 32px;
+  height: 32px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 14px;
+  line-height: 1;
+  cursor: pointer;
+}
+.landing .theme-toggle:hover {
+  color: var(--text);
+  border-color: var(--amber);
+}
+
+/* ---- light theme --------------------------------------------------------
+ * Not an inversion. Amber glows on near-black and fails as text on white, so
+ * anything carrying meaning in amber switches to a darkened ink; the glows and
+ * blurs that make the dark page feel lit are dialled back, because on a pale
+ * ground they read as smudges rather than light. */
+.landing.light {
+  --bg: #f6f4f1;
+  --surface: #ffffff;
+  --border: #e3dfda;
+  --text: #171526;
+  --muted: #5d5769;
+  --faint: #8b8497;
+  --amber: #b76e1f;
+  --indigo: #4c3a8c;
+  --cyan: #0e7490;
+
+  background: radial-gradient(
+      circle at 83% 2%,
+      rgba(124, 92, 255, 0.1),
+      transparent 29rem
+    ),
+    var(--bg);
+}
+.landing.light .topbar {
+  border-bottom-color: var(--border);
+}
+/* The download button keeps the bright amber: it is a filled surface with dark
+   text on it, which is legible either way, and it should stay the loudest
+   thing on the page. */
+.landing.light .store-button {
+  background: #f0a11a;
+  color: #1b1210;
+}
+.landing.light .store-button.soon {
+  background: transparent;
+  color: var(--faint);
+}
+.landing.light .lang .on {
+  background: #f0a11a;
+  color: #1b1210;
+}
+.landing.light .panel {
+  border-color: #ddd6ea;
+  background: linear-gradient(105deg, #f3efff 0%, #fbf9ff 60%, #fffdf7 100%);
+}
+.landing.light .panel p:not(.eyebrow) {
+  color: var(--muted);
+}
+.landing.light .safety {
+  background: var(--surface);
+  border-color: var(--border);
+}
+.landing.light .rarity-card::before {
+  opacity: 0.35;
+  filter: blur(18px);
+}
+.landing.light .rarity-card .dot {
+  box-shadow: none;
+}
+.landing.light .hero-art img {
+  filter: drop-shadow(0 12px 30px rgba(23, 21, 38, 0.18));
+}
+.landing.light .orbit {
+  border-color: rgba(76, 58, 140, 0.3);
+}
+.landing.light .orbit-two {
+  border-color: rgba(183, 110, 31, 0.35);
+}
+.landing.light .sticky-cta {
+  background: #f0a11a;
+  box-shadow: 0 10px 30px rgba(23, 21, 38, 0.18);
+}

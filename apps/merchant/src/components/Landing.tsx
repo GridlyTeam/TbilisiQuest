@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 
 import '../app/landing.css'
@@ -102,6 +102,8 @@ const COPY = {
     privacy: 'კონფიდენციალურობა',
     terms: 'წესები',
     stickyCta: 'ჩამოტვირთე',
+    toLight: 'ღია თემა',
+    toDark: 'მუქი თემა',
   },
   en: {
     portal: 'For business',
@@ -173,19 +175,59 @@ const COPY = {
     privacy: 'Privacy',
     terms: 'Terms',
     stickyCta: 'Download',
+    toLight: 'Light theme',
+    toDark: 'Dark theme',
   },
 } as const
 
 export default function Landing({ stats }: { stats: PublicStats | null }) {
   const [lang, setLang] = useState<Lang>('ka')
+  // Dark is the product's identity, so it is the default here as in the app.
+  // Read the stored choice after mount rather than during render: the server
+  // has no idea what this visitor picked, and guessing produces a hydration
+  // mismatch and a flash of the wrong theme.
+  const [theme, setTheme] = useState<'dark' | 'light'>('dark')
   const t = COPY[lang]
+
+  useEffect(() => {
+    try {
+      const saved = window.localStorage.getItem('tq.theme')
+      if (saved === 'light' || saved === 'dark') {
+        setTheme(saved)
+        return
+      }
+      if (window.matchMedia('(prefers-color-scheme: light)').matches) {
+        setTheme('light')
+      }
+    } catch {
+      // Private mode or blocked storage: dark is a fine answer.
+    }
+  }, [])
+
+  function switchTheme() {
+    const next = theme === 'dark' ? 'light' : 'dark'
+    setTheme(next)
+    try {
+      window.localStorage.setItem('tq.theme', next)
+    } catch {
+      // Not worth failing a click over.
+    }
+  }
 
   // Below a handful of venues the numbers argue against us, so they stay off
   // until the map is worth boasting about.
   const showStats = stats != null && stats.venues >= 3
 
   return (
-    <main className={lang === 'ka' ? 'landing ka' : 'landing'}>
+    <main
+      className={[
+        'landing',
+        lang === 'ka' ? 'ka' : '',
+        theme === 'light' ? 'light' : '',
+      ]
+        .filter(Boolean)
+        .join(' ')}
+    >
       <header className="topbar">
         <Link className="brand" href="/">
           <span className="brand-mark">
@@ -208,6 +250,15 @@ export default function Landing({ stats }: { stats: PublicStats | null }) {
           <Link className="portal-link" href="/login?mode=signup">
             {t.signUp}
           </Link>
+          <button
+            className="theme-toggle"
+            onClick={switchTheme}
+            aria-label={theme === 'dark' ? t.toLight : t.toDark}
+            title={theme === 'dark' ? t.toLight : t.toDark}
+          >
+            {theme === 'dark' ? '☀' : '☾'}
+          </button>
+
           <div className="lang">
             <button
               className={lang === 'ka' ? 'on' : undefined}
