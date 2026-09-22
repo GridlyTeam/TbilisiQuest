@@ -12,13 +12,16 @@ import { useColorScheme } from 'react-native'
 /**
  * Tbilisi Dusk, in two schemes.
  *
- * The app is used outdoors: dark for dusk and evening, light because a phone
- * at minimum brightness in direct Tbilisi sun is unreadable on a dark ground.
- * Both carry the same hues; only their lightness flips.
+ * Dark is the default and the one that gets designed: the audience is
+ * teenagers, and a near-black ground with saturated accents is what reads as a
+ * game rather than as a loyalty card. Light stays available and stays sober --
+ * a phone at minimum brightness in direct Tbilisi sun is unreadable on black,
+ * and the app is only playable in daylight hours, so this is a real setting
+ * rather than a checkbox.
  *
- * Amber is the one colour that cannot simply invert. #E0913A glows beautifully
- * on near-black and fails contrast outright as text on white, so the light
- * scheme uses a darkened #B76E1F wherever amber carries meaning.
+ * Amber is the one colour that cannot simply invert. It glows on near-black
+ * and fails contrast outright as text on white, so the light scheme uses a
+ * darkened #B76E1F wherever amber carries meaning.
  */
 
 export type Palette = {
@@ -40,20 +43,23 @@ export type Palette = {
   isDark: boolean
 }
 
+// Pushed darker and colder than the original dusk. Saturated colour only
+// looks electric against something close to black; on the old #12101C the
+// rarity hues read as pastel.
 const dark: Palette = {
-  bg: '#12101C',
-  surface: '#1C1A2B',
-  surfaceRaised: '#262238',
-  border: '#2E2A42',
-  text: '#F4F2F8',
-  textMuted: '#8E88A0',
-  textFaint: '#6E6880',
-  accent: '#E0913A',
-  accentInk: '#E0913A',
-  indigo: '#6C6BE8',
-  good: '#4ED08A',
-  bad: '#FF6B6B',
-  overlay: 'rgba(18,16,28,0.97)',
+  bg: '#08060F',
+  surface: '#15111F',
+  surfaceRaised: '#1F1930',
+  border: '#2C2440',
+  text: '#F7F5FF',
+  textMuted: '#9A93B0',
+  textFaint: '#6E6789',
+  accent: '#FFB020',
+  accentInk: '#FFB020',
+  indigo: '#7C5CFF',
+  good: '#3BE08A',
+  bad: '#FF5C7A',
+  overlay: 'rgba(8,6,15,0.97)',
   mapStyle: 'https://basemaps.cartocdn.com/gl/dark-matter-gl-style/style.json',
   isDark: true,
 }
@@ -84,40 +90,42 @@ const light: Palette = {
 export const rarityFor = (p: Palette) =>
   p.isDark
     ? {
+        // Cyan / violet / gold, in that order of value. Borrowed from the
+        // loot-tier convention every game in this audience's life already
+        // teaches: nobody has to be told which one is worth walking for.
         common: {
-          color: '#8A93A8',
-          // `fill` tints an undiscovered drop's circle: the rarity is readable
-          // at a glance, but the map stays visible underneath so the marker
-          // reads as an area rather than a pin.
-          fill: 'rgba(138,147,168,0.30)',
-          glow: 'rgba(138,147,168,0.35)',
+          color: '#3BD6FF',
+          // `fill` tints the marker's ring: the rarity is readable at a glance
+          // while the map stays visible underneath.
+          fill: 'rgba(59,214,255,0.28)',
+          glow: 'rgba(59,214,255,0.55)',
           label: { ka: 'ჩვეულებრივი', en: 'Common' },
         },
         rare: {
-          color: '#6C6BE8',
-          fill: 'rgba(108,107,232,0.32)',
-          glow: 'rgba(108,107,232,0.55)',
+          color: '#A855F7',
+          fill: 'rgba(168,85,247,0.32)',
+          glow: 'rgba(168,85,247,0.75)',
           label: { ka: 'იშვიათი', en: 'Rare' },
         },
         legendary: {
-          color: '#E0913A',
-          fill: 'rgba(224,145,58,0.34)',
-          glow: 'rgba(224,145,58,0.65)',
+          color: '#FFB020',
+          fill: 'rgba(255,176,32,0.34)',
+          glow: 'rgba(255,176,32,0.85)',
           label: { ka: 'ლეგენდარული', en: 'Legendary' },
         },
       }
     : {
         common: {
-          color: '#5D6B8A',
+          color: '#0E7490',
           // Slightly stronger on light: a pale tint over pale tiles disappears.
-          fill: 'rgba(93,107,138,0.26)',
-          glow: 'rgba(93,107,138,0.25)',
+          fill: 'rgba(14,116,144,0.26)',
+          glow: 'rgba(14,116,144,0.25)',
           label: { ka: 'ჩვეულებრივი', en: 'Common' },
         },
         rare: {
-          color: '#4C3A8C',
-          fill: 'rgba(76,58,140,0.26)',
-          glow: 'rgba(76,58,140,0.25)',
+          color: '#6D28D9',
+          fill: 'rgba(109,40,217,0.26)',
+          glow: 'rgba(109,40,217,0.25)',
           label: { ka: 'იშვიათი', en: 'Rare' },
         },
         legendary: {
@@ -130,8 +138,31 @@ export const rarityFor = (p: Palette) =>
 
 export type Rarity = 'common' | 'rare' | 'legendary'
 
-export const radius = { sm: 8, md: 12, lg: 18, pill: 999 } as const
+export const radius = { sm: 8, md: 12, lg: 18, xl: 26, pill: 999 } as const
 export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 } as const
+
+/**
+ * One type scale, so headings are decided here rather than re-invented per
+ * screen with whatever font size looked right that day.
+ *
+ * `display` and `title` are deliberately far heavier and tighter than the body
+ * sizes: the contrast between an enormous number and small caps underneath it
+ * is most of what makes an interface feel like a game instead of a form.
+ * `eyebrow` is the small wide-tracked caps label that sits above them.
+ */
+export const font = {
+  display: { fontSize: 56, fontWeight: '900', letterSpacing: -2 },
+  title: { fontSize: 30, fontWeight: '800', letterSpacing: -0.8 },
+  heading: { fontSize: 20, fontWeight: '800', letterSpacing: -0.3 },
+  body: { fontSize: 15, fontWeight: '500', letterSpacing: 0 },
+  label: { fontSize: 13, fontWeight: '600', letterSpacing: 0 },
+  eyebrow: {
+    fontSize: 11,
+    fontWeight: '800',
+    letterSpacing: 2,
+    textTransform: 'uppercase',
+  },
+} as const
 
 // ---------------------------------------------------------------------------
 // Provider
@@ -150,7 +181,10 @@ const ThemeContext = createContext<Ctx | null>(null)
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const system = useColorScheme()
-  const [mode, setModeState] = useState<ThemeMode>('system')
+  // Dark rather than 'system': the look is designed dark, and a player whose
+  // phone happens to be in light mode should still get the intended app on
+  // first launch. Choosing 'Auto' in settings restores system following.
+  const [mode, setModeState] = useState<ThemeMode>('dark')
 
   useEffect(() => {
     AsyncStorage.getItem(STORAGE_KEY)
@@ -160,7 +194,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
         }
       })
       .catch(() => {
-        // Storage unavailable: following the system setting is a fine default.
+        // Storage unavailable: the dark default stands.
       })
   }, [])
 

@@ -204,7 +204,7 @@ export default function MapScreen() {
           {!loading && drops.length === 0 && (
             <Text style={styles.headerWarn}>
               {ka
-                ? 'აქტიური დროფი არ არის — შეამოწმე დრო და მიმოხილვა'
+                ? 'აქტიური დროფი არ არის - შეამოწმე დრო და მიმოხილვა'
                 : 'No live drops right now'}
             </Text>
           )}

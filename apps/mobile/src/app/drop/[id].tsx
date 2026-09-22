@@ -13,6 +13,7 @@ import {
 import { supabase } from '../../lib/supabase'
 import { useTranslation } from '../../lib/i18n'
 import { useLocation } from '../../lib/useLocation'
+import ClaimReveal, { type ClaimedDrop } from '../../components/ClaimReveal'
 import { useTheme, useRarity, radius, space, type Palette, type Rarity } from '../../lib/theme'
 
 function useStyles() {
@@ -72,6 +73,7 @@ export default function DropDetailScreen() {
   const [claiming, setClaiming] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [fixTimedOut, setFixTimedOut] = useState(false)
+  const [claimed, setClaimed] = useState<ClaimedDrop | null>(null)
 
   // This screen starts its own location watch, so there is a gap before the
   // first fix. Say what is happening instead of spinning indefinitely.
@@ -135,8 +137,15 @@ export default function DropDetailScreen() {
       return
     }
 
-    await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success)
-    router.replace('/vouchers')
+    // The success haptic now belongs to the reveal, which plays its own
+    // escalating sequence. Navigation waits until the player dismisses it.
+    setClaimed({
+      rarity: drop.rarity,
+      titleKa: drop.title_ka,
+      titleEn: drop.title_en,
+      venueKa: drop.venue_name_ka,
+      venueEn: drop.venue_name_en,
+    })
   }
 
   if (!fix) {
@@ -150,7 +159,7 @@ export default function DropDetailScreen() {
             <Text style={styles.hint}>
               {ka
                 ? 'ჩართე GPS და გამოდი ღია ცის ქვეშ.'
-                : 'Turn on GPS and step outside — the drop needs your position to measure distance.'}
+                : 'Turn on GPS and step outside - the drop needs your position to measure distance.'}
             </Text>
           </>
         ) : (
@@ -271,6 +280,10 @@ export default function DropDetailScreen() {
             ? `უნდა იყო ${drop.claim_radius_m} მეტრში`
             : `You need to be within ${drop.claim_radius_m} m`}
         </Text>
+      )}
+
+      {claimed && (
+        <ClaimReveal drop={claimed} onDone={() => router.replace('/vouchers')} />
       )}
     </ScrollView>
   )
