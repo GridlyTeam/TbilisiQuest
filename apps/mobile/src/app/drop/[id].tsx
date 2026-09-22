@@ -14,7 +14,15 @@ import { supabase } from '../../lib/supabase'
 import { useTranslation } from '../../lib/i18n'
 import { useLocation } from '../../lib/useLocation'
 import ClaimReveal, { type ClaimedDrop } from '../../components/ClaimReveal'
-import { useTheme, useRarity, radius, space, type Palette, type Rarity } from '../../lib/theme'
+import {
+  useTheme,
+  useRarity,
+  radius,
+  space,
+  font,
+  type Palette,
+  type Rarity,
+} from '../../lib/theme'
 
 function useStyles() {
   const { c } = useTheme()
@@ -240,12 +248,16 @@ export default function DropDetailScreen() {
       {error && <Text style={styles.error}>{error}</Text>}
 
       <Pressable
-        style={[styles.claimButton, blocked && styles.claimDisabled]}
+        style={[
+          styles.claimButton,
+          { backgroundColor: meta.color },
+          blocked && styles.claimDisabled,
+        ]}
         onPress={claim}
         disabled={blocked}
       >
         {claiming ? (
-          <ActivityIndicator color={c.bg} />
+          <ActivityIndicator color="#08060F" />
         ) : (
           <Text style={[styles.claimText, blocked && styles.claimTextDisabled]}>
             {alreadyRedeemed
@@ -362,9 +374,20 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     paddingHorizontal: space.md,
     paddingVertical: 4,
   },
-  rarityText: { fontSize: 11, fontWeight: '800', letterSpacing: 1 },
-  title: { color: c.text, fontSize: 28, fontWeight: '800' },
-  venue: { color: c.accent, fontSize: 15, fontWeight: '600' },
+  rarityText: { fontSize: 11, fontWeight: '900', letterSpacing: 2 },
+  title: {
+    color: c.text,
+    fontSize: font.title.fontSize,
+    fontWeight: font.title.fontWeight,
+    letterSpacing: font.title.letterSpacing,
+  },
+  venue: {
+    color: c.accent,
+    fontSize: 13,
+    fontWeight: '800',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+  },
   description: { color: c.textMuted, fontSize: 15, lineHeight: 22 },
   statRow: { flexDirection: 'row', gap: space.md, marginTop: space.md },
   stat: {
@@ -375,8 +398,14 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     borderColor: c.border,
     padding: space.md,
   },
-  statLabel: { color: c.textFaint, fontSize: 11, textTransform: 'uppercase' },
-  statValue: { fontSize: 18, fontWeight: '700', marginTop: 2 },
+  statLabel: {
+    color: c.textFaint,
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+  },
+  statValue: { fontSize: 21, fontWeight: '900', letterSpacing: -0.5, marginTop: 3 },
   claimButton: {
     backgroundColor: c.accent,
     borderRadius: radius.md,
@@ -389,7 +418,12 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     borderWidth: 1,
     borderColor: c.border,
   },
-  claimText: { color: c.bg, fontSize: 17, fontWeight: '800' },
+  claimText: {
+    color: '#08060F',
+    fontSize: 17,
+    fontWeight: '900',
+    letterSpacing: 0.3,
+  },
   claimTextDisabled: { color: c.text },
   hint: { color: c.textFaint, fontSize: 13, textAlign: 'center' },
   error: { color: c.bad, fontSize: 14 },

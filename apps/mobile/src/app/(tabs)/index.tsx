@@ -23,7 +23,7 @@ import { useSafetyGate } from '../../lib/useSafetyGate'
 import SafetyOverlay from '../../components/SafetyOverlay'
 import SafetyBriefing from '../../components/SafetyBriefing'
 import SafetyButton from '../../components/SafetyButton'
-import { useTheme, useRarity, radius, space, type Palette, type Rarity } from '../../lib/theme'
+import { useTheme, useRarity, radius, space, font, type Palette, type Rarity } from '../../lib/theme'
 
 function useStyles() {
   const { c } = useTheme()
@@ -192,35 +192,48 @@ export default function MapScreen() {
 
       <View style={styles.header} pointerEvents="box-none">
         <View style={styles.headerCard}>
-          <Text style={styles.headerTitle}>
-            {loading
-              ? ka
-                ? 'იტვირთება…'
-                : 'Loading…'
-              : ka
-                ? `${nearbyCount} დროფი ახლოს`
-                : `${nearbyCount} drop${nearbyCount === 1 ? '' : 's'} nearby`}
-          </Text>
-          {!loading && drops.length === 0 && (
-            <Text style={styles.headerWarn}>
-              {ka
-                ? 'აქტიური დროფი არ არის - შეამოწმე დრო და მიმოხილვა'
-                : 'No live drops right now'}
+          {/* The count is the whole message, so it is the whole design: one
+              big numeral, a small wide-tracked label, and the instruction
+              underneath in the quietest weight on the screen. */}
+          <View style={styles.headerRow}>
+            <Text style={styles.headerCount}>
+              {loading ? '·' : nearbyCount}
             </Text>
-          )}
-          <Text style={styles.headerSub}>
-            {nearbyCount > 0
-              ? ka
-                ? 'მიუახლოვდი 20 მ-ზე ასაღებად'
-                : 'Get within 20 m to claim'
-              : nearestM != null
-                ? ka
-                  ? `უახლოესი დროფი ${formatDistance(nearestM, true)}-ზეა`
-                  : `Nearest drop is ${formatDistance(nearestM, false)} away`
-                : ka
-                  ? 'მიუახლოვდი 20 მ-ზე ასაღებად'
-                  : 'Get within 20 m to claim'}
-          </Text>
+
+            <View style={styles.headerText}>
+              <Text style={styles.headerLabel}>
+                {loading
+                  ? ka ? 'იტვირთება' : 'Loading'
+                  : ka
+                    ? 'დროფი ახლოს'
+                    : nearbyCount === 1
+                      ? 'drop nearby'
+                      : 'drops nearby'}
+              </Text>
+
+              <Text style={styles.headerSub}>
+                {nearbyCount > 0
+                  ? ka
+                    ? 'მიუახლოვდი 20 მ-ზე ასაღებად'
+                    : 'Get within 20 m to claim'
+                  : nearestM != null
+                    ? ka
+                      ? `უახლოესი დროფი ${formatDistance(nearestM, true)}-ზეა`
+                      : `Nearest drop is ${formatDistance(nearestM, false)} away`
+                    : ka
+                      ? 'მიუახლოვდი 20 მ-ზე ასაღებად'
+                      : 'Get within 20 m to claim'}
+              </Text>
+
+              {!loading && drops.length === 0 && (
+                <Text style={styles.headerWarn}>
+                  {ka
+                    ? 'აქტიური დროფი არ არის - შეამოწმე დრო და მიმოხილვა'
+                    : 'No live drops right now'}
+                </Text>
+              )}
+            </View>
+          </View>
         </View>
       </View>
 
@@ -346,9 +359,27 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     paddingHorizontal: space.lg,
     paddingVertical: space.md,
   },
-  headerTitle: { color: c.text, fontSize: 16, fontWeight: '700' },
-  headerSub: { color: c.textMuted, fontSize: 12, marginTop: 2 },
-  headerWarn: { color: c.accentInk, fontSize: 12, marginTop: 2, fontWeight: '600' },
+  headerRow: { flexDirection: 'row', alignItems: 'center', gap: space.md },
+  headerCount: {
+    color: c.accent,
+    fontSize: 44,
+    fontWeight: '900',
+    letterSpacing: -2,
+    // Optical centring: a numeral sits high in its line box next to caps.
+    marginTop: -4,
+    minWidth: 38,
+    textAlign: 'center',
+  },
+  headerText: { flex: 1, gap: 1 },
+  headerLabel: {
+    color: c.text,
+    fontSize: font.eyebrow.fontSize,
+    fontWeight: font.eyebrow.fontWeight,
+    letterSpacing: font.eyebrow.letterSpacing,
+    textTransform: 'uppercase',
+  },
+  headerSub: { color: c.textMuted, fontSize: 12.5 },
+  headerWarn: { color: c.accentInk, fontSize: 12, marginTop: 1, fontWeight: '700' },
 
   footer: {
     position: 'absolute',

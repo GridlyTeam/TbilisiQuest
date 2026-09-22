@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router'
 import { Text } from 'react-native'
 
-import { useTheme, useRarity, radius, space, type Palette, type Rarity } from '../../lib/theme'
+import { useTheme } from '../../lib/theme'
 import { useTranslation } from '../../lib/i18n'
 
 
@@ -15,9 +15,21 @@ export default function TabsLayout() {
       screenOptions={{
         headerStyle: { backgroundColor: c.bg },
         headerTintColor: c.text,
+        headerTitleStyle: { fontWeight: '800', letterSpacing: -0.3 },
+        // Sits on the page background rather than a lighter surface: on a
+        // near-black app a paler bar reads as a separate panel stuck to the
+        // bottom of the screen.
         tabBarStyle: {
-          backgroundColor: c.surface,
+          backgroundColor: c.bg,
           borderTopColor: c.border,
+          height: 62,
+          paddingTop: 6,
+          paddingBottom: 8,
+        },
+        tabBarLabelStyle: {
+          fontSize: 11,
+          fontWeight: '800',
+          letterSpacing: 0.4,
         },
         tabBarActiveTintColor: c.accent,
         tabBarInactiveTintColor: c.textFaint,

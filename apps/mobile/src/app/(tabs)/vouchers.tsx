@@ -1,4 +1,4 @@
-import { useCallback, useState, useMemo } from 'react'
+import { useCallback, useEffect, useState, useMemo } from 'react'
 import { useFocusEffect } from 'expo-router'
 import {
   ActivityIndicator,
@@ -13,7 +13,7 @@ import {
 import GeofencedScannerScreen from '../../screens/GeofencedScannerScreen'
 import { supabase } from '../../lib/supabase'
 import { useTranslation } from '../../lib/i18n'
-import { useTheme, useRarity, radius, space, type Palette, type Rarity } from '../../lib/theme'
+import { useTheme, useRarity, radius, space, font, type Palette, type Rarity } from '../../lib/theme'
 
 function useStyles() {
   const { c } = useTheme()
@@ -53,6 +53,15 @@ export default function VouchersScreen() {
   >({})
 
   const ka = locale === 'ka'
+
+  // A held voucher expires in 30 minutes, and a card that silently goes stale
+  // is how someone walks to a shop for a voucher they no longer have. Ticking
+  // every 20 seconds is enough for a minutes-granularity countdown.
+  const [now, setNow] = useState(() => Date.now())
+  useEffect(() => {
+    const timer = setInterval(() => setNow(Date.now()), 20_000)
+    return () => clearInterval(timer)
+  }, [])
 
   const load = useCallback(async () => {
     const { data, error } = await supabase
@@ -177,24 +186,56 @@ export default function VouchersScreen() {
       renderItem={({ item }) => {
         const meta = rarity[item.drops?.rarity ?? 'common']
         const redeemed = item.status === 'redeemed'
+        const minutesLeft = item.hold_expires_at
+          ? Math.round((new Date(item.hold_expires_at).getTime() - now) / 60000)
+          : null
+        const expiring = minutesLeft != null && minutesLeft <= 5
+
         return (
           <Pressable
-            style={[styles.card, redeemed && styles.cardUsed]}
+            style={[
+              styles.card,
+              redeemed && styles.cardUsed,
+              !redeemed && { borderColor: meta.color },
+            ]}
             disabled={redeemed}
             onPress={() => setScanning(item)}
           >
             <View style={[styles.stripe, { backgroundColor: meta.color }]} />
+
             <View style={styles.cardBody}>
+              <Text style={[styles.cardRarity, { color: meta.color }]}>
+                {meta.label[ka ? 'ka' : 'en'].toUpperCase()}
+              </Text>
               <Text style={styles.cardTitle} numberOfLines={1}>
                 {ka ? item.drops?.title_ka : item.drops?.title_en}
               </Text>
               <Text style={styles.cardVenue} numberOfLines={1}>
                 {ka ? item.drops?.venues?.name_ka : item.drops?.venues?.name_en}
               </Text>
+
+              {!redeemed && minutesLeft != null && (
+                <Text style={[styles.hold, expiring && styles.holdSoon]}>
+                  {minutesLeft <= 0
+                    ? ka ? 'ვადა ამოიწურა' : 'Expired'
+                    : ka
+                      ? `დარჩა ${minutesLeft} წუთი`
+                      : `${minutesLeft} min left`}
+                </Text>
+              )}
             </View>
-            <Text style={[styles.cardAction, redeemed && styles.cardActionUsed]}>
-              {redeemed ? (ka ? 'გამოყენებული' : 'Used') : ka ? 'სკანირება' : 'Scan'}
-            </Text>
+
+            {redeemed ? (
+              <Text style={styles.cardActionUsed}>
+                {ka ? 'გამოყენებული' : 'Used'}
+              </Text>
+            ) : (
+              <View style={[styles.scan, { backgroundColor: meta.color }]}>
+                <Text style={styles.scanText}>
+                  {ka ? 'სკანირება' : 'Scan'}
+                </Text>
+              </View>
+            )}
           </Pressable>
         )
       }}
@@ -220,19 +261,42 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     borderColor: c.border,
     overflow: 'hidden',
   },
-  cardUsed: { opacity: 0.45 },
-  stripe: { width: 4, alignSelf: 'stretch' },
-  cardBody: { flex: 1, padding: space.lg },
-  cardTitle: { color: c.text, fontSize: 16, fontWeight: '700' },
-  cardVenue: { color: c.textMuted, fontSize: 13, marginTop: 2 },
-  cardAction: {
-    color: c.accent,
-    fontWeight: '700',
+  cardUsed: { opacity: 0.4 },
+  stripe: { width: 5, alignSelf: 'stretch' },
+  cardBody: { flex: 1, padding: space.lg, gap: 1 },
+  cardRarity: {
+    fontSize: 10,
+    fontWeight: '900',
+    letterSpacing: 1.8,
+  },
+  cardTitle: {
+    color: c.text,
+    fontSize: 17,
+    fontWeight: '800',
+    letterSpacing: -0.3,
+  },
+  cardVenue: { color: c.textMuted, fontSize: 13 },
+  hold: { color: c.textFaint, fontSize: 12, fontWeight: '700', marginTop: 3 },
+  holdSoon: { color: c.bad },
+  scan: {
+    borderRadius: radius.pill,
+    paddingHorizontal: space.lg,
+    paddingVertical: 9,
+    marginRight: space.lg,
+  },
+  scanText: { color: '#08060F', fontSize: 13, fontWeight: '900' },
+  cardActionUsed: {
+    color: c.textFaint,
     fontSize: 13,
+    fontWeight: '700',
     paddingRight: space.lg,
   },
-  cardActionUsed: { color: c.textFaint },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.sm },
-  emptyTitle: { color: c.text, fontSize: 17, fontWeight: '700' },
+  emptyTitle: {
+    color: c.text,
+    fontSize: font.title.fontSize,
+    fontWeight: font.title.fontWeight,
+    letterSpacing: font.title.letterSpacing,
+  },
   emptyBody: { color: c.textMuted, fontSize: 14, textAlign: 'center' },
 })

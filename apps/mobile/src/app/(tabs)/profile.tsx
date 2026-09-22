@@ -15,7 +15,15 @@ import InviteCard from '../../components/InviteCard'
 import QuestBoard from '../../components/QuestBoard'
 import SeasonCard from '../../components/SeasonCard'
 import BadgeCase from '../../components/BadgeCase'
-import { useTheme, useRarity, radius, space, type Palette, type Rarity } from '../../lib/theme'
+import {
+  useTheme,
+  useRarity,
+  radius,
+  space,
+  font,
+  type Palette,
+  type Rarity,
+} from '../../lib/theme'
 
 function useStyles() {
   const { c } = useTheme()
@@ -192,7 +200,7 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   },
   levelCard: {
     backgroundColor: c.surface,
-    borderRadius: radius.lg,
+    borderRadius: radius.xl,
     borderWidth: 1,
     borderColor: c.border,
     padding: space.xl,
@@ -200,11 +208,19 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   },
   levelLabel: {
     color: c.textFaint,
-    fontSize: 12,
+    fontSize: font.eyebrow.fontSize,
+    fontWeight: font.eyebrow.fontWeight,
+    letterSpacing: font.eyebrow.letterSpacing,
     textTransform: 'uppercase',
-    letterSpacing: 1.5,
   },
-  levelValue: { color: c.accent, fontSize: 56, fontWeight: '800' },
+  // The one genuinely large number in the app outside the claim moment.
+  levelValue: {
+    color: c.accent,
+    fontSize: font.display.fontSize,
+    fontWeight: font.display.fontWeight,
+    letterSpacing: font.display.letterSpacing,
+    lineHeight: font.display.fontSize + 6,
+  },
   barTrack: {
     width: '100%',
     height: 8,
@@ -225,8 +241,21 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     padding: space.md,
     alignItems: 'center',
   },
-  statValue: { color: c.text, fontSize: 22, fontWeight: '700' },
-  statLabel: { color: c.textFaint, fontSize: 11, marginTop: 2 },
+  statValue: {
+    color: c.text,
+    fontSize: 24,
+    fontWeight: '900',
+    letterSpacing: -0.6,
+  },
+  statLabel: {
+    color: c.textFaint,
+    fontSize: 10,
+    fontWeight: '800',
+    letterSpacing: 1.2,
+    textTransform: 'uppercase',
+    marginTop: 3,
+    textAlign: 'center',
+  },
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
@@ -236,7 +265,7 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     borderColor: c.border,
     padding: space.lg,
   },
-  rowLabel: { color: c.text, fontSize: 15, fontWeight: '600' },
+  rowLabel: { color: c.text, fontSize: 15, fontWeight: '700' },
   segmented: {
     flexDirection: 'row',
     backgroundColor: c.bg,
