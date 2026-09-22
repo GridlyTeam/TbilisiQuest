@@ -225,8 +225,8 @@ export default function App() {
       <footer className="footer">
         <span>© {new Date().getFullYear()} Gridly LLC</span>
         <nav>
-          <a href="/privacy.html">{t.footerLinks[0]}</a>
-          <a href="/terms.html">{t.footerLinks[1]}</a>
+          <a href="/privacy">{t.footerLinks[0]}</a>
+          <a href="/terms">{t.footerLinks[1]}</a>
           <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
         </nav>
       </footer>
