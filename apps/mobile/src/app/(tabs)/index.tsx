@@ -220,7 +220,12 @@ export default function MapScreen() {
                   : setPicker(group)
               }
             >
-              <DropMarker drop={best} count={group.length} ka={ka} />
+              <DropMarker
+                drop={best}
+                count={group.length}
+                totalRemaining={group.reduce((sum, d) => sum + (d.remaining ?? 0), 0)}
+                ka={ka}
+              />
             </Marker>
           )
         })}
@@ -352,11 +357,15 @@ export default function MapScreen() {
 function DropMarker({
   drop,
   count,
+  totalRemaining,
   ka,
 }: {
   drop: NearbyDrop
   /** How many drops share this position. */
   count: number
+  /** Vouchers left across all of them -- what a player can actually walk away
+   *  with from this shop. */
+  totalRemaining: number
   ka: boolean
 }) {
   const styles = useStyles()
@@ -364,7 +373,7 @@ function DropMarker({
   const meta = rarity[drop.rarity] ?? rarity.common
   const size = drop.is_boss_chest ? 74 : 58
   const venueName = (ka ? drop.venue_name_ka : drop.venue_name_en) ?? ''
-  const soldOut = drop.remaining === 0
+  const soldOut = totalRemaining === 0
   const squad = (drop.squad_size ?? 1) > 1
   const stacked = count > 1
 
@@ -377,17 +386,13 @@ function DropMarker({
         ]}
       >
         <Text style={styles.badgeText}>
-          {stacked
-            ? ka
-              ? `${count} შეთავაზება`
-              : `${count} offers`
-            : soldOut
+          {soldOut
             ? ka
               ? 'ვაუჩერები ამოიწურა'
               : 'No vouchers left'
             : ka
-              ? `${drop.remaining} ვაუჩერი დარჩა`
-              : `${drop.remaining} voucher${drop.remaining === 1 ? '' : 's'} left`}
+              ? `${totalRemaining} ვაუჩერი დარჩა`
+              : `${totalRemaining} voucher${totalRemaining === 1 ? '' : 's'} left`}
         </Text>
       </View>
 
@@ -416,6 +421,15 @@ function DropMarker({
         {squad && (
           <View style={[styles.squadPip, { borderColor: meta.color }]}>
             <Text style={styles.squadPipText}>{drop.squad_size}x</Text>
+          </View>
+        )}
+
+        {/* How many separate offers this shop is running. Bottom right, in the
+            brand amber, so it reads as a quantity attached to the shop rather
+            than as another rarity signal. */}
+        {stacked && (
+          <View style={styles.offerCount}>
+            <Text style={styles.offerCountText}>{count}</Text>
           </View>
         )}
       </View>
@@ -610,7 +624,7 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   pickerRowMeta: { color: c.textMuted, fontSize: 12, marginTop: 1 },
   squadPip: {
     position: 'absolute',
-    right: -4,
+    left: -6,
     bottom: -2,
     backgroundColor: c.bg,
     borderWidth: 1.5,
@@ -623,6 +637,25 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     fontSize: 10,
     fontWeight: '900',
     letterSpacing: 0.2,
+  },
+  offerCount: {
+    position: 'absolute',
+    right: -5,
+    bottom: -3,
+    minWidth: 22,
+    height: 22,
+    borderRadius: 11,
+    backgroundColor: c.accent,
+    borderWidth: 2,
+    borderColor: c.bg,
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 3,
+  },
+  offerCountText: {
+    color: '#08060F',
+    fontSize: 12,
+    fontWeight: '900',
   },
   markerLabel: {
     marginTop: 4,
