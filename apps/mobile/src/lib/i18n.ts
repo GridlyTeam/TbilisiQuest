@@ -2,8 +2,10 @@
  * Bilingual copy for the mobile app.
  *
  * Georgian is the default because the primary audience is local, with English
- * as the fallback for visitors. The device locale decides at first launch and
- * the player can override it in settings.
+ * offered for visitors. The device locale is deliberately NOT consulted: a
+ * phone bought abroad, or one left on English by habit, is common in Tbilisi
+ * and would otherwise hide the Georgian the app is written for. The player
+ * picks a language in settings and that choice is remembered.
  *
  * Deliberately a plain object rather than i18next: the string count is small,
  * the two languages are maintained together, and a typed catalogue means a
@@ -12,9 +14,21 @@
  */
 
 import { useCallback, useSyncExternalStore } from 'react'
-import * as Localization from 'expo-localization'
+import AsyncStorage from '@react-native-async-storage/async-storage'
 
 export type Locale = 'ka' | 'en'
+
+/**
+ * The languages offered in the picker, in the order they are shown.
+ *
+ * `label` is each language's name in itself -- someone who has accidentally
+ * put the app into a language they cannot read still needs to find their way
+ * back out, and "English" is only useful if it is written in English.
+ */
+export const LOCALES: readonly { code: Locale; label: string }[] = [
+  { code: 'ka', label: 'ქართული' },
+  { code: 'en', label: 'English' },
+]
 
 const catalogue = {
   'common.allow': { ka: 'ნებართვა', en: 'Allow' },
@@ -84,15 +98,27 @@ export type MessageKey = keyof typeof catalogue
 // ---------------------------------------------------------------------------
 // Minimal store so a locale change re-renders every consumer.
 // ---------------------------------------------------------------------------
-function deviceLocale(): Locale {
-  const tag = Localization.getLocales()[0]?.languageCode
-  return tag === 'ka' ? 'ka' : 'en'
-}
+const STORAGE_KEY = 'tq.locale'
 
-let current: Locale = deviceLocale()
+let current: Locale = 'ka'
 const listeners = new Set<() => void>()
 
+// Restore the saved choice. This lands a frame or two after first paint, which
+// is why the default is Georgian rather than a neutral placeholder: a player
+// who has never chosen sees the right language immediately, and one who has
+// chosen English sees at most one frame of Georgian.
+void AsyncStorage.getItem(STORAGE_KEY)
+  .then((stored) => {
+    if (stored === 'ka' || stored === 'en') {
+      if (stored === current) return
+      current = stored
+      listeners.forEach((fn) => fn())
+    }
+  })
+  .catch(() => {})
+
 export function setLocale(next: Locale) {
+  void AsyncStorage.setItem(STORAGE_KEY, next).catch(() => {})
   if (next === current) return
   current = next
   listeners.forEach((fn) => fn())

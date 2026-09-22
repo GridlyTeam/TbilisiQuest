@@ -12,7 +12,7 @@ import {
 
 import { supabase } from '../lib/supabase'
 import { useTheme, useRarity, radius, space, type Palette, type Rarity } from '../lib/theme'
-import { useTranslation } from '../lib/i18n'
+import { useTranslation, LOCALES } from '../lib/i18n'
 
 function useStyles() {
   const { c } = useTheme()
@@ -140,12 +140,32 @@ export default function LoginScreen() {
           </Pressable>
         </View>
 
-        <Pressable
-          style={styles.localeToggle}
-          onPress={() => setLocale(ka ? 'en' : 'ka')}
-        >
-          <Text style={styles.localeText}>{ka ? 'English' : 'ქართული'}</Text>
-        </Pressable>
+        {/* Both languages are always on screen, with the active one marked.
+            Someone who cannot read the interface can still see their own
+            language listed and tap it. */}
+        <View style={styles.localePicker}>
+          {LOCALES.map((option) => (
+            <Pressable
+              key={option.code}
+              onPress={() => setLocale(option.code)}
+              accessibilityRole="radio"
+              accessibilityState={{ selected: locale === option.code }}
+              style={[
+                styles.localeOption,
+                locale === option.code && styles.localeOptionActive,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.localeText,
+                  locale === option.code && styles.localeTextActive,
+                ]}
+              >
+                {option.label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
       </View>
     </KeyboardAvoidingView>
   )
@@ -191,6 +211,23 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   switch: { color: c.textMuted, fontSize: 13, textAlign: 'center' },
   error: { color: c.bad, fontSize: 13 },
   notice: { color: c.good, fontSize: 13 },
-  localeToggle: { marginTop: space.xl, alignSelf: 'center' },
-  localeText: { color: c.textFaint, fontSize: 13 },
+  localePicker: {
+    flexDirection: 'row',
+    alignSelf: 'center',
+    marginTop: space.xl,
+    backgroundColor: c.surface,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: c.border,
+    padding: 3,
+    gap: 3,
+  },
+  localeOption: {
+    paddingHorizontal: space.md,
+    paddingVertical: 7,
+    borderRadius: radius.pill,
+  },
+  localeOptionActive: { backgroundColor: c.accent },
+  localeText: { color: c.textMuted, fontSize: 13, fontWeight: '600' },
+  localeTextActive: { color: c.bg },
 })

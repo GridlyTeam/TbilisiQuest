@@ -10,7 +10,7 @@ import {
 } from 'react-native'
 
 import { supabase } from '../../lib/supabase'
-import { useTranslation } from '../../lib/i18n'
+import { useTranslation, LOCALES } from '../../lib/i18n'
 import { useTheme, useRarity, radius, space, type Palette, type Rarity } from '../../lib/theme'
 
 function useStyles() {
@@ -126,10 +126,36 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      <Pressable style={styles.row} onPress={() => setLocale(ka ? 'en' : 'ka')}>
+      {/* A picker rather than a tap-to-flip row: with a toggle the label has to
+          double as both the current language and the thing you get if you
+          press it, which is ambiguous in either reading. Here the selected
+          language is simply the highlighted one. */}
+      <View style={styles.row}>
         <Text style={styles.rowLabel}>{ka ? 'ენა' : 'Language'}</Text>
-        <Text style={styles.rowValue}>{ka ? 'ქართული' : 'English'}</Text>
-      </Pressable>
+        <View style={styles.segmented}>
+          {LOCALES.map((option) => (
+            <Pressable
+              key={option.code}
+              onPress={() => setLocale(option.code)}
+              accessibilityRole="radio"
+              accessibilityState={{ selected: locale === option.code }}
+              style={[
+                styles.segment,
+                locale === option.code && styles.segmentActive,
+              ]}
+            >
+              <Text
+                style={[
+                  styles.segmentText,
+                  locale === option.code && styles.segmentTextActive,
+                ]}
+              >
+                {option.label}
+              </Text>
+            </Pressable>
+          ))}
+        </View>
+      </View>
 
       <Pressable style={styles.row} onPress={() => supabase.auth.signOut()}>
         <Text style={[styles.rowLabel, { color: c.bad }]}>
@@ -211,5 +237,4 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   segmentActive: { backgroundColor: c.accent },
   segmentText: { color: c.textMuted, fontSize: 13, fontWeight: '600' },
   segmentTextActive: { color: c.bg },
-  rowValue: { color: c.textMuted, fontSize: 15 },
 })
