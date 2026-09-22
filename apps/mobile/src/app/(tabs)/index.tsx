@@ -10,7 +10,9 @@ import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
 import {
   ActivityIndicator,
   Image,
+  Modal,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   View,
@@ -43,6 +45,9 @@ const TBILISI_CENTER: [number, number] = [44.7935, 41.6998]
  */
 const NEARBY_RADIUS_M = 500
 
+/** Which rarity a shared marker should advertise. */
+const RARITY_RANK: Record<Rarity, number> = { common: 0, rare: 1, legendary: 2 }
+
 type NearbyDrop = {
   id: string
   rarity: Rarity
@@ -70,6 +75,8 @@ export default function MapScreen() {
   const safety = useSafetyGate(fix)
   const [drops, setDrops] = useState<NearbyDrop[]>([])
   const [loading, setLoading] = useState(true)
+  // Set when a tapped marker holds more than one drop.
+  const [picker, setPicker] = useState<NearbyDrop[] | null>(null)
   const lastQuery = useRef<{ lat: number; lng: number } | null>(null)
   const cameraRef = useRef<CameraRef>(null)
   const centredOnce = useRef(false)
@@ -152,6 +159,25 @@ export default function MapScreen() {
     })
   }, [fix])
 
+  /**
+   * Drops at one venue share that venue's coordinates exactly, so two offers
+   * from the same shop render as one marker sitting on top of another -- the
+   * second is invisible and looks like it was never created. Group them by
+   * position and render one marker per place.
+   */
+  const groups = useMemo(() => {
+    const byPlace = new Map<string, NearbyDrop[]>()
+    for (const drop of drops) {
+      if (drop.lat == null || drop.lng == null) continue
+      // Five decimals is roughly a metre: same shop, not same street.
+      const key = `${drop.lat.toFixed(5)},${drop.lng.toFixed(5)}`
+      const bucket = byPlace.get(key)
+      if (bucket) bucket.push(drop)
+      else byPlace.set(key, [drop])
+    }
+    return [...byPlace.values()]
+  }, [drops])
+
   const recentre = useCallback(() => {
     if (!fix) return
     cameraRef.current?.easeTo({
@@ -177,15 +203,24 @@ export default function MapScreen() {
         />
         {permission === 'granted' && <UserLocation animated accuracy />}
 
-        {drops.map((drop) => {
-          if (drop.lat == null || drop.lng == null) return null
+        {groups.map((group) => {
+          // The marker wears the best thing on offer here: a shop with a
+          // Legendary and a Common should glow gold, not grey.
+          const best = [...group].sort(
+            (a, b) => RARITY_RANK[b.rarity] - RARITY_RANK[a.rarity],
+          )[0]
+
           return (
             <Marker
-              key={drop.id}
-              lngLat={[drop.lng, drop.lat]}
-              onPress={() => router.push(`/drop/${drop.id}`)}
+              key={best.id}
+              lngLat={[best.lng, best.lat]}
+              onPress={() =>
+                group.length === 1
+                  ? router.push(`/drop/${best.id}`)
+                  : setPicker(group)
+              }
             >
-              <DropMarker drop={drop} ka={ka} />
+              <DropMarker drop={best} count={group.length} ka={ka} />
             </Marker>
           )
         })}
@@ -271,6 +306,37 @@ export default function MapScreen() {
         </View>
       )}
 
+      <Modal
+        visible={picker != null}
+        transparent
+        animationType="slide"
+        statusBarTranslucent
+        onRequestClose={() => setPicker(null)}
+      >
+        <Pressable style={styles.pickerBackdrop} onPress={() => setPicker(null)}>
+          <Pressable style={styles.pickerSheet} onPress={(e) => e.stopPropagation()}>
+            <Text style={styles.pickerTitle}>
+              {(ka ? picker?.[0]?.venue_name_ka : picker?.[0]?.venue_name_en) ??
+                (ka ? 'შეთავაზებები' : 'Offers')}
+            </Text>
+
+            <ScrollView style={styles.pickerList}>
+              {picker?.map((drop) => (
+                <PickerRow
+                  key={drop.id}
+                  drop={drop}
+                  ka={ka}
+                  onPress={() => {
+                    setPicker(null)
+                    router.push(`/drop/${drop.id}`)
+                  }}
+                />
+              ))}
+            </ScrollView>
+          </Pressable>
+        </Pressable>
+      </Modal>
+
       <SafetyOverlay safety={safety} />
       <SafetyBriefing />
     </View>
@@ -283,7 +349,16 @@ export default function MapScreen() {
  * the thing that actually moves someone off a sofa, so it gets the loudest
  * treatment of the three.
  */
-function DropMarker({ drop, ka }: { drop: NearbyDrop; ka: boolean }) {
+function DropMarker({
+  drop,
+  count,
+  ka,
+}: {
+  drop: NearbyDrop
+  /** How many drops share this position. */
+  count: number
+  ka: boolean
+}) {
   const styles = useStyles()
   const rarity = useRarity()
   const meta = rarity[drop.rarity] ?? rarity.common
@@ -291,6 +366,7 @@ function DropMarker({ drop, ka }: { drop: NearbyDrop; ka: boolean }) {
   const venueName = (ka ? drop.venue_name_ka : drop.venue_name_en) ?? ''
   const soldOut = drop.remaining === 0
   const squad = (drop.squad_size ?? 1) > 1
+  const stacked = count > 1
 
   return (
     <View style={styles.markerWrap}>
@@ -301,7 +377,11 @@ function DropMarker({ drop, ka }: { drop: NearbyDrop; ka: boolean }) {
         ]}
       >
         <Text style={styles.badgeText}>
-          {soldOut
+          {stacked
+            ? ka
+              ? `${count} შეთავაზება`
+              : `${count} offers`
+            : soldOut
             ? ka
               ? 'ვაუჩერები ამოიწურა'
               : 'No vouchers left'
@@ -348,6 +428,45 @@ function DropMarker({ drop, ka }: { drop: NearbyDrop; ka: boolean }) {
         </View>
       )}
     </View>
+  )
+}
+
+function PickerRow({
+  drop,
+  ka,
+  onPress,
+}: {
+  drop: NearbyDrop
+  ka: boolean
+  onPress: () => void
+}) {
+  const styles = useStyles()
+  const rarity = useRarity()
+  const meta = rarity[drop.rarity] ?? rarity.common
+  const soldOut = drop.remaining === 0
+
+  return (
+    <Pressable
+      style={({ pressed }) => [styles.pickerRow, pressed && { opacity: 0.7 }]}
+      onPress={onPress}
+      disabled={soldOut}
+    >
+      <View style={[styles.pickerDot, { backgroundColor: meta.color }]} />
+      <View style={{ flex: 1 }}>
+        <Text style={styles.pickerRowTitle} numberOfLines={1}>
+          {(ka ? drop.title_ka : drop.title_en) ?? ''}
+        </Text>
+        <Text style={styles.pickerRowMeta}>
+          {meta.label[ka ? 'ka' : 'en']}
+          {' · '}
+          {soldOut
+            ? ka ? 'ამოიწურა' : 'Sold out'
+            : ka
+              ? `${drop.remaining} დარჩა`
+              : `${drop.remaining} left`}
+        </Text>
+      </View>
+    </Pressable>
   )
 }
 
@@ -459,6 +578,36 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     fontWeight: '800',
   },
   badgeSoldOut: { color: c.textFaint },
+  pickerBackdrop: { flex: 1, backgroundColor: c.overlay, justifyContent: 'flex-end' },
+  pickerSheet: {
+    backgroundColor: c.surface,
+    borderTopLeftRadius: radius.xl,
+    borderTopRightRadius: radius.xl,
+    borderTopWidth: 1,
+    borderColor: c.border,
+    padding: space.xl,
+    paddingBottom: space.xxl,
+    gap: space.md,
+    maxHeight: '70%',
+  },
+  pickerTitle: {
+    color: c.text,
+    fontSize: font.heading.fontSize,
+    fontWeight: font.heading.fontWeight,
+    letterSpacing: font.heading.letterSpacing,
+  },
+  pickerList: { flexGrow: 0 },
+  pickerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: space.md,
+    paddingVertical: space.md,
+    borderBottomWidth: 1,
+    borderBottomColor: c.border,
+  },
+  pickerDot: { width: 10, height: 10, borderRadius: 5 },
+  pickerRowTitle: { color: c.text, fontSize: 15, fontWeight: '700' },
+  pickerRowMeta: { color: c.textMuted, fontSize: 12, marginTop: 1 },
   squadPip: {
     position: 'absolute',
     right: -4,
