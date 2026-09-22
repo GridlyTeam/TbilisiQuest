@@ -232,12 +232,12 @@ export default function VouchersScreen() {
             </View>
 
             {redeemed ? (
-              <Text style={styles.cardActionUsed}>
+              <Text style={styles.cardActionUsed} numberOfLines={2}>
                 {ka ? 'გამოყენებული' : 'Used'}
               </Text>
             ) : (
               <View style={[styles.scan, { backgroundColor: meta.color }]}>
-                <Text style={styles.scanText}>
+                <Text style={styles.scanText} numberOfLines={1}>
                   {ka ? 'სკანირება' : 'Scan'}
                 </Text>
               </View>
@@ -278,7 +278,7 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     opacity: 0.5,
   },
   stripe: { width: 5, alignSelf: 'stretch' },
-  cardBody: { flex: 1, padding: space.lg, gap: 1 },
+  cardBody: { flex: 1, minWidth: 0, padding: space.lg, gap: 1 },
   cardRarity: {
     fontSize: 10,
     fontWeight: '900',
@@ -295,16 +295,21 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   holdSoon: { color: c.bad },
   scan: {
     borderRadius: radius.pill,
-    paddingHorizontal: space.lg,
+    paddingHorizontal: space.md,
     paddingVertical: 9,
-    marginRight: space.lg,
+    marginRight: space.md,
+    flexShrink: 0,
   },
   scanText: { color: '#08060F', fontSize: 13, fontWeight: '900' },
   cardActionUsed: {
     color: c.textFaint,
-    fontSize: 13,
+    fontSize: 12,
     fontWeight: '700',
-    paddingRight: space.lg,
+    // Capped so a long Georgian word takes two lines in its own column
+    // rather than squeezing the title beside it.
+    maxWidth: 86,
+    textAlign: 'right',
+    paddingRight: space.md,
   },
   empty: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: space.sm },
   emptyTitle: {

@@ -130,18 +130,24 @@ export default function ProfileScreen() {
       <View style={styles.statRow}>
         <View style={styles.stat}>
           <Text style={styles.statValue}>{redeemed}</Text>
-          <Text style={styles.statLabel}>{ka ? 'გამოყენებული' : 'Redeemed'}</Text>
+          <Text style={styles.statLabel} numberOfLines={2}>
+            {ka ? 'გამოყენებული' : 'Redeemed'}
+          </Text>
         </View>
         <View style={styles.stat}>
           <Text style={styles.statValue}>
             {xp.current_streak_days > 0 ? '🔥 ' : ''}
             {xp.current_streak_days}
           </Text>
-          <Text style={styles.statLabel}>{ka ? 'დღიური სერია' : 'Day streak'}</Text>
+          <Text style={styles.statLabel} numberOfLines={2}>
+            {ka ? 'დღიური სერია' : 'Day streak'}
+          </Text>
         </View>
         <View style={styles.stat}>
           <Text style={styles.statValue}>{xp.total_xp}</Text>
-          <Text style={styles.statLabel}>{ka ? 'სულ XP' : 'Total XP'}</Text>
+          <Text style={styles.statLabel} numberOfLines={2}>
+            {ka ? 'სულ XP' : 'Total XP'}
+          </Text>
         </View>
       </View>
 

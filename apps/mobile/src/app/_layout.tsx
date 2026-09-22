@@ -6,9 +6,13 @@ import type { Session } from '@supabase/supabase-js'
 
 import { supabase } from '../lib/supabase'
 import { ThemeProvider, useTheme } from '../lib/theme'
+import { applyTextDefaults } from '../lib/text-defaults'
 import { usePushToken } from '../lib/usePushToken'
 import AgeGate from '../components/AgeGate'
 
+
+// Once, at module load, before anything renders.
+applyTextDefaults()
 
 export default function RootLayout() {
   return (
