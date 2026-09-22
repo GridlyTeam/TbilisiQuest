@@ -102,3 +102,25 @@ correct default. Clear them from the portal, or in bulk for development:
 ```sql
 update public.drops set safety_reviewed_at = now() where safety_reviewed_at is null;
 ```
+
+## Decisions taken deliberately
+
+### Safety exclusion zones: not populated
+The `safety_zones` machinery from 0008 is in place and intentionally empty.
+It was designed when a drop could be placed at arbitrary coordinates, where a
+pin on a motorway shoulder or an embankment was a real possibility. Every drop
+now inherits the location of an operator-created venue — a real shop with a
+door — so there is nothing left for a zone to catch. The trigger still runs; if
+a future feature ever places drops away from venues, the polygons are the thing
+to add back first.
+
+The speed lock and the daylight window remain enforced. Those govern how a
+player travels rather than where a pin sits, and neither is made redundant by
+venues being real.
+
+### Age floor: 13 to play, 16 for group play (0025)
+Date of birth is collected once, at first launch after sign-up, and is
+write-once — a player cannot return later and become 16. Under-16s confirm that
+a parent or guardian knows they use the app; that is an acknowledgement, not
+verified consent, and the copy says so. `can_group_play()` is the single place
+the 16+ rule lives, ready for squad drops.

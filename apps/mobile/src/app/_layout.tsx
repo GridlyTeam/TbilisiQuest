@@ -7,6 +7,7 @@ import type { Session } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 import { ThemeProvider, useTheme } from '../lib/theme'
 import { usePushToken } from '../lib/usePushToken'
+import AgeGate from '../components/AgeGate'
 
 
 export default function RootLayout() {
@@ -81,6 +82,11 @@ function RootNavigator() {
           options={{ presentation: 'modal', title: '' }}
         />
       </Stack>
+
+      {/* Covers everything until a date of birth is on file. Rendered here
+          rather than inside the tabs so it cannot be dodged by deep-linking
+          straight to a drop. */}
+      {session && <AgeGate />}
     </>
   )
 }
