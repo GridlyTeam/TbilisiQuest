@@ -37,7 +37,8 @@ create table public.streak_rewards (
 );
 
 insert into public.streak_rewards (days, xp) values
-  (3, 50), (7, 150), (14, 350), (30, 800), (60, 1800), (100, 4000);
+  (3, 50), (7, 150), (14, 350), (30, 800), (60, 1800), (100, 4000)
+on conflict (days) do nothing;
 
 -- ---------------------------------------------------------------------------
 -- bump_streak
@@ -333,34 +334,7 @@ alter table public.streak_rewards enable row level security;
 create policy streak_rewards_select on public.streak_rewards
   for select to authenticated using (true);
 
--- ---------------------------------------------------------------------------
--- The starting set
--- ---------------------------------------------------------------------------
--- Deliberately small. Three live quests a player can hold in their head beats
--- twelve they scroll past, and every one of these is achievable by a school
--- pupil with fifteen lari.
-insert into public.quests
-  (code, title_ka, title_en, description_ka, description_en,
-   cadence, objective_type, objective_target, objective_params, xp_reward)
-values
-  ('daily_redeem_1',
-   'დღის ნადავლი', 'Daily catch',
-   'გამოიყენე ერთი ვაუჩერი დღეს.', 'Redeem one voucher today.',
-   'daily', 'redeem_count', 1, '{}'::jsonb, 60),
-
-  ('weekly_redeem_3',
-   'სამჯერ კვირაში', 'Three this week',
-   'გამოიყენე სამი ვაუჩერი ამ კვირაში.', 'Redeem three vouchers this week.',
-   'weekly', 'redeem_count', 3, '{}'::jsonb, 250),
-
-  ('weekly_explorer',
-   'მკვლევარი', 'Explorer',
-   'გამოიყენე ვაუჩერი სამ სხვადასხვა ადგილას.',
-   'Redeem at three different venues this week.',
-   'weekly', 'distinct_venues', 3, '{}'::jsonb, 400),
-
-  ('weekly_legendary',
-   'ლეგენდარული ნადირობა', 'Legendary hunt',
-   'დაიჭირე და გამოიყენე ერთი ლეგენდარული ვაუჩერი.',
-   'Catch and redeem one Legendary voucher this week.',
-   'weekly', 'rarity_hunt', 1, '{"rarity": "legendary"}'::jsonb, 500);
+-- No quests are seeded here. supabase/seed.sql already defines five, and they
+-- use exactly the objective vocabulary this engine implements -- claim_count,
+-- redeem_count, distinct_venues, rarity_hunt, category_visit. What was missing
+-- was never the content; it was anything that moved the progress.

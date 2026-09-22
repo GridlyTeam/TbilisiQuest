@@ -16,13 +16,17 @@
 
 set search_path = public, extensions;
 
+-- `if not exists` throughout: part of this migration reached the database on an
+-- earlier attempt, and a migration that cannot be re-run after a partial
+-- failure is a migration you have to repair by hand at exactly the moment you
+-- least want to.
 alter table public.users
-  add column birth_date          date,
+  add column if not exists birth_date          date,
   -- Recorded when a 13-15 year old confirms a parent or guardian knows they
   -- are using this. It is an acknowledgement, not verified consent -- no app
   -- this size can verify a parent, and pretending otherwise in the terms would
   -- be worse than stating plainly what was collected.
-  add column guardian_ack_at     timestamptz;
+  add column if not exists guardian_ack_at     timestamptz;
 
 -- No CHECK constraint here on purpose: Postgres requires check expressions to
 -- be immutable, and any age rule has to read today's date. The floor is
@@ -127,6 +131,7 @@ begin
 end;
 $$;
 
+drop trigger if exists users_protect_birth_date on public.users;
 create trigger users_protect_birth_date
   before update on public.users
   for each row execute function public.protect_birth_date();
@@ -171,6 +176,7 @@ begin
 end;
 $$;
 
+drop trigger if exists vouchers_check_age on public.vouchers;
 create trigger vouchers_check_age
   before update on public.vouchers
   for each row execute function public.check_age_before_claim();

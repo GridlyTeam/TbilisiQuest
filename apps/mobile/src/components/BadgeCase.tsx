@@ -35,10 +35,10 @@ type Badge = {
  * row in the database plus one entry here, not an asset pipeline.
  */
 const GLYPH: Record<string, string> = {
-  spark: '✦',
-  stack: '❖',
-  compass: '✧',
-  crown: '♛',
+  boot: '➤',
+  star: '★',
+  map: '✧',
+  chest: '❖',
   flame: '🔥',
   people: '❉',
 }

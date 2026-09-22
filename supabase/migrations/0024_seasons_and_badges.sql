@@ -365,13 +365,15 @@ insert into public.cosmetics (code, kind, title_ka, title_en, style_key, rarity)
   ('frame_violet',    'avatar_frame', 'იისფერი', 'Violet',     'violet',   'rare'),
   ('card_theme_neon', 'card_theme', 'ნეონი',   'Neon',         'neon',     'rare'),
   ('title_legend',    'title', 'ლეგენდა',     'Legend',       'legend',   'legendary'),
-  ('frame_gold',      'avatar_frame', 'ოქრო',  'Gold',         'gold',     'legendary');
+  ('frame_gold',      'avatar_frame', 'ოქრო',  'Gold',         'gold',     'legendary')
+on conflict (code) do nothing;
 
 insert into public.seasons (code, name_ka, name_en, starts_at, ends_at) values
   ('s1_autumn',
    'სეზონი 1: შემოდგომა', 'Season 1: Autumn',
    date_trunc('day', now()),
-   date_trunc('day', now()) + interval '6 weeks');
+   date_trunc('day', now()) + interval '6 weeks')
+on conflict (code) do nothing;
 
 insert into public.season_tiers (season_id, tier, min_xp, title_ka, title_en, reward_code)
 select s.id, t.tier, t.min_xp, t.title_ka, t.title_en, t.reward_code
@@ -385,29 +387,16 @@ cross join (values
   (6,  5000, 'ლეგენდა',        'Legend',       'title_legend'),
   (7,  7500, 'ოქროს სტატუსი',  'Gold status',  'frame_gold')
 ) as t(tier, min_xp, title_ka, title_en, reward_code)
-where s.code = 's1_autumn';
+where s.code = 's1_autumn'
+on conflict (season_id, tier) do nothing;
 
+-- seed.sql already defines first_steps, regular, cartographer and
+-- treasure_hunter. These two cover the ground it does not -- a streak and
+-- referrals -- rather than adding near-duplicates beside it.
 insert into public.badges
   (code, title_ka, title_en, description_ka, description_en, icon_key,
    criteria_type, criteria_target, criteria_params, xp_reward)
 values
-  ('first_redeem', 'პირველი ნადავლი', 'First catch',
-   'გამოიყენე პირველი ვაუჩერი.', 'Redeem your first voucher.',
-   'spark', 'redeem_count', 1, '{}'::jsonb, 50),
-
-  ('ten_redeems', 'ათეული', 'Ten down',
-   'გამოიყენე ათი ვაუჩერი.', 'Redeem ten vouchers.',
-   'stack', 'redeem_count', 10, '{}'::jsonb, 200),
-
-  ('explorer_5', 'მოხეტიალე', 'Wanderer',
-   'გამოიყენე ვაუჩერი ხუთ სხვადასხვა ადგილას.',
-   'Redeem at five different venues.',
-   'compass', 'distinct_venues', 5, '{}'::jsonb, 250),
-
-  ('legendary_1', 'ლეგენდარული', 'Legendary',
-   'დაიჭირე ლეგენდარული ვაუჩერი.', 'Catch a Legendary voucher.',
-   'crown', 'rarity_hunt', 1, '{"rarity": "legendary"}'::jsonb, 300),
-
   ('streak_7', 'კვირეული', 'Seven days',
    'შვიდდღიანი სერია.', 'Keep a seven day streak.',
    'flame', 'streak_days', 7, '{}'::jsonb, 200),
@@ -415,4 +404,5 @@ values
   ('inviter_3', 'შემკრები', 'Recruiter',
    'მოიწვიე სამი მეგობარი, რომლებმაც ვაუჩერი გამოიყენეს.',
    'Invite three friends who redeem a voucher.',
-   'people', 'referrals', 3, '{}'::jsonb, 400);
+   'people', 'referrals', 3, '{}'::jsonb, 400)
+on conflict (code) do nothing;
