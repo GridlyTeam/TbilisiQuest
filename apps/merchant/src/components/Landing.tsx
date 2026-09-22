@@ -319,38 +319,9 @@ export default function Landing({ stats }: { stats: PublicStats | null }) {
             <p className="download-note">{t.downloadNote}</p>
           </div>
 
-          {/* A drawn phone, not a screenshot: there is nothing real to
-              photograph yet, and an empty map would sell nothing. Everything
-              in it is shape and colour -- no venue names, no counts, nothing
-              that could be read as data. */}
           <div className="hero-art" aria-hidden="true">
-            <div className="phone">
-              <span className="notch" />
-              <div className="screen">
-                <div className="mini-map">
-                  <span className="road r1" />
-                  <span className="road r2" />
-                  <span className="road r3" />
-
-                  <span className="pin legendary">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img src="/store-icon.png" alt="" />
-                  </span>
-                  <span className="pin rare" />
-                  <span className="pin common" />
-
-                  <span className="me">
-                    <i />
-                  </span>
-                </div>
-
-                <div className="mini-card">
-                  <span className="mini-bar wide" />
-                  <span className="mini-bar" />
-                  <span className="mini-cta" />
-                </div>
-              </div>
-            </div>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src="/store-icon.png" alt="" />
             <span className="orbit orbit-one" />
             <span className="orbit orbit-two" />
           </div>
