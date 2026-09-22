@@ -508,3 +508,60 @@
     font-size: 26px;
   }
 }
+
+/* ---- Georgian -----------------------------------------------------------
+ * Tracking is a Latin habit. Georgian letterforms are already open and evenly
+ * spaced by design, so extra tracking makes words fall apart and negative
+ * tracking jams the loops together. Both are switched off when the page is in
+ * Georgian, and the type is set slightly larger with more leading, because
+ * Georgian has no capitals to carry a line and reads small at Latin sizes. */
+.landing.ka,
+.landing.ka .eyebrow,
+.landing.ka .brand,
+.landing.ka h1,
+.landing.ka .panel h2,
+.landing.ka .step h3,
+.landing.ka .rarity-card h3,
+.landing.ka .stats b,
+.landing.ka .stats span,
+.landing.ka .store-button,
+.landing.ka .portal-link,
+.landing.ka .outline-button,
+.landing.ka .faq summary,
+.landing.ka .lang button {
+  letter-spacing: 0;
+}
+
+.landing.ka h1 {
+  font-size: clamp(34px, 5vw, 60px);
+  line-height: 1.12;
+}
+.landing.ka .panel h2 {
+  line-height: 1.22;
+}
+.landing.ka .intro {
+  font-size: 17px;
+  line-height: 1.7;
+}
+.landing.ka .eyebrow {
+  font-size: 12px;
+}
+.landing.ka .step p,
+.landing.ka .rarity-card p,
+.landing.ka .panel p:not(.eyebrow),
+.landing.ka .faq p {
+  font-size: 15px;
+  line-height: 1.75;
+}
+.landing.ka .step h3,
+.landing.ka .rarity-card h3 {
+  font-size: 21px;
+  line-height: 1.35;
+}
+.landing.ka .stats span,
+.landing.ka .download-note {
+  font-size: 13px;
+}
+.landing.ka .faq summary {
+  font-size: 16px;
+}

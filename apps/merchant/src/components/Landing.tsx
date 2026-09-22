@@ -185,7 +185,7 @@ export default function Landing({ stats }: { stats: PublicStats | null }) {
   const showStats = stats != null && stats.venues >= 3
 
   return (
-    <main className="landing">
+    <main className={lang === 'ka' ? 'landing ka' : 'landing'}>
       <header className="topbar">
         <Link className="brand" href="/">
           <span className="brand-mark">
