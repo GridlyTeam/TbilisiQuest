@@ -81,6 +81,7 @@ function RootNavigator() {
           name="drop/[id]"
           options={{ presentation: 'modal', title: '' }}
         />
+        <Stack.Screen name="scan/[id]" options={{ headerShown: false }} />
       </Stack>
 
       {/* Covers everything until a date of birth is on file. Rendered here

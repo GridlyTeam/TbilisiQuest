@@ -75,9 +75,14 @@ const CHARGE_MS: Record<Rarity, number> = {
 
 export default function ClaimReveal({
   drop,
+  onScan,
   onDone,
 }: {
   drop: ClaimedDrop
+  /** Straight to the counter. The player is already inside the shop -- they
+   *  had to be, to claim -- so this is the next thing they want, not a trip
+   *  back through the Vouchers tab. */
+  onScan?: () => void
   onDone: () => void
 }) {
   const styles = useStyles()
@@ -264,12 +269,26 @@ export default function ClaimReveal({
 
             <Pressable
               style={[styles.button, { backgroundColor: meta.color }]}
-              onPress={onDone}
+              onPress={onScan ?? onDone}
             >
               <Text style={styles.buttonText}>
-                {ka ? 'ჩემი ვაუჩერები' : 'My vouchers'}
+                {onScan
+                  ? ka
+                    ? 'დაასკანერე სალაროსთან'
+                    : 'Scan at the counter'
+                  : ka
+                    ? 'ჩემი ვაუჩერები'
+                    : 'My vouchers'}
               </Text>
             </Pressable>
+
+            {onScan && (
+              <Pressable style={styles.tertiary} onPress={onDone}>
+                <Text style={styles.tertiaryText}>
+                  {ka ? 'მოგვიანებით' : 'Later'}
+                </Text>
+              </Pressable>
+            )}
 
             {/* Offered at the moment someone is most pleased with themselves,
                 which is the only moment anyone shares anything. */}
@@ -452,6 +471,8 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   },
   secondaryBusy: { opacity: 0.6 },
   secondaryText: { color: c.text, fontSize: 15, fontWeight: '700' },
+  tertiary: { paddingVertical: space.sm },
+  tertiaryText: { color: c.textMuted, fontSize: 14, fontWeight: '600' },
   tapBlocker: { ...StyleSheet.absoluteFill },
   dismiss: { position: 'absolute', bottom: space.xxl, fontSize: 12 },
 })

@@ -86,6 +86,7 @@ export default function DropDetailScreen() {
   const [error, setError] = useState<string | null>(null)
   const [fixTimedOut, setFixTimedOut] = useState(false)
   const [claimed, setClaimed] = useState<ClaimedDrop | null>(null)
+  const [claimedVoucherId, setClaimedVoucherId] = useState<string | null>(null)
 
   // This screen starts its own location watch, so there is a gap before the
   // first fix. Say what is happening instead of spinning indefinitely.
@@ -169,7 +170,7 @@ export default function DropDetailScreen() {
     setClaiming(true)
     setError(null)
 
-    const { error } = await supabase.rpc('claim_voucher', {
+    const { data, error } = await supabase.rpc('claim_voucher', {
       p_drop_id: drop.id,
       p_lat: fix.latitude,
       p_lng: fix.longitude,
@@ -190,6 +191,8 @@ export default function DropDetailScreen() {
 
     // The success haptic now belongs to the reveal, which plays its own
     // escalating sequence. Navigation waits until the player dismisses it.
+    const row = Array.isArray(data) ? data[0] : data
+    setClaimedVoucherId((row?.voucher_id as string) ?? null)
     setClaimed({
       rarity: drop.rarity,
       titleKa: drop.title_ka,
@@ -384,7 +387,21 @@ export default function DropDetailScreen() {
       )}
 
       {claimed && (
-        <ClaimReveal drop={claimed} onDone={() => router.replace('/vouchers')} />
+        <ClaimReveal
+          drop={claimed}
+          onScan={
+            claimedVoucherId
+              ? () =>
+                  // Typed routes cannot know a dynamic segment built at
+                  // runtime; the route file exists at app/scan/[id].tsx.
+                  router.replace({
+                    pathname: '/scan/[id]',
+                    params: { id: claimedVoucherId },
+                  })
+              : undefined
+          }
+          onDone={() => router.replace('/vouchers')}
+        />
       )}
     </ScrollView>
   )
