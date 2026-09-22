@@ -42,6 +42,23 @@ export default function LocationPicker({
 
     instance.addControl(new NavigationControl(), 'top-right')
 
+    // The map is built before the browser has necessarily laid the container
+    // out -- inside a form that was just revealed, the div can still be 0px
+    // high at this point. MapLibre sizes its canvas once, at construction, so
+    // it would stay 0x0 forever: the tiles never appear while the marker,
+    // which is an absolutely positioned DOM element rather than part of the
+    // canvas, shows perfectly. Watching the container and resizing is what
+    // makes it survive being rendered inside a collapsible form.
+    const observer = new ResizeObserver(() => instance.resize())
+    observer.observe(container.current)
+    instance.once('load', () => instance.resize())
+
+    // Surface a failed style or blocked tile request instead of leaving a
+    // blank rectangle and no explanation.
+    instance.on('error', (event) => {
+      console.warn('[LocationPicker] map error', event.error?.message ?? event)
+    })
+
     marker.current = new Marker({ color: '#4C3A8C', draggable: true })
       .setLngLat([lng, lat])
       .addTo(instance)
@@ -59,6 +76,7 @@ export default function LocationPicker({
     map.current = instance
 
     return () => {
+      observer.disconnect()
       instance.remove()
       map.current = null
     }
