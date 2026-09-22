@@ -30,6 +30,15 @@ function RootNavigator() {
   // ever asks once.
   usePushToken(session != null)
 
+  // An account with no public.users row can neither claim nor be asked for a
+  // birth date -- the gate reads "no row" as "nothing to ask". The trigger in
+  // migration 0029 prevents it at source; this repairs anything that slipped
+  // through before it, on the next launch.
+  useEffect(() => {
+    if (!session) return
+    void supabase.rpc('ensure_profile')
+  }, [session])
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {
       setSession(data.session)

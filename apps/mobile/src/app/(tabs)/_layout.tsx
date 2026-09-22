@@ -1,5 +1,6 @@
 import { Tabs } from 'expo-router'
 import { Text } from 'react-native'
+import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
 import { useTheme } from '../../lib/theme'
 import { useTranslation } from '../../lib/i18n'
@@ -7,6 +8,13 @@ import { useTranslation } from '../../lib/i18n'
 
 export default function TabsLayout() {
   const { c } = useTheme()
+  // On a phone using gesture navigation the system swipe bar sits over the
+  // bottom of the screen. A fixed-height tab bar puts the icons underneath it,
+  // so they are awkward to hit and the swipe fires instead. Lift them by
+  // whatever the device says that area is, with a floor for buttoned phones
+  // that report nothing.
+  const insets = useSafeAreaInsets()
+  const bottomInset = Math.max(insets.bottom, 10)
   const { locale } = useTranslation()
   const ka = locale === 'ka'
 
@@ -22,9 +30,9 @@ export default function TabsLayout() {
         tabBarStyle: {
           backgroundColor: c.bg,
           borderTopColor: c.border,
-          height: 62,
-          paddingTop: 6,
-          paddingBottom: 8,
+          height: 56 + bottomInset,
+          paddingTop: 8,
+          paddingBottom: bottomInset,
         },
         tabBarLabelStyle: {
           fontSize: 11,

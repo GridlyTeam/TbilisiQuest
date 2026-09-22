@@ -80,8 +80,13 @@ export default function SeasonCard() {
   return (
     <View style={styles.root}>
       <View style={styles.head}>
-        <Text style={styles.name}>{ka ? season.name_ka : season.name_en}</Text>
-        <Text style={styles.days}>
+        {/* The Georgian season name plus "დარჩა 42 დღე" is wider than a phone.
+            The name takes the slack and truncates; the countdown never does,
+            because a half-visible number is worse than a shortened title. */}
+        <Text style={styles.name} numberOfLines={1}>
+          {ka ? season.name_ka : season.name_en}
+        </Text>
+        <Text style={styles.days} numberOfLines={1}>
           {ka ? `დარჩა ${daysLeft} დღე` : `${daysLeft} days left`}
         </Text>
       </View>
@@ -155,14 +160,16 @@ const makeStyles = (c: Palette) =>
       flexDirection: 'row',
       alignItems: 'baseline',
       justifyContent: 'space-between',
+      gap: space.sm,
     },
     name: {
+      flexShrink: 1,
       color: c.text,
       fontSize: font.heading.fontSize,
       fontWeight: font.heading.fontWeight,
       letterSpacing: font.heading.letterSpacing,
     },
-    days: { color: c.accent, fontSize: 12, fontWeight: '700' },
+    days: { flexShrink: 0, color: c.accent, fontSize: 12, fontWeight: '700' },
     tierNow: { color: c.text, fontSize: 14, fontWeight: '700' },
     xp: { color: c.textMuted, fontSize: 13, fontWeight: '600' },
     track: {

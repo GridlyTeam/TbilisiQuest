@@ -391,7 +391,7 @@ function DropMarker({
               ? 'ვაუჩერები ამოიწურა'
               : 'No vouchers left'
             : ka
-              ? `${totalRemaining} ვაუჩერი დარჩა`
+              ? `დარჩა ${totalRemaining} ვოუჩერი`
               : `${totalRemaining} voucher${totalRemaining === 1 ? '' : 's'} left`}
         </Text>
       </View>
@@ -476,7 +476,7 @@ function PickerRow({
           {soldOut
             ? ka ? 'ამოიწურა' : 'Sold out'
             : ka
-              ? `${drop.remaining} დარჩა`
+              ? `დარჩა ${drop.remaining}`
               : `${drop.remaining} left`}
         </Text>
       </View>
