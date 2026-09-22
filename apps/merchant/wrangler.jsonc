@@ -1,0 +1,15 @@
+{
+  // The portal is a server-rendered Next.js app, so unlike the landing page it
+  // cannot be static assets alone -- @opennextjs/cloudflare compiles it into a
+  // Worker. Deploy with `npm run deploy` rather than `wrangler deploy`, which
+  // would upload the unbuilt directory.
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "tbilisiquest-portal",
+  "main": ".open-next/worker.js",
+  "compatibility_date": "2025-09-21",
+  "compatibility_flags": ["nodejs_compat"],
+  "assets": {
+    "directory": ".open-next/assets",
+    "binding": "ASSETS"
+  }
+}

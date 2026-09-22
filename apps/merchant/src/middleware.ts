@@ -38,14 +38,27 @@ export async function middleware(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  const isAuthRoute = request.nextUrl.pathname.startsWith('/login')
+  // The site is no longer private end to end: the landing page, the legal
+  // pages and the login form are public, everything else is not. Written as an
+  // allowlist rather than a list of guarded prefixes, so a route added later
+  // is private by default.
+  const path = request.nextUrl.pathname
+  const isAuthRoute = path.startsWith('/login')
+  const isPublic =
+    isAuthRoute ||
+    path === '/' ||
+    path.startsWith('/privacy') ||
+    path.startsWith('/terms')
 
-  if (!user && !isAuthRoute) {
+  if (!user && !isPublic) {
     const url = request.nextUrl.clone()
     url.pathname = '/login'
     return NextResponse.redirect(url)
   }
 
+  // A signed-in account landing on /login goes to the dashboard; the landing
+  // page stays reachable for everyone, because a merchant may well want to
+  // read it or send it to someone.
   if (user && isAuthRoute) {
     const url = request.nextUrl.clone()
     url.pathname = '/drops'

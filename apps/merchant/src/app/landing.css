@@ -1,0 +1,403 @@
+/* The public landing page.
+ *
+ * Plain CSS rather than the portal's Tailwind tokens, because this page is the
+ * dark product identity (the same palette as the phone app) while everything
+ * behind the login is the light merchant portal. Keeping them in separate
+ * stylesheets stops one from quietly restyling the other.
+ *
+ * Tokens mirror apps/mobile/src/lib/theme.tsx. Change them there first. */
+.landing {
+  --bg: #08060f;
+  --surface: #15111f;
+  --border: #2c2440;
+  --text: #f7f5ff;
+  --muted: #9a93b0;
+  --faint: #6e6789;
+  --amber: #ffb020;
+  --indigo: #7c5cff;
+  --cyan: #3bd6ff;
+
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+  color: var(--muted);
+  background: radial-gradient(
+      circle at 83% 2%,
+      rgba(124, 92, 255, 0.13),
+      transparent 29rem
+    ),
+    var(--bg);
+}
+
+.landing a {
+  text-decoration: none;
+}
+
+/* ---- top bar ---------------------------------------------------------- */
+.landing .topbar {
+  height: 82px;
+  padding: 0 clamp(20px, 5vw, 76px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.landing .brand {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  line-height: 1.05;
+}
+.landing .brand > span:last-child span {
+  display: block;
+  color: var(--amber);
+}
+.landing .brand-mark {
+  width: 25px;
+  height: 25px;
+  border: 2px solid var(--text);
+  border-radius: 8px;
+  transform: rotate(45deg);
+  display: grid;
+  place-items: center;
+}
+.landing .brand-mark span {
+  width: 9px;
+  height: 9px;
+  background: var(--indigo);
+  border-radius: 2px;
+}
+.landing .top-actions {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-left: auto;
+}
+.landing .nav-link {
+  color: var(--muted);
+  font-size: 13px;
+}
+.landing .nav-link:hover {
+  color: var(--text);
+}
+.landing .portal-link {
+  padding: 9px 15px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 800;
+}
+.landing .portal-link:hover {
+  border-color: var(--amber);
+}
+.landing .lang {
+  display: flex;
+  gap: 2px;
+  padding: 3px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--surface);
+}
+.landing .lang button {
+  padding: 6px 11px;
+  border: 0;
+  border-radius: 999px;
+  background: none;
+  color: var(--muted);
+  font: inherit;
+  font-size: 11px;
+  font-weight: 800;
+  cursor: pointer;
+}
+.landing .lang .on {
+  background: var(--amber);
+  color: #110d1a;
+}
+
+/* ---- layout ----------------------------------------------------------- */
+.landing .content {
+  width: min(1170px, calc(100% - 40px));
+  margin: auto;
+  padding: 62px 0 80px;
+}
+.landing section + section {
+  margin-top: 72px;
+}
+.landing .eyebrow {
+  margin: 0 0 18px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 900;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.landing .amber {
+  color: var(--amber);
+}
+
+/* ---- hero ------------------------------------------------------------- */
+.landing .hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 40px;
+}
+.landing .hero-copy {
+  max-width: 620px;
+}
+.landing h1 {
+  margin: 0;
+  color: var(--text);
+  font-size: clamp(38px, 5.6vw, 68px);
+  line-height: 0.99;
+  letter-spacing: -3px;
+}
+.landing h1 em {
+  color: var(--amber);
+  font-style: normal;
+}
+.landing .intro {
+  margin: 20px 0 30px;
+  max-width: 480px;
+  font-size: 16px;
+  line-height: 1.55;
+}
+.landing .stores {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.landing .store-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 20px;
+  border-radius: 10px;
+  background: var(--amber);
+  color: #1b1210;
+  font-size: 14px;
+  font-weight: 900;
+}
+.landing .store-button small {
+  display: block;
+  font-size: 10px;
+  font-weight: 700;
+  opacity: 0.7;
+}
+.landing .store-button.soon {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--faint);
+  cursor: default;
+}
+.landing .download-note {
+  margin: 14px 0 0;
+  color: var(--faint);
+  font-size: 12px;
+}
+.landing .hero-art {
+  position: relative;
+  width: 300px;
+  height: 260px;
+  flex-shrink: 0;
+}
+.landing .hero-art img {
+  position: absolute;
+  width: 210px;
+  left: 45px;
+  top: 20px;
+  filter: drop-shadow(0 0 40px rgba(124, 92, 255, 0.35));
+}
+.landing .orbit {
+  position: absolute;
+  border: 1px solid rgba(124, 92, 255, 0.55);
+  border-radius: 50%;
+  transform: rotate(-24deg);
+}
+.landing .orbit-one {
+  width: 290px;
+  height: 110px;
+  left: 5px;
+  top: 96px;
+}
+.landing .orbit-two {
+  width: 235px;
+  height: 88px;
+  left: 33px;
+  top: 108px;
+  border-color: rgba(255, 176, 32, 0.45);
+}
+
+/* ---- cards ------------------------------------------------------------ */
+.landing .steps,
+.landing .rarities {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.landing .step,
+.landing .rarity-card {
+  position: relative;
+  overflow: hidden;
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: var(--surface);
+}
+.landing .step b {
+  color: var(--indigo);
+  font-size: 12px;
+  letter-spacing: 2px;
+}
+.landing .step h3,
+.landing .rarity-card h3 {
+  margin: 12px 0 8px;
+  color: var(--text);
+  font-size: 20px;
+  letter-spacing: -0.4px;
+}
+.landing .step p,
+.landing .rarity-card p {
+  margin: 0;
+  font-size: 13px;
+  line-height: 1.55;
+}
+.landing .rarity-card::before {
+  content: '';
+  position: absolute;
+  width: 150px;
+  height: 150px;
+  top: -80px;
+  right: -45px;
+  border-radius: 50%;
+  background: var(--glow);
+  filter: blur(14px);
+  opacity: 0.5;
+}
+.landing .rarity-card .dot {
+  display: inline-block;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--tint);
+  box-shadow: 0 0 12px var(--tint);
+}
+.landing .common {
+  --tint: var(--cyan);
+  --glow: rgba(59, 214, 255, 0.2);
+}
+.landing .rare {
+  --tint: var(--indigo);
+  --glow: rgba(124, 92, 255, 0.25);
+}
+.landing .legendary {
+  --tint: var(--amber);
+  --glow: rgba(255, 176, 32, 0.2);
+}
+
+/* ---- panels ----------------------------------------------------------- */
+.landing .panel {
+  padding: 40px 44px;
+  border: 1px solid #3a2d5c;
+  border-radius: 16px;
+  background: linear-gradient(105deg, #21173a 0%, #171125 58%, #161020 100%);
+}
+.landing .panel h2 {
+  margin: 0;
+  max-width: 620px;
+  color: var(--text);
+  font-size: clamp(26px, 3.4vw, 40px);
+  line-height: 1.05;
+  letter-spacing: -1.4px;
+}
+.landing .panel p:not(.eyebrow) {
+  max-width: 620px;
+  margin: 18px 0 0;
+  color: #b2a9c8;
+  font-size: 15px;
+  line-height: 1.6;
+}
+.landing .outline-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 18px;
+  margin-top: 26px;
+  padding: 12px 18px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 800;
+}
+.landing .outline-button span {
+  color: var(--amber);
+}
+.landing .safety {
+  background: var(--surface);
+  border-color: var(--border);
+}
+
+/* ---- footer ----------------------------------------------------------- */
+.landing .footer {
+  margin-top: auto;
+  padding: 26px clamp(20px, 5vw, 76px);
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  justify-content: space-between;
+  color: var(--faint);
+  font-size: 12px;
+}
+.landing .footer nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 22px;
+}
+.landing .footer a {
+  color: var(--muted);
+}
+.landing .footer a:hover {
+  color: var(--text);
+}
+
+@media (max-width: 860px) {
+  .landing .topbar {
+    height: 68px;
+    padding: 0 20px;
+    gap: 12px;
+  }
+  .landing .top-actions .nav-link {
+    display: none;
+  }
+  .landing .content {
+    width: calc(100% - 32px);
+    padding: 40px 0 60px;
+  }
+  .landing section + section {
+    margin-top: 48px;
+  }
+  .landing .hero {
+    display: block;
+  }
+  .landing h1 {
+    font-size: 42px;
+    letter-spacing: -2px;
+  }
+  .landing .hero-art {
+    margin: 34px auto 0;
+  }
+  .landing .steps,
+  .landing .rarities {
+    grid-template-columns: 1fr;
+  }
+  .landing .panel {
+    padding: 28px 24px;
+  }
+}

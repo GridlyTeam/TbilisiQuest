@@ -66,3 +66,4 @@ export function canManageDrops(role: MerchantRole) {
 export function canSeeRevenue(role: MerchantRole) {
   return role === 'owner' || role === 'manager'
 }
+

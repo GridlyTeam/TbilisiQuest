@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase-client'
 import { useI18n } from '@/lib/i18n'
 import LanguageToggle from '@/components/LanguageToggle'
+import { resolveHome } from '@/lib/home-action'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -47,7 +48,10 @@ export default function LoginPage() {
       return
     }
 
-    router.push('/drops')
+    // Merchants, operators and players share one login now; ask the server
+    // where this account actually belongs.
+    const home = await resolveHome()
+    router.push(home)
     router.refresh()
   }
 
