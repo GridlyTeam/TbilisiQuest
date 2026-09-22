@@ -22,6 +22,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { z } from 'zod'
 
 import { createDrop } from '../lib/actions'
+import type { VenueAllowance } from '@/lib/admin-actions'
 import { useI18n, type MessageKey } from '@/lib/i18n'
 
 // ---------------------------------------------------------------------------
@@ -100,6 +101,10 @@ type Props = {
   venueId: string
   venueTimezone: string
   subscriptionTier: 'basic' | 'premium'
+  /** Operator-set supply ceiling. Null only if the lookup failed, in which case
+   *  the form falls back to permissive limits and the database still refuses
+   *  anything over. */
+  allowance: VenueAllowance | null
   onCreated?: (dropId: string) => void
 }
 
@@ -159,10 +164,19 @@ export default function DropCreator({
   venueId,
   venueTimezone,
   subscriptionTier,
+  allowance,
   onCreated,
 }: Props) {
   const { t } = useI18n()
   const [values, setValues] = useState<DropFormValues>(makeDefaults)
+
+  // The slider stops where the operator's limit does, so the ceiling is felt
+  // rather than discovered on submit. min() with what is left this month keeps
+  // a merchant from scheduling a drop that cannot be created.
+  const capCeiling = allowance
+    ? Math.max(1, Math.min(allowance.max_per_drop, allowance.remaining || allowance.max_per_drop))
+    : 100
+  const overAllowance = allowance != null && values.inventoryCap > capCeiling
   const [today, setToday] = useState('')
 
   useEffect(() => {
@@ -456,7 +470,7 @@ export default function DropCreator({
             <input
               type="range"
               min={1}
-              max={100}
+              max={capCeiling}
               value={values.inventoryCap}
               onChange={(e) => set('inventoryCap', Number(e.target.value))}
               className="flex-1 accent-indigo"
@@ -464,13 +478,25 @@ export default function DropCreator({
             <input
               type="number"
               min={1}
-              max={500}
+              max={capCeiling}
               value={values.inventoryCap}
               onChange={(e) => set('inventoryCap', Number(e.target.value))}
               className={`${inputClass} w-24 text-center tabular-nums`}
             />
           </div>
         </Field>
+
+        {allowance && (
+          <p
+            className={`text-xs ${
+              overAllowance ? 'font-semibold text-danger-ink' : 'text-muted'
+            }`}
+          >
+            ლიმიტი: {allowance.max_per_drop} ვაუჩერი ერთ დროფზე ·{' '}
+            ამ თვეში დარჩა {allowance.remaining} / {allowance.monthly}
+            {overAllowance && ' — ლიმიტი გადაჭარბებულია'}
+          </p>
+        )}
 
         <div
           className={`rounded-xl border p-4 ${

@@ -10,7 +10,7 @@ export default async function AdminVenuesPage() {
   const [{ data: venues }, { data: coords }, { data: staff }] = await Promise.all([
     supabase
       .from('venues')
-      .select('id, name_ka, name_en, category, status, subscription_tier, address_en')
+      .select('id, name_ka, name_en, category, status, subscription_tier, address_en, max_vouchers_per_drop, monthly_voucher_allowance')
       .order('name_en'),
     supabase.from('venue_coords').select('id, lat, lng'),
     supabase.from('merchant_users').select('venue_id, role, users(display_name)'),

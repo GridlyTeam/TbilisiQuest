@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 
 import { useI18n } from '@/lib/i18n'
 import { markDropReviewed } from '@/lib/actions'
+import type { VenueAllowance } from '@/lib/admin-actions'
 import DropCreator from './DropCreator'
 
 export type DropSummary = {
@@ -31,11 +32,13 @@ export default function DropsView({
   venueId,
   venueTimezone,
   subscriptionTier,
+  allowance,
 }: {
   drops: DropSummary[]
   venueId: string
   venueTimezone: string
   subscriptionTier: 'basic' | 'premium'
+  allowance: VenueAllowance | null
 }) {
   const { t } = useI18n()
   const router = useRouter()
@@ -78,6 +81,7 @@ export default function DropsView({
           venueId={venueId}
           venueTimezone={venueTimezone}
           subscriptionTier={subscriptionTier}
+          allowance={allowance}
           onCreated={() => router.refresh()}
         />
       </section>

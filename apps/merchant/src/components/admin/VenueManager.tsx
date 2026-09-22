@@ -17,6 +17,8 @@ export type AdminVenue = {
   category: string
   status: 'pending' | 'approved' | 'suspended'
   subscription_tier: 'basic' | 'premium'
+  max_vouchers_per_drop: number
+  monthly_voucher_allowance: number
   address_en: string | null
   lat: number
   lng: number
@@ -102,7 +104,8 @@ function VenueRow({ venue, onEdit }: { venue: AdminVenue; onEdit: () => void }) 
             )}
           </div>
           <p className="mt-0.5 text-xs text-muted">
-            {venue.category} · {venue.lat.toFixed(5)}, {venue.lng.toFixed(5)}
+            {venue.category} · {venue.lat.toFixed(5)}, {venue.lng.toFixed(5)} ·{' '}
+            {venue.max_vouchers_per_drop}/drop · {venue.monthly_voucher_allowance}/month
             {venue.staff.length > 0 && (
               <>
                 {' · '}
@@ -226,6 +229,8 @@ function VenueForm({
     lng: venue?.lng ?? 44.7935,
     addressEn: venue?.address_en ?? '',
     tier: venue?.subscription_tier ?? 'basic',
+    maxPerDrop: venue?.max_vouchers_per_drop ?? 20,
+    monthlyAllowance: venue?.monthly_voucher_allowance ?? 400,
   })
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
@@ -293,6 +298,42 @@ function VenueForm({
             <option value="premium">Premium</option>
           </select>
         </Field>
+      </div>
+
+      {/* Supply is set here and nowhere else. The merchant's drop form reads
+          these numbers and the database refuses anything above them, so this
+          is the only place the quantity of vouchers in the city is decided. */}
+      <div className="grid grid-cols-2 gap-3 rounded-lg border border-line-strong bg-canvas p-3">
+        <Field label="Max vouchers per drop">
+          <input
+            type="number"
+            min={1}
+            max={500}
+            required
+            value={values.maxPerDrop}
+            onChange={(e) =>
+              setValues({ ...values, maxPerDrop: Number(e.target.value) })
+            }
+            className={inputClass}
+          />
+        </Field>
+        <Field label="Monthly allowance">
+          <input
+            type="number"
+            min={1}
+            max={20000}
+            required
+            value={values.monthlyAllowance}
+            onChange={(e) =>
+              setValues({ ...values, monthlyAllowance: Number(e.target.value) })
+            }
+            className={inputClass}
+          />
+        </Field>
+        <p className="col-span-2 text-xs text-muted">
+          The venue can schedule drops freely inside these limits and cannot
+          exceed them. Counted against the month a drop starts in.
+        </p>
       </div>
 
       <Field label="Address">

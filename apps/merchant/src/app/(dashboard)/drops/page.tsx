@@ -1,5 +1,6 @@
 import { createServerSupabase } from '@/lib/supabase-server'
 import { resolveVenue, canManageDrops } from '@/lib/venues'
+import { loadVenueAllowance } from '@/lib/admin-actions'
 import DropsView, { type DropSummary } from '@/components/DropsView'
 import RoleNotice from '@/components/RoleNotice'
 
@@ -37,6 +38,11 @@ export default async function DropsPage() {
     remainingByDrop.set(id, (remainingByDrop.get(id) ?? 0) + 1)
   }
 
+  // What the operator has allowed this venue this month. Shown in the creator
+  // so a merchant sees the ceiling before they hit it; the database enforces it
+  // either way.
+  const allowance = await loadVenueAllowance(venue.venueId)
+
   const summaries: DropSummary[] = (drops ?? []).map((d) => ({
     ...(d as Omit<DropSummary, 'remaining'>),
     remaining: remainingByDrop.get(d.id as string) ?? 0,
@@ -48,6 +54,7 @@ export default async function DropsPage() {
       venueId={venue.venueId}
       venueTimezone={process.env.NEXT_PUBLIC_DEFAULT_TIMEZONE ?? 'Asia/Tbilisi'}
       subscriptionTier={venue.subscriptionTier}
+      allowance={allowance}
     />
   )
 }

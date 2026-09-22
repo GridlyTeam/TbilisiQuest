@@ -23,6 +23,10 @@ export type VenueInput = {
   addressKa?: string
   addressEn?: string
   tier: 'basic' | 'premium'
+  /** Operator-set supply ceilings. A merchant cannot change these, and the
+   *  database refuses a drop that exceeds them. */
+  maxPerDrop: number
+  monthlyAllowance: number
 }
 
 export async function upsertVenue(input: VenueInput) {
@@ -38,6 +42,8 @@ export async function upsertVenue(input: VenueInput) {
     p_address_ka: input.addressKa ?? null,
     p_address_en: input.addressEn ?? null,
     p_tier: input.tier,
+    p_max_per_drop: input.maxPerDrop,
+    p_monthly: input.monthlyAllowance,
   })
 
   if (error) throw new Error(error.message)
@@ -168,6 +174,25 @@ export async function updateSafetyConfig(input: {
 // ---------------------------------------------------------------------------
 // Players
 // ---------------------------------------------------------------------------
+export type VenueAllowance = {
+  max_per_drop: number
+  monthly: number
+  used: number
+  remaining: number
+}
+
+export async function loadVenueAllowance(
+  venueId: string,
+): Promise<VenueAllowance | null> {
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase.rpc('venue_allowance', {
+    p_venue_id: venueId,
+  })
+  if (error) throw new Error(error.message)
+  const row = Array.isArray(data) ? data[0] : data
+  return (row as VenueAllowance) ?? null
+}
+
 export type Player = {
   user_id: string
   email: string
