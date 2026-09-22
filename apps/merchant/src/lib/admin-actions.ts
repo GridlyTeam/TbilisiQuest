@@ -233,3 +233,70 @@ export async function setPlayerStatus(
   if (error) throw new Error(error.message)
   revalidatePath('/admin/players')
 }
+
+// ---------------------------------------------------------------------------
+// Venue analytics
+// ---------------------------------------------------------------------------
+// The merchant's own analytics page reads the drop_performance view, which RLS
+// scopes to their venue. An operator cannot use it: the counts come from
+// impressions, vouchers and redemptions, and those policies are staff-only, so
+// the view would hand an admin a row per drop with every number at zero. These
+// go through security-definer RPCs instead (migration 0019).
+export type VenueAnalyticsRow = {
+  venue_id: string
+  name_ka: string
+  name_en: string
+  category: string
+  venue_state: 'pending' | 'approved' | 'suspended'
+  tier: 'basic' | 'premium'
+  is_active: boolean
+  drops_total: number
+  drops_live: number
+  map_views: number
+  reveals: number
+  claimed: number
+  redeemed: number
+  unique_visitors: number
+  discount_value_gel: number | string | null
+  conversion_pct: number | string | null
+  abandonment_pct: number | string | null
+  last_redeemed_at: string | null
+}
+
+export type VenueDropRow = {
+  drop_id: string
+  title_ka: string | null
+  title_en: string | null
+  rarity: 'common' | 'rare' | 'legendary'
+  starts_at: string
+  ends_at: string
+  drop_state: string
+  inventory_cap: number
+  map_views: number
+  reveals: number
+  claimed: number
+  redeemed: number
+  foot_traffic_conversion_pct: number | string | null
+  discount_value_gel: number | string | null
+}
+
+export async function loadVenueAnalytics(
+  days = 30,
+): Promise<VenueAnalyticsRow[]> {
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase.rpc('admin_venue_analytics', {
+    p_days: days,
+  })
+  if (error) throw new Error(error.message)
+  return (data ?? []) as VenueAnalyticsRow[]
+}
+
+export async function loadVenueDrops(venueId: string): Promise<VenueDropRow[]> {
+  const supabase = await createServerSupabase()
+  const { data, error } = await supabase.rpc('admin_venue_drops', {
+    p_venue_id: venueId,
+    p_limit: 25,
+  })
+  if (error) throw new Error(error.message)
+  return (data ?? []) as VenueDropRow[]
+}
