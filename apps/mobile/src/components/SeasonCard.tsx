@@ -79,14 +79,13 @@ export default function SeasonCard() {
 
   return (
     <View style={styles.root}>
+      {/* Stacked rather than side by side: the Georgian season name and
+          "დარჩა 42 დღე" together are wider than a phone, and sharing a row
+          meant the title shrank to make space for the countdown. The name
+          gets the full width; the countdown sits under it. */}
       <View style={styles.head}>
-        {/* The Georgian season name plus "დარჩა 42 დღე" is wider than a phone.
-            The name takes the slack and truncates; the countdown never does,
-            because a half-visible number is worse than a shortened title. */}
-        <Text style={styles.name} numberOfLines={1}>
-          {ka ? season.name_ka : season.name_en}
-        </Text>
-        <Text style={styles.days} numberOfLines={1}>
+        <Text style={styles.name}>{ka ? season.name_ka : season.name_en}</Text>
+        <Text style={styles.days}>
           {ka ? `დარჩა ${daysLeft} დღე` : `${daysLeft} days left`}
         </Text>
       </View>
@@ -156,20 +155,14 @@ const makeStyles = (c: Palette) =>
       padding: space.lg,
       gap: space.sm,
     },
-    head: {
-      flexDirection: 'row',
-      alignItems: 'baseline',
-      justifyContent: 'space-between',
-      gap: space.sm,
-    },
+    head: { gap: 3 },
     name: {
-      flexShrink: 1,
       color: c.text,
       fontSize: font.heading.fontSize,
       fontWeight: font.heading.fontWeight,
       letterSpacing: 0,
     },
-    days: { flexShrink: 0, color: c.accent, fontSize: 12, fontWeight: '700' },
+    days: { color: c.accent, fontSize: 12, fontWeight: '700' },
     tierNow: { color: c.text, fontSize: 14, fontWeight: '700' },
     xp: { color: c.textMuted, fontSize: 13, fontWeight: '600' },
     track: {
