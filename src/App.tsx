@@ -17,7 +17,7 @@ import './App.css'
 // release. When the download goes on a poster, this should become a permanent
 // path on the site backed by R2 storage.
 const APK_URL =
-  'https://expo.dev/artifacts/eas/nlW4NCtX3eUuUqiMaNGjuLEZbRnHX9xmkzXs5-mLaTs.apk'
+  'https://expo.dev/artifacts/eas/hxMoEyk2BWZdGEEBrjlU8wGSnkKQqeyPyVEwExJv3R8.apk'
 
 const CONTACT_EMAIL = 'hello@tbilisiquest.ge'
 
