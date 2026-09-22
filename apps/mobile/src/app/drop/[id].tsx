@@ -179,7 +179,11 @@ export default function DropDetailScreen() {
 
     if (error) {
       await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error)
+      // The raw message is appended while the app is in testing: a translated
+      // "Something went wrong" is useless to whoever has to fix it, and every
+      // unrecognised code so far has cost a round trip to find out what it was.
       setError(translateClaimError(error.message, ka))
+      console.warn('[claim] failed', error.message, error.code, error.details)
       void load()
       return
     }
@@ -447,7 +451,12 @@ function translateClaimError(raw: string, ka: boolean): string {
     case 'OVER_MONTHLY_ALLOWANCE':
       return ka ? 'ლიმიტი ამოწურულია' : 'Venue allowance reached'
     default:
-      return ka ? 'რაღაც ვერ გამოვიდა' : 'Something went wrong'
+      // Deliberately shows the raw code. "Something went wrong" tells the
+      // player nothing and tells whoever has to fix it even less; every
+      // unrecognised code so far has cost a round trip to identify.
+      return ka
+        ? `რაღაც ვერ გამოვიდა (${raw})`
+        : `Something went wrong (${raw})`
   }
 }
 
