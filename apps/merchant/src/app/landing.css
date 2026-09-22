@@ -406,13 +406,18 @@
 /* Real numbers from public_stats(), not decoration: they go up on their own
    as venues sign, and they cannot age into a lie. */
 .landing .stats {
-  display: flex;
+  /* inline-flex so the box is only as wide as the three figures, rather than
+     a full-bleed panel with a metre of empty space after the last one. */
+  display: inline-flex;
   flex-wrap: wrap;
-  gap: 40px;
-  padding: 26px 30px;
+  gap: 34px;
+  padding: 20px 28px;
   border: 1px solid var(--border);
   border-radius: 14px;
   background: var(--surface);
+}
+.landing .stats > div {
+  text-align: center;
 }
 .landing .stats b {
   display: block;
@@ -493,8 +498,11 @@
     padding-bottom: 86px;
   }
   .landing .stats {
-    gap: 24px;
-    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    gap: 16px;
+    padding: 18px 16px;
   }
   .landing .stats b {
     font-size: 26px;
