@@ -13,6 +13,8 @@ import { supabase } from '../../lib/supabase'
 import { useTranslation, LOCALES } from '../../lib/i18n'
 import InviteCard from '../../components/InviteCard'
 import QuestBoard from '../../components/QuestBoard'
+import SeasonCard from '../../components/SeasonCard'
+import BadgeCase from '../../components/BadgeCase'
 import { useTheme, useRarity, radius, space, type Palette, type Rarity } from '../../lib/theme'
 
 function useStyles() {
@@ -105,7 +107,11 @@ export default function ProfileScreen() {
         </View>
       </View>
 
+      <SeasonCard />
+
       <QuestBoard />
+
+      <BadgeCase />
 
       <InviteCard />
 
