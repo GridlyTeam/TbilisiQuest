@@ -16,10 +16,30 @@ const sans = Noto_Sans_Georgian({
   display: 'swap',
 })
 
+/**
+ * One site, so the title is the product rather than the portal. The tab icon
+ * comes from src/app/icon.png, which is the same mark the phone app uses --
+ * Next picks that file up by convention, no link tag needed.
+ */
 export const metadata: Metadata = {
-  title: 'Tbilisi Quest — Merchant',
-  description: 'Schedule off-peak voucher drops and track foot traffic.',
+  title: {
+    default: 'Tbilisi Quest',
+    template: '%s · Tbilisi Quest',
+  },
+  description:
+    'ყოველდღე 14:00-დან თბილისში ჩნდება ვაუჩერები. იპოვე რუკაზე, მიდი ადგილზე, წაიღე. · Real discounts around Tbilisi, claimed on foot.',
+  openGraph: {
+    title: 'Tbilisi Quest',
+    description:
+      'ყოველდღე 14:00-დან თბილისში ჩნდება ვაუჩერები. იპოვე რუკაზე, მიდი ადგილზე, წაიღე.',
+    images: ['/og.png'],
+    type: 'website',
+  },
 }
+
+// themeColor belongs to the viewport export in the App Router, not to
+// metadata; Next warns on every route otherwise.
+export const viewport = { themeColor: '#08060f' }
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
