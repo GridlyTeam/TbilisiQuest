@@ -435,6 +435,17 @@ function translateClaimError(raw: string, ka: boolean): string {
       return ka ? 'ჯერ არ დაწყებულა' : 'Not open yet'
     case 'DROP_EXPIRED':
       return ka ? 'ვადა გავიდა' : 'This drop has ended'
+    case 'AGE_NOT_SET':
+      return ka
+        ? 'ჯერ მიუთითე დაბადების თარიღი'
+        : 'Tell us your date of birth first'
+    case 'AGE_RESTRICTED':
+      return ka ? 'ჯგუფური დროფები 16 წლიდანაა' : 'Squad drops are for ages 16+'
+    case 'SQUAD_NOT_READY':
+      return ka ? 'ჯგუფი ჯერ არ შეკრებილა' : 'Not enough of you here yet'
+    case 'OVER_PER_DROP_LIMIT':
+    case 'OVER_MONTHLY_ALLOWANCE':
+      return ka ? 'ლიმიტი ამოწურულია' : 'Venue allowance reached'
     default:
       return ka ? 'რაღაც ვერ გამოვიდა' : 'Something went wrong'
   }
