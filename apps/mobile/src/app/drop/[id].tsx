@@ -56,7 +56,7 @@ type DropDetail = {
 }
 
 
-function useCountdown(target: string | undefined) {
+function useCountdown(target: string | undefined, ka = false) {
   const [now, setNow] = useState(() => Date.now())
   useEffect(() => {
     const id = setInterval(() => setNow(Date.now()), 1000)
@@ -68,7 +68,11 @@ function useCountdown(target: string | undefined) {
   const h = Math.floor(ms / 3600000)
   const m = Math.floor((ms % 3600000) / 60000)
   const s = Math.floor((ms % 60000) / 1000)
-  return h > 0 ? `${h}h ${m}m` : `${m}:${String(s).padStart(2, '0')}`
+  // Georgian gets Georgian units: an otherwise Georgian screen reading
+  // "2h 15m" is the kind of seam that makes an app feel translated rather
+  // than written.
+  if (h > 0) return ka ? `${h} სთ ${m} წთ` : `${h}h ${m}m`
+  return `${m}:${String(s).padStart(2, '0')}`
 }
 
 export default function DropDetailScreen() {
@@ -161,8 +165,8 @@ export default function DropDetailScreen() {
 
   const distance = drop?.distance_m ?? null
   const inRange = drop?.in_claim_range ?? false
-  const opensIn = useCountdown(drop?.starts_at)
-  const endsIn = useCountdown(drop?.ends_at)
+  const opensIn = useCountdown(drop?.starts_at, ka)
+  const endsIn = useCountdown(drop?.ends_at, ka)
   const notYetOpen = opensIn != null
 
   async function claim() {
@@ -293,8 +297,8 @@ export default function DropDetailScreen() {
             distance == null
               ? '—'
               : distance > 1000
-                ? `${(distance / 1000).toFixed(1)} km`
-                : `${Math.round(distance)} m`
+                ? `${(distance / 1000).toFixed(1)} ${ka ? 'კმ' : 'km'}`
+                : `${Math.round(distance)} ${ka ? 'მ' : 'm'}`
           }
           tone={inRange ? 'good' : 'neutral'}
         />
@@ -550,7 +554,7 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     padding: space.md,
   },
   statLabel: {
-    color: c.textFaint,
+    color: c.text,
     fontSize: 10,
     fontWeight: '800',
     letterSpacing: 1.2,
@@ -593,7 +597,7 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     letterSpacing: 0.3,
   },
   claimTextDisabled: { color: c.text },
-  hint: { color: c.textFaint, fontSize: 13, textAlign: 'center' },
+  hint: { color: c.text, fontSize: 13, textAlign: 'center', fontWeight: '600' },
   error: { color: c.bad, fontSize: 14 },
   muted: { color: c.textMuted },
 })
