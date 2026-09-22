@@ -25,6 +25,9 @@
       "permissions": [
         "android.permission.ACCESS_COARSE_LOCATION",
         "android.permission.ACCESS_FINE_LOCATION",
+        "android.permission.CAMERA",
+        "android.permission.ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_FINE_LOCATION",
         "android.permission.CAMERA"
       ]
     },
@@ -71,6 +74,12 @@
         "projectId": "bb78eeb9-e781-4aec-8ee5-c10d5e8bfc5d"
       }
     },
-    "owner": "akalified"
+    "owner": "akalified",
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/bb78eeb9-e781-4aec-8ee5-c10d5e8bfc5d"
+    }
   }
 }

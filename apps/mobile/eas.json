@@ -9,7 +9,8 @@
       "distribution": "internal",
       "android": {
         "buildType": "apk"
-      }
+      },
+      "channel": "development"
     },
     "preview": {
       "distribution": "internal",
@@ -18,20 +19,23 @@
       },
       "ios": {
         "simulator": false
-      }
+      },
+      "channel": "preview"
     },
     "production": {
       "autoIncrement": true,
       "android": {
         "buildType": "app-bundle"
       },
-      "ios": {}
+      "ios": {},
+      "channel": "production"
     },
     "preview-simulator": {
       "distribution": "internal",
       "ios": {
         "simulator": true
-      }
+      },
+      "channel": "preview-simulator"
     }
   },
   "submit": {
