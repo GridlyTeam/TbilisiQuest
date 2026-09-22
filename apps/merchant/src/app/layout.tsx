@@ -1,5 +1,5 @@
 import type { Metadata } from 'next'
-import { Noto_Sans_Georgian } from 'next/font/google'
+import { Noto_Sans_Georgian, Noto_Serif_Georgian } from 'next/font/google'
 import './globals.css'
 
 import { I18nProvider } from '@/lib/i18n'
@@ -13,6 +13,22 @@ import { I18nProvider } from '@/lib/i18n'
 const sans = Noto_Sans_Georgian({
   variable: '--font-sans',
   subsets: ['georgian', 'latin'],
+  display: 'swap',
+})
+
+/**
+ * A serif for the landing page's headlines only.
+ *
+ * One family at several weights is why the page read as generic: nothing on it
+ * had a voice. A serif against the sans gives the headlines somewhere to speak
+ * from, and Noto Serif Georgian is the rare free face that draws Georgian
+ * properly rather than shearing a Latin design into it. The portal behind the
+ * login keeps the sans throughout -- an admin tool wants to be quiet.
+ */
+const display = Noto_Serif_Georgian({
+  variable: '--font-display',
+  subsets: ['georgian', 'latin'],
+  weight: ['600', '700', '800'],
   display: 'swap',
 })
 
@@ -43,7 +59,10 @@ export const viewport = { themeColor: '#08060f' }
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
-    <html lang="ka" className={`${sans.variable} h-full antialiased`}>
+    <html
+      lang="ka"
+      className={`${sans.variable} ${display.variable} h-full antialiased`}
+    >
       <body className="flex min-h-full flex-col">
         <I18nProvider>{children}</I18nProvider>
       </body>
