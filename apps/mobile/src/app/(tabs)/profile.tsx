@@ -12,6 +12,7 @@ import {
 import { supabase } from '../../lib/supabase'
 import { useTranslation, LOCALES } from '../../lib/i18n'
 import InviteCard from '../../components/InviteCard'
+import QuestBoard from '../../components/QuestBoard'
 import { useTheme, useRarity, radius, space, type Palette, type Rarity } from '../../lib/theme'
 
 function useStyles() {
@@ -92,7 +93,10 @@ export default function ProfileScreen() {
           <Text style={styles.statLabel}>{ka ? 'გამოყენებული' : 'Redeemed'}</Text>
         </View>
         <View style={styles.stat}>
-          <Text style={styles.statValue}>{xp.current_streak_days}</Text>
+          <Text style={styles.statValue}>
+            {xp.current_streak_days > 0 ? '🔥 ' : ''}
+            {xp.current_streak_days}
+          </Text>
           <Text style={styles.statLabel}>{ka ? 'დღიური სერია' : 'Day streak'}</Text>
         </View>
         <View style={styles.stat}>
@@ -100,6 +104,8 @@ export default function ProfileScreen() {
           <Text style={styles.statLabel}>{ka ? 'სულ XP' : 'Total XP'}</Text>
         </View>
       </View>
+
+      <QuestBoard />
 
       <InviteCard />
 

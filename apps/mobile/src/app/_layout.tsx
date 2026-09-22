@@ -6,6 +6,7 @@ import type { Session } from '@supabase/supabase-js'
 
 import { supabase } from '../lib/supabase'
 import { ThemeProvider, useTheme } from '../lib/theme'
+import { usePushToken } from '../lib/usePushToken'
 
 
 export default function RootLayout() {
@@ -22,6 +23,11 @@ function RootNavigator() {
   const [loading, setLoading] = useState(true)
   const segments = useSegments()
   const router = useRouter()
+
+  // Only once there is a session: the permission prompt is worth far more
+  // after someone has seen the map than on a login screen, and Android only
+  // ever asks once.
+  usePushToken(session != null)
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data }) => {

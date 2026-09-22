@@ -85,3 +85,51 @@ enables.
 
 That exercises every part of the system: fog of war, the geofence, atomic
 allocation, the rotating counter code, and the analytics funnel.
+
+## Push notifications
+
+The daily "drops are live" notification is the app's one push, sent at 13:55
+Tbilisi time and only when drops are actually live with stock left. Everything
+else in the app is pull.
+
+### What is already built
+- `src/lib/usePushToken.ts` asks for permission after sign-in, registers an
+  Expo push token and stores it through `set_push_token()`.
+- `push_outbox` plus `enqueue_drop_notifications()` and `flush_push_outbox()`
+  (migration 0023), scheduled with pg_cron.
+
+### What you have to do once
+Expo delivers to Android through Firebase, so Google has to be told your app
+exists before anything arrives on a phone.
+
+1. Create a Firebase project at <https://console.firebase.google.com>, add an
+   **Android app** with package name `com.gridly.tbilisiquest` (match
+   `android.package` in `app.json`).
+2. Download `google-services.json` and put it at `apps/mobile/google-services.json`.
+   It is not a secret, but keep it out of screenshots.
+3. In the Firebase console open **Project settings → Cloud Messaging** and
+   enable the **Firebase Cloud Messaging API (V1)** if it is not already on.
+4. Upload the service account key to Expo so its servers can send on your
+   behalf:
+
+   ```
+   npx eas credentials -p android
+   # → Push Notifications: Manage your FCM V1 service account key
+   ```
+
+   The JSON key comes from Firebase: **Project settings → Service accounts →
+   Generate new private key**.
+5. Rebuild: `eas build -p android --profile preview`. Push cannot work in a
+   build made before `expo-notifications` was installed.
+
+### Checking it works
+```sql
+-- Should return the number of rows queued.
+select public.enqueue_drop_notifications();
+-- Runs every minute anyway; call it to skip the wait.
+select public.flush_push_outbox();
+select status, count(*) from public.push_outbox group by status;
+```
+
+A device that never appears in `public.users.push_token` did not get past the
+permission prompt, or is a simulator — `usePushToken` skips those deliberately.
