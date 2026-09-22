@@ -336,7 +336,7 @@ const makeStyles = (c: Palette) =>
       color: c.text,
       fontSize: 13,
       fontWeight: '800',
-      letterSpacing: 0.3,
+      letterSpacing: 0,
     },
 
     backdrop: { flex: 1, backgroundColor: c.overlay, justifyContent: 'flex-end' },
@@ -354,7 +354,7 @@ const makeStyles = (c: Palette) =>
       color: c.text,
       fontSize: font.heading.fontSize,
       fontWeight: font.heading.fontWeight,
-      letterSpacing: font.heading.letterSpacing,
+      letterSpacing: 0,
     },
     body: { color: c.textMuted, fontSize: 15, lineHeight: 21 },
     done: { gap: space.md },

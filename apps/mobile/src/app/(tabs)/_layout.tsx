@@ -23,7 +23,7 @@ export default function TabsLayout() {
       screenOptions={{
         headerStyle: { backgroundColor: c.bg },
         headerTintColor: c.text,
-        headerTitleStyle: { fontWeight: '800', letterSpacing: -0.3 },
+        headerTitleStyle: { fontWeight: '800', letterSpacing: 0 },
         // Sits on the page background rather than a lighter surface: on a
         // near-black app a paler bar reads as a separate panel stuck to the
         // bottom of the screen.
@@ -37,7 +37,7 @@ export default function TabsLayout() {
         tabBarLabelStyle: {
           fontSize: 11,
           fontWeight: '800',
-          letterSpacing: 0.4,
+          letterSpacing: 0,
         },
         tabBarActiveTintColor: c.accent,
         tabBarInactiveTintColor: c.textFaint,

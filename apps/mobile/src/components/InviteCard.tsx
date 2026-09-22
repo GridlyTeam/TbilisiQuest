@@ -194,7 +194,7 @@ const makeStyles = (c: Palette) =>
       color: c.textFaint,
       fontSize: font.eyebrow.fontSize,
       fontWeight: font.eyebrow.fontWeight,
-      letterSpacing: font.eyebrow.letterSpacing,
+      letterSpacing: 0,
       textTransform: 'uppercase',
     },
     codeBox: {

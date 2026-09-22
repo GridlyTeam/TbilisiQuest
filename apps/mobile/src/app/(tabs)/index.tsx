@@ -391,7 +391,7 @@ function DropMarker({
               ? 'ვაუჩერები ამოიწურა'
               : 'No vouchers left'
             : ka
-              ? `დარჩა ${totalRemaining} ვოუჩერი`
+              ? `დარჩა ${totalRemaining} ვაუჩერი`
               : `${totalRemaining} voucher${totalRemaining === 1 ? '' : 's'} left`}
         </Text>
       </View>
@@ -508,7 +508,7 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     color: c.accent,
     fontSize: 44,
     fontWeight: '900',
-    letterSpacing: -2,
+    letterSpacing: 0,
     // Optical centring: a numeral sits high in its line box next to caps.
     marginTop: -4,
     minWidth: 38,
@@ -519,7 +519,7 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     color: c.text,
     fontSize: font.eyebrow.fontSize,
     fontWeight: font.eyebrow.fontWeight,
-    letterSpacing: font.eyebrow.letterSpacing,
+    letterSpacing: 0,
     textTransform: 'uppercase',
   },
   headerSub: { color: c.textMuted, fontSize: 12.5 },
@@ -608,7 +608,7 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     color: c.text,
     fontSize: font.heading.fontSize,
     fontWeight: font.heading.fontWeight,
-    letterSpacing: font.heading.letterSpacing,
+    letterSpacing: 0,
   },
   pickerList: { flexGrow: 0 },
   pickerRow: {
@@ -636,7 +636,7 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     color: c.text,
     fontSize: 10,
     fontWeight: '900',
-    letterSpacing: 0.2,
+    letterSpacing: 0,
   },
   offerCount: {
     position: 'absolute',

@@ -167,7 +167,7 @@ const makeStyles = (c: Palette) =>
       color: c.text,
       fontSize: font.heading.fontSize,
       fontWeight: font.heading.fontWeight,
-      letterSpacing: font.heading.letterSpacing,
+      letterSpacing: 0,
     },
     days: { flexShrink: 0, color: c.accent, fontSize: 12, fontWeight: '700' },
     tierNow: { color: c.text, fontSize: 14, fontWeight: '700' },
@@ -190,7 +190,7 @@ const makeStyles = (c: Palette) =>
       gap: 1,
     },
     tierOn: { backgroundColor: c.accent, borderColor: c.accent },
-    tierNum: { fontSize: 11, fontWeight: '800', letterSpacing: 1 },
+    tierNum: { fontSize: 11, fontWeight: '800', letterSpacing: 0 },
     tierTitle: { fontSize: 13, fontWeight: '700' },
     tierXp: { fontSize: 11, fontWeight: '600' },
   })

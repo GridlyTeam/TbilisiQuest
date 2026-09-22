@@ -282,13 +282,13 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   cardRarity: {
     fontSize: 10,
     fontWeight: '900',
-    letterSpacing: 1.8,
+    letterSpacing: 0,
   },
   cardTitle: {
     color: c.text,
     fontSize: 17,
     fontWeight: '800',
-    letterSpacing: -0.3,
+    letterSpacing: 0,
   },
   cardVenue: { color: c.textMuted, fontSize: 13 },
   hold: { color: c.textFaint, fontSize: 12, fontWeight: '700', marginTop: 3 },
@@ -311,7 +311,7 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     color: c.text,
     fontSize: font.title.fontSize,
     fontWeight: font.title.fontWeight,
-    letterSpacing: font.title.letterSpacing,
+    letterSpacing: 0,
   },
   emptyBody: { color: c.textMuted, fontSize: 14, textAlign: 'center' },
 })

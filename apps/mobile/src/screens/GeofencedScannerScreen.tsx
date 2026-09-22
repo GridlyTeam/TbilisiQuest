@@ -402,7 +402,7 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   overlay: { flex: 1, justifyContent: 'space-between', padding: 20 },
 
   header: { marginTop: 48, gap: 4 },
-  venue: { color: c.accentInk, fontSize: 13, letterSpacing: 1.2, textTransform: 'uppercase' },
+  venue: { color: c.accentInk, fontSize: 13, letterSpacing: 0, textTransform: 'uppercase' },
   voucher: { color: c.text, fontSize: 24, fontWeight: '700' },
 
   reticle: { alignSelf: 'center', width: 240, height: 240 },

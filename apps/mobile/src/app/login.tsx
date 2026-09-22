@@ -203,7 +203,7 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     color: c.text,
     fontSize: 34,
     fontWeight: '900',
-    letterSpacing: -1,
+    letterSpacing: 0,
     textAlign: 'center',
   },
   tagline: {

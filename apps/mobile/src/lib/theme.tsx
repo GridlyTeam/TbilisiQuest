@@ -151,15 +151,15 @@ export const space = { xs: 4, sm: 8, md: 12, lg: 16, xl: 24, xxl: 32 } as const
  * `eyebrow` is the small wide-tracked caps label that sits above them.
  */
 export const font = {
-  display: { fontSize: 56, fontWeight: '900', letterSpacing: -2 },
-  title: { fontSize: 30, fontWeight: '800', letterSpacing: -0.8 },
-  heading: { fontSize: 20, fontWeight: '800', letterSpacing: -0.3 },
+  display: { fontSize: 56, fontWeight: '900', letterSpacing: 0 },
+  title: { fontSize: 30, fontWeight: '800', letterSpacing: 0 },
+  heading: { fontSize: 20, fontWeight: '800', letterSpacing: 0 },
   body: { fontSize: 15, fontWeight: '500', letterSpacing: 0 },
   label: { fontSize: 13, fontWeight: '600', letterSpacing: 0 },
   eyebrow: {
     fontSize: 11,
     fontWeight: '800',
-    letterSpacing: 2,
+    letterSpacing: 0,
     textTransform: 'uppercase',
   },
 } as const

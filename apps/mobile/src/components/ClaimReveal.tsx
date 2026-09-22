@@ -434,14 +434,14 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   rarityLabel: {
     fontSize: font.eyebrow.fontSize,
     fontWeight: font.eyebrow.fontWeight,
-    letterSpacing: font.eyebrow.letterSpacing,
+    letterSpacing: 0,
     textTransform: 'uppercase',
   },
   title: {
     color: c.text,
     fontSize: font.title.fontSize,
     fontWeight: font.title.fontWeight,
-    letterSpacing: font.title.letterSpacing,
+    letterSpacing: 0,
     textAlign: 'center',
   },
   venue: { color: c.textMuted, fontSize: 15, fontWeight: '600' },
