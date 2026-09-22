@@ -88,15 +88,13 @@ export default function SafetyBriefing() {
         ['ყურადღებით იყავი', 'გადასვლამდე და გზაზე - შეხედე ტელეფონს მხოლოდ გაჩერებისას.'],
         ['გზები', 'არასდროს გადახვიდე გზაზე ტელეფონის ყურებით. დროფი არსად წავა.'],
         ['ფეხით', 'აპლიკაცია პაუზდება თუ ჩქარა მოძრაობ. ნუ გამოიყენებ აპლიკაციას მანქანის ან სხვა ტრანსპორტის მართვისას.'],
-        ['დღისით', 'თამაში მუშაობს 11:00–19:00, დღის სინათლეზე.'],
-        ['112', 'საგანგებო ღილაკი ყოველთვის ეკრანზეა.'],
+        ['დღისით', 'თამაში მუშაობს 11:00-19:00, დღის სინათლეზე.'],
       ]
     : [
         ['Look up', 'Check your surroundings before you check your phone. Stop walking to read the screen.'],
         ['Roads', 'Never cross a road looking at your phone. The drop will still be there.'],
-        ['Walking pace', 'The game locks above walking speed. Do not play while driving or cycling.'],
-        ['Daylight', 'Hunting runs 11:00–19:00 only.'],
-        ['112', 'The emergency button is always on screen.'],
+        ['Walking pace', 'The app pauses if you move too fast. Never use it while driving or riding in a vehicle.'],
+        ['Daylight', 'Hunting runs 11:00-19:00 only.'],
       ]
 
   return (
