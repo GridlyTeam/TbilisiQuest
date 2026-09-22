@@ -1,71 +1,235 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import './App.css'
-import hero from './assets/hero.png'
 
-// Tbilisi, Freedom Square — placeholder anchor until real quest data lands.
-const ANCHOR = { lat: 41.6934, lon: 44.8015, name: 'Freedom Square' }
+/**
+ * The public page: what this is, and a button that installs it.
+ *
+ * Written for someone who has just been handed a QR code in the street and has
+ * about eight seconds of patience. Georgian first, because that is who this is
+ * for; English underneath for visitors rather than as an equal.
+ *
+ * Deliberately not a dashboard. The previous version showed a level, an XP
+ * total and a streak, all invented -- a page that displays fake numbers as
+ * though they were live is a problem the moment a merchant reads it.
+ */
 
-type Fix = { lat: number; lon: number; accuracy: number }
+// Each EAS build publishes a new artifact URL, so this moves with every
+// release. When the download goes on a poster, this should become a permanent
+// path on the site backed by R2 storage.
+const APK_URL =
+  'https://expo.dev/artifacts/eas/nlW4NCtX3eUuUqiMaNGjuLEZbRnHX9xmkzXs5-mLaTs.apk'
 
-function distanceMeters(aLat: number, aLon: number, bLat: number, bLon: number) {
-  const R = 6371000
-  const toRad = (d: number) => (d * Math.PI) / 180
-  const dLat = toRad(bLat - aLat)
-  const dLon = toRad(bLon - aLon)
-  const h =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRad(aLat)) * Math.cos(toRad(bLat)) * Math.sin(dLon / 2) ** 2
-  return 2 * R * Math.asin(Math.sqrt(h))
-}
+const CONTACT_EMAIL = 'hello@tbilisiquest.ge'
+
+type Lang = 'ka' | 'en'
+
+const COPY = {
+  ka: {
+    nav: ['როგორ მუშაობს', 'ბიზნესებს', 'ჩამოტვირთვა'],
+    heroEyebrow: 'თბილისი · ყოველდღე 14:00-დან',
+    heroTitle: 'ქალაქი სავსეა',
+    heroTitleAccent: 'ფასდაკლებებით.',
+    heroBody:
+      'იპოვე დროფები რუკაზე, მიდი ადგილზე და აიღე ვაუჩერი. კაფეები, ბარები, სალონები - ნამდვილი ფასდაკლებები ნამდვილ ადგილებში.',
+    download: 'ჩამოტვირთე აპლიკაცია',
+    downloadNote: 'Android · უფასო · 13 წლიდან',
+    stepsEyebrow: 'სამი ნაბიჯი',
+    steps: [
+      {
+        n: '01',
+        t: 'იპოვე',
+        b: 'რუკაზე ჩანს ყველა აქტიური დროფი ქალაქში. ოქროსფერი ყველაზე იშვიათია.',
+      },
+      {
+        n: '02',
+        t: 'მიდი',
+        b: 'ვაუჩერის აღება მხოლოდ ადგილზე შეიძლება - 20 მეტრის რადიუსში.',
+      },
+      {
+        n: '03',
+        t: 'გამოიყენე',
+        b: 'მაღაზიაში დაასკანერე კოდი სალაროსთან და ფასდაკლება შენია.',
+      },
+    ],
+    rarityEyebrow: 'იშვიათობა',
+    rarities: [
+      { k: 'common', t: 'ჩვეულებრივი', b: 'პროცენტული ფასდაკლება' },
+      { k: 'rare', t: 'იშვიათი', b: '1+1 შეთავაზებები' },
+      { k: 'legendary', t: 'ლეგენდარული', b: 'უფასო ან მსხვილი ფასდაკლება' },
+    ],
+    bizEyebrow: 'ბიზნესებს',
+    bizTitle: 'მოიყვანე ხალხი მაშინ, როცა დარბაზი ცარიელია.',
+    bizBody:
+      'დღის შუა საათები ყველაზე მშვიდია. დატოვე რამდენიმე ვაუჩერი ამ დროისთვის და ნახე, რამდენი ადამიანი შემოვა. ხედავ რეალურ სტატისტიკას: რამდენმა ნახა, რამდენი მოვიდა, რამდენმა გამოიყენა.',
+    bizCta: 'დაგვიკავშირდი',
+    safetyEyebrow: 'უსაფრთხოება',
+    safetyTitle: 'ფეხით. დღისით. ყურადღებით.',
+    safetyBody:
+      'აპლიკაცია პაუზდება, თუ ჩქარა მოძრაობ - მანქანაში თამაში არ გამოვა. მუშაობს მხოლოდ დღის საათებში. ყველა დროფი ნამდვილ მაღაზიასთანაა, სადაც კარი ქუჩიდან იღება.',
+    footerLinks: ['კონფიდენციალურობა', 'წესები'],
+  },
+  en: {
+    nav: ['How it works', 'For business', 'Download'],
+    heroEyebrow: 'Tbilisi · every day from 14:00',
+    heroTitle: 'The city is full of',
+    heroTitleAccent: 'discounts.',
+    heroBody:
+      'Find drops on the map, walk to them, claim a voucher. Cafés, bars, salons — real discounts in real places.',
+    download: 'Download the app',
+    downloadNote: 'Android · free · ages 13+',
+    stepsEyebrow: 'Three steps',
+    steps: [
+      {
+        n: '01',
+        t: 'Find',
+        b: 'The map shows every live drop in the city. Gold ones are the rarest.',
+      },
+      {
+        n: '02',
+        t: 'Walk',
+        b: 'A voucher can only be claimed on the spot — within 20 metres.',
+      },
+      {
+        n: '03',
+        t: 'Redeem',
+        b: 'Scan the code at the counter inside the shop and the discount is yours.',
+      },
+    ],
+    rarityEyebrow: 'Rarity',
+    rarities: [
+      { k: 'common', t: 'Common', b: 'Percentage off' },
+      { k: 'rare', t: 'Rare', b: 'Buy one get one' },
+      { k: 'legendary', t: 'Legendary', b: 'Free item or a major discount' },
+    ],
+    bizEyebrow: 'For business',
+    bizTitle: 'Fill the room when it would otherwise be empty.',
+    bizBody:
+      'Mid-afternoon is the quietest part of your day. Put a few vouchers into that window and watch who walks in. You see what actually happened: how many saw it, how many came close, how many redeemed.',
+    bizCta: 'Get in touch',
+    safetyEyebrow: 'Safety',
+    safetyTitle: 'On foot. In daylight. Eyes up.',
+    safetyBody:
+      'The app pauses above walking speed, so it cannot be played from a car. It runs in daylight hours only. Every drop sits at a real shop with a door onto the street.',
+    footerLinks: ['Privacy', 'Terms'],
+  },
+} as const
 
 export default function App() {
-  const [fix, setFix] = useState<Fix | null>(null)
-  const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState('Discover')
-
-  useEffect(() => {
-    if (!('geolocation' in navigator)) {
-      setError('Geolocation is not available in this browser.')
-      return
-    }
-    const id = navigator.geolocation.watchPosition(
-      (pos) =>
-        setFix({
-          lat: pos.coords.latitude,
-          lon: pos.coords.longitude,
-          accuracy: pos.coords.accuracy,
-        }),
-      (err) => setError(err.message),
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 5000 },
-    )
-    return () => navigator.geolocation.clearWatch(id)
-  }, [])
-
-  const away = fix
-    ? Math.round(distanceMeters(fix.lat, fix.lon, ANCHOR.lat, ANCHOR.lon))
-    : null
-
-  const distanceLabel = away === null ? 'Locating you...' : away > 1500 ? `${(away / 1000).toFixed(1)} km away` : `${away} m away`
+  const [lang, setLang] = useState<Lang>('ka')
+  const t = COPY[lang]
 
   return (
-    <main className="app-shell">
+    <main className="site">
       <header className="topbar">
-        <a className="brand" href="#top" aria-label="Tbilisi Quest home"><span className="brand-mark"><span /></span><span>TBILISI<span>QUEST</span></span></a>
-        <nav className="desktop-nav" aria-label="Main navigation">{['Discover', 'My quests', 'Rewards'].map((tab) => <button className={activeTab === tab ? 'nav-link active' : 'nav-link'} key={tab} onClick={() => setActiveTab(tab)}>{tab}</button>)}</nav>
-        <button className="profile-button" aria-label="Open profile"><span className="avatar">N</span><span className="profile-name">Nino</span><span className="chevron">⌄</span></button>
+        <a className="brand" href="#top" aria-label="Tbilisi Quest">
+          <span className="brand-mark">
+            <span />
+          </span>
+          <span>
+            TBILISI<span>QUEST</span>
+          </span>
+        </a>
+
+        <nav className="desktop-nav" aria-label="Main">
+          <a className="nav-link" href="#how">
+            {t.nav[0]}
+          </a>
+          <a className="nav-link" href="#business">
+            {t.nav[1]}
+          </a>
+          <a className="nav-link" href="#get">
+            {t.nav[2]}
+          </a>
+        </nav>
+
+        <div className="lang" role="group" aria-label="Language">
+          <button
+            className={lang === 'ka' ? 'lang-on' : undefined}
+            onClick={() => setLang('ka')}
+          >
+            ქარ
+          </button>
+          <button
+            className={lang === 'en' ? 'lang-on' : undefined}
+            onClick={() => setLang('en')}
+          >
+            ENG
+          </button>
+        </div>
       </header>
+
       <div className="content" id="top">
-        <section className="welcome-row"><div><p className="eyebrow">Saturday · 14 September</p><h1>Find something <em>unexpected.</em></h1><p className="intro">Turn a walk through Tbilisi into your next story.</p></div><div className="xp-summary"><strong>1,240</strong><span>XP earned</span><div className="xp-track"><i /></div><small>Level 4 · 260 XP to go</small></div></section>
-        <section className="hero-card"><div className="hero-copy"><p className="eyebrow amber">FEATURED QUEST</p><h2>The city<br /><span>is your canvas.</span></h2><p>Three hidden drops. One afternoon. Start at the old town and follow the clues.</p><button className="primary-button" onClick={() => setActiveTab('My quests')}>Start exploring <span>→</span></button></div><div className="hero-art"><img src={hero} alt="Layered quest emblem" /><span className="orbit orbit-one" /><span className="orbit orbit-two" /></div><div className="hero-meta"><span><b>03</b> drops</span><span><b>~45</b> min</span><span><b>+500</b> XP</span></div></section>
-        <div className="section-heading"><div><p className="eyebrow">MAKE YOUR MOVE</p><h2>Quests near you</h2></div><button className="text-button" onClick={() => setActiveTab('Discover')}>View all <span>↗</span></button></div>
-        <section className="quest-grid">
-          <article className="quest-card quest-card-purple"><div className="quest-icon">✦</div><div className="quest-top"><span className="rarity rare">RARE</span><span className="quest-time">◷ 25 min</span></div><h3>Hidden courtyards</h3><p>Find the quiet corners behind Sololaki's colourful doors.</p><footer><span className="distance-dot purple" />{distanceLabel}<span className="reward">+250 XP</span></footer></article>
-          <article className="quest-card quest-card-cyan"><div className="quest-icon">⌁</div><div className="quest-top"><span className="rarity common">COMMON</span><span className="quest-time">◷ 15 min</span></div><h3>River rhythm</h3><p>Follow the Mtkvari and capture three changing reflections.</p><footer><span className="distance-dot cyan" />1.2 km away<span className="reward">+120 XP</span></footer></article>
-          <article className="quest-card quest-card-gold"><div className="quest-icon">✧</div><div className="quest-top"><span className="rarity legendary">LEGENDARY</span><span className="quest-time">◷ 60 min</span></div><h3>Above the rooftops</h3><p>Climb higher for the view that locals keep to themselves.</p><footer><span className="distance-dot gold" />2.8 km away<span className="reward">+500 XP</span></footer></article>
+        <section className="hero">
+          <div className="hero-copy">
+            <p className="eyebrow amber">{t.heroEyebrow}</p>
+            <h1>
+              {t.heroTitle} <em>{t.heroTitleAccent}</em>
+            </h1>
+            <p className="intro">{t.heroBody}</p>
+
+            <a className="primary-button" href={APK_URL} id="get">
+              {t.download} <span>↓</span>
+            </a>
+            <p className="download-note">{t.downloadNote}</p>
+          </div>
+
+          <div className="hero-art">
+            <img src="/store-icon.png" alt="" />
+            <span className="orbit orbit-one" />
+            <span className="orbit orbit-two" />
+          </div>
         </section>
-        <section className="lower-grid"><div className="nearby-panel"><div className="section-heading compact"><div><p className="eyebrow">YOUR POSITION</p><h2>Close to the action</h2></div><span className="live-pill"><i /> LIVE</span></div><div className="map-preview"><span className="map-label label-one">FREEDOM SQUARE</span><span className="map-label label-two">SOLOLAKI</span><span className="map-road road-one" /><span className="map-road road-two" /><span className="map-pin"><i /></span><span className="map-target" /></div><div className="location-status">{error ? <span className="error">{error}</span> : <><span className="status-icon">⌖</span><span><b>{fix ? 'You are on the map' : 'Finding your location'}</b><small>{fix ? `±${Math.round(fix.accuracy)} m accuracy · ${distanceLabel} from Freedom Square` : 'Allow location access to discover nearby drops.'}</small></span></>}</div></div><aside className="streak-panel"><p className="eyebrow">YOUR STREAK</p><div className="streak-number">04 <span>days</span></div><p>Keep exploring to grow your streak.</p><div className="streak-days"><b>M</b><b>T</b><b>W</b><b>T</b><b className="today">F</b><b>S</b><b>S</b></div><button className="outline-button" onClick={() => setActiveTab('Rewards')}>See rewards <span>→</span></button></aside></section>
+
+        <section id="how">
+          <p className="eyebrow">{t.stepsEyebrow}</p>
+          <div className="steps">
+            {t.steps.map((step) => (
+              <article className="step" key={step.n}>
+                <b>{step.n}</b>
+                <h3>{step.t}</h3>
+                <p>{step.b}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section>
+          <p className="eyebrow">{t.rarityEyebrow}</p>
+          <div className="rarities">
+            {t.rarities.map((r) => (
+              <article className={`rarity-card ${r.k}`} key={r.k}>
+                <span className="dot" />
+                <h3>{r.t}</h3>
+                <p>{r.b}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="panel" id="business">
+          <p className="eyebrow amber">{t.bizEyebrow}</p>
+          <h2>{t.bizTitle}</h2>
+          <p>{t.bizBody}</p>
+          <a className="outline-button" href={`mailto:${CONTACT_EMAIL}`}>
+            {t.bizCta} <span>→</span>
+          </a>
+        </section>
+
+        <section className="panel safety">
+          <p className="eyebrow">{t.safetyEyebrow}</p>
+          <h2>{t.safetyTitle}</h2>
+          <p>{t.safetyBody}</p>
+        </section>
       </div>
-      <nav className="mobile-nav" aria-label="Mobile navigation">{['Discover', 'My quests', 'Rewards'].map((tab, index) => <button className={activeTab === tab ? 'mobile-link active' : 'mobile-link'} key={tab} onClick={() => setActiveTab(tab)}><span>{['⌂', '✦', '◇'][index]}</span>{tab}</button>)}</nav>
+
+      <footer className="footer">
+        <span>© {new Date().getFullYear()} Gridly LLC</span>
+        <nav>
+          <a href="/privacy.html">{t.footerLinks[0]}</a>
+          <a href="/terms.html">{t.footerLinks[1]}</a>
+          <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+        </nav>
+      </footer>
     </main>
   )
 }
