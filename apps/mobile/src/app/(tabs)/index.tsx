@@ -18,7 +18,7 @@ import {
 
 import { supabase } from '../../lib/supabase'
 import { useTranslation } from '../../lib/i18n'
-import { useLocation } from '../../lib/useLocation'
+import { useLocation, distanceMeters } from '../../lib/useLocation'
 import { useSafetyGate } from '../../lib/useSafetyGate'
 import SafetyOverlay from '../../components/SafetyOverlay'
 import SafetyBriefing from '../../components/SafetyBriefing'
@@ -32,6 +32,16 @@ function useStyles() {
 
 
 const TBILISI_CENTER: [number, number] = [44.7935, 41.6998]
+
+/**
+ * How close counts as "nearby" in the header.
+ *
+ * The map itself is queried over the whole city, so counting every marker it
+ * returned told a player standing at home that 12 drops were nearby -- true of
+ * Tbilisi, useless to them. 500 m is roughly a five-minute walk: near enough
+ * that the number means "you could go now".
+ */
+const NEARBY_RADIUS_M = 500
 
 type NearbyDrop = {
   id: string
@@ -64,6 +74,23 @@ export default function MapScreen() {
   const centredOnce = useRef(false)
 
   const ka = locale === 'ka'
+
+  // Measured against the live fix rather than the RPC's distance_m, which was
+  // computed from wherever the last query was made -- up to ~55 m stale, and
+  // stale in exactly the moment a player is walking toward a drop.
+  const { nearbyCount, nearestM } = useMemo(() => {
+    if (!fix) return { nearbyCount: 0, nearestM: null as number | null }
+
+    let nearest: number | null = null
+    let count = 0
+    for (const drop of drops) {
+      if (drop.lat == null || drop.lng == null) continue
+      const metres = distanceMeters(fix.latitude, fix.longitude, drop.lat, drop.lng)
+      if (metres <= NEARBY_RADIUS_M) count += 1
+      if (nearest === null || metres < nearest) nearest = metres
+    }
+    return { nearbyCount: count, nearestM: nearest }
+  }, [drops, fix])
 
   const load = useCallback(async (lat: number, lng: number) => {
     const { data, error } = await supabase.rpc('nearby_drops', {
@@ -171,8 +198,8 @@ export default function MapScreen() {
                 ? 'იტვირთება…'
                 : 'Loading…'
               : ka
-                ? `${drops.length} დროფი ახლოს`
-                : `${drops.length} drops nearby`}
+                ? `${nearbyCount} დროფი ახლოს`
+                : `${nearbyCount} drop${nearbyCount === 1 ? '' : 's'} nearby`}
           </Text>
           {!loading && drops.length === 0 && (
             <Text style={styles.headerWarn}>
@@ -182,9 +209,17 @@ export default function MapScreen() {
             </Text>
           )}
           <Text style={styles.headerSub}>
-            {ka
-              ? 'მიუახლოვდი 20 მ-ზე ასაღებად'
-              : 'Get within 20 m to claim'}
+            {nearbyCount > 0
+              ? ka
+                ? 'მიუახლოვდი 20 მ-ზე ასაღებად'
+                : 'Get within 20 m to claim'
+              : nearestM != null
+                ? ka
+                  ? `უახლოესი დროფი ${formatDistance(nearestM, true)}-ზეა`
+                  : `Nearest drop is ${formatDistance(nearestM, false)} away`
+                : ka
+                  ? 'მიუახლოვდი 20 მ-ზე ასაღებად'
+                  : 'Get within 20 m to claim'}
           </Text>
         </View>
       </View>
@@ -290,6 +325,13 @@ function DropMarker({ drop, ka }: { drop: NearbyDrop; ka: boolean }) {
       )}
     </View>
   )
+}
+
+/** Metres under a kilometre, kilometres above it -- "1400 m" reads as noise. */
+function formatDistance(metres: number, ka: boolean): string {
+  return metres < 1000
+    ? `${Math.round(metres)} ${ka ? 'მ' : 'm'}`
+    : `${(metres / 1000).toFixed(1)} ${ka ? 'კმ' : 'km'}`
 }
 
 const makeStyles = (c: Palette) => StyleSheet.create({
