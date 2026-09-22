@@ -133,3 +133,28 @@ select status, count(*) from public.push_outbox group by status;
 
 A device that never appears in `public.users.push_token` did not get past the
 permission prompt, or is a simulator — `usePushToken` skips those deliberately.
+
+## Build-time configuration
+
+The app reads `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_ANON_KEY` at
+startup and throws if either is missing — which, on a device, looks exactly
+like a native crash: the Supabase client is imported while expo-router is still
+building its route tree, so the app dies before any screen renders.
+
+`apps/mobile/.env` is gitignored and is **not** uploaded to EAS. Build-time
+values live as EAS environment variables instead:
+
+```
+npx eas-cli env:list
+npx eas-cli env:create --environment preview \
+  --name EXPO_PUBLIC_SUPABASE_URL --value "https://…" --visibility plaintext
+```
+
+They are set for the `development`, `preview` and `production` environments. A
+new one has to be added to each environment that needs it.
+
+### Archive size
+`.easignore` lives at the **repository root**, not in `apps/mobile`. EAS
+archives from the git root in a monorepo and reads ignore rules from there; a
+copy inside the app directory is never consulted. Getting this wrong costs
+about eight minutes of upload per build.
