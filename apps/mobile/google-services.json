@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "501115966192",
+    "project_id": "tbilisi-quest-85b35",
+    "storage_bucket": "tbilisi-quest-85b35.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:501115966192:android:86a977564256d8c9a62835",
+        "android_client_info": {
+          "package_name": "ge.gridly.tbilisiquest"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCbAWjI1j8zIhkzQgeKF45m8Rwdl4HhMHw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

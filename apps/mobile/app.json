@@ -14,6 +14,7 @@
     },
     "android": {
       "package": "ge.gridly.tbilisiquest",
+      "googleServicesFile": "./google-services.json",
       "adaptiveIcon": {
         "backgroundColor": "#14141A",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
@@ -57,7 +58,8 @@
           "recordAudioAndroid": false
         }
       ],
-      "expo-sharing"
+      "expo-sharing",
+      "expo-notifications"
     ],
     "experiments": {
       "typedRoutes": true,
