@@ -108,16 +108,19 @@ export default function ProfileScreen() {
         </Text>
 
         <View style={styles.week}>
-          {weekDays(ka).map((day, index) => {
-            // index 6 is today; fill backwards for as long as the streak runs.
-            const covered = 6 - index < xp.current_streak_days
+          {(ka ? WEEK_KA : WEEK_EN).map((day, index) => {
+            const today = mondayIndex(new Date())
+            // Fill backwards from today for as long as the streak runs, and
+            // never mark a day that has not happened yet this week.
+            const covered =
+              index <= today && today - index < xp.current_streak_days
             return (
               <Text
                 key={`${day}-${index}`}
                 style={[
                   styles.weekDay,
                   covered && styles.weekDayOn,
-                  index === 6 && styles.weekDayToday,
+                  index === today && styles.weekDayToday,
                 ]}
               >
                 {day}
@@ -225,13 +228,18 @@ export default function ProfileScreen() {
   )
 }
 
-/** The last seven day initials, ending today. */
-function weekDays(ka: boolean): string[] {
-  const ge = ['კ', 'ო', 'ს', 'ო', 'ხ', 'პ', 'შ']
-  const en = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
-  const names = ka ? ge : en
-  const today = new Date().getDay()
-  return Array.from({ length: 7 }, (_, i) => names[(today - 6 + i + 7) % 7])
+/**
+ * Monday to Sunday, the way a week is read here.
+ *
+ * It used to be a rolling seven days ending today, which put Thursday first on
+ * a Thursday -- accurate about the streak and unreadable as a week.
+ */
+const WEEK_KA = ['ორ', 'სა', 'ოთ', 'ხუ', 'პა', 'შა', 'კვ']
+const WEEK_EN = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
+
+/** Monday is 0, Sunday is 6 -- getDay() puts Sunday first, which we do not. */
+function mondayIndex(date: Date): number {
+  return (date.getDay() + 6) % 7
 }
 
 const makeStyles = (c: Palette) => StyleSheet.create({
