@@ -9,6 +9,7 @@ import {
   View,
 } from 'react-native'
 
+import Avatar, { type AvatarStyles } from '../components/Avatar'
 import { supabase } from '../lib/supabase'
 import { useTranslation } from '../lib/i18n'
 import {
@@ -36,7 +37,7 @@ type Cosmetic = {
   owned: boolean
 }
 
-type Avatar = {
+type AvatarRow = {
   avatar_config: Record<string, string> | null
   equipped_title: string | null
   equipped_frame: string | null
@@ -88,7 +89,7 @@ export default function InventoryScreen() {
     ])
     setItems((cosmetics.data as Cosmetic[]) ?? [])
     const row = (Array.isArray(avatar.data) ? avatar.data[0] : avatar.data) as
-      | Avatar
+      | AvatarRow
       | undefined
     setConfig(row?.avatar_config ?? {})
     setLoading(false)
@@ -129,6 +130,21 @@ export default function InventoryScreen() {
 
   const owned = items.filter((i) => i.owned).length
 
+  // The avatar takes style keys, not codes: the catalogue is already here, so
+  // the component never has to query anything.
+  const worn: AvatarStyles = useMemo(() => {
+    const keyFor = (slot: string) =>
+      items.find((i) => i.code === config[slot])?.style_key
+    return {
+      outfit: keyFor('outfit'),
+      frame: keyFor('frame'),
+      marker: keyFor('marker'),
+      sticker: keyFor('sticker'),
+    }
+  }, [config, items])
+
+  const equippedTitle = items.find((i) => i.code === config.title)
+
   if (loading) {
     return (
       <View style={styles.centre}>
@@ -147,11 +163,27 @@ export default function InventoryScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        <Text style={styles.summary}>
-          {ka
-            ? `${owned} ${items.length}-დან შეგროვებული`
-            : `${owned} of ${items.length} collected`}
-        </Text>
+        {/* The point of the screen: what you are wearing, changing as you
+            tap. Without it the locker is a list of words. */}
+        <View style={styles.preview}>
+          <Avatar styles={worn} size={132} />
+          <View style={styles.previewMeta}>
+            <Text style={styles.previewTitle} numberOfLines={2}>
+              {equippedTitle
+                ? ka
+                  ? equippedTitle.title_ka
+                  : equippedTitle.title_en
+                : ka
+                  ? 'წოდება არ გაქვს არჩეული'
+                  : 'No title equipped'}
+            </Text>
+            <Text style={styles.summary}>
+              {ka
+                ? `${owned} ${items.length}-დან შეგროვებული`
+                : `${owned} of ${items.length} collected`}
+            </Text>
+          </View>
+        </View>
         {error && <Text style={styles.error}>{error}</Text>}
 
         {SLOTS.map((slot) => {
@@ -165,7 +197,7 @@ export default function InventoryScreen() {
               <View style={styles.grid}>
                 {group.map((item) => {
                   const meta = rarity[item.rarity] ?? rarity.common
-                  const worn = config[slot.slot] === item.code
+                  const isWorn = config[slot.slot] === item.code
 
                   return (
                     <Pressable
@@ -175,7 +207,7 @@ export default function InventoryScreen() {
                       style={[
                         styles.item,
                         !item.owned && styles.itemLocked,
-                        worn && { borderColor: meta.color, borderWidth: 2 },
+                        isWorn && { borderColor: meta.color, borderWidth: 2 },
                       ]}
                     >
                       {/* The rarity is the only colour on the card, so a
@@ -198,10 +230,10 @@ export default function InventoryScreen() {
                       <Text
                         style={[
                           styles.itemState,
-                          worn && { color: meta.color },
+                          isWorn && { color: meta.color },
                         ]}
                       >
-                        {worn
+                        {isWorn
                           ? ka
                             ? 'ეცვა'
                             : 'Worn'
@@ -240,6 +272,24 @@ const makeStyles = (c: Palette) =>
       backgroundColor: c.bg,
       alignItems: 'center',
       justifyContent: 'center',
+    },
+    preview: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: space.lg,
+      backgroundColor: c.surface,
+      borderRadius: radius.md,
+      borderWidth: 1,
+      borderColor: c.border,
+      padding: space.lg,
+    },
+    previewMeta: { flex: 1 },
+    previewTitle: {
+      color: c.text,
+      fontSize: 17,
+      fontWeight: '900',
+      letterSpacing: 0,
+      marginBottom: 4,
     },
     summary: { color: c.textMuted, fontSize: 13, fontWeight: '700' },
     error: { color: c.bad, fontSize: 13, marginTop: space.sm },
