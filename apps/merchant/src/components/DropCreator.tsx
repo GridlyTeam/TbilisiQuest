@@ -253,6 +253,14 @@ export default function DropCreator({
         fieldErrors[issue.path.join('.')] = issue.message
       }
       setErrors(fieldErrors)
+
+      // Also surface the first problem at the bottom of the form, next to the
+      // button that was just pressed. Field-level errors only help if the
+      // field renders one -- the rarity/offer rules attach to controls that do
+      // not, so submitting simply did nothing, which is the worst possible
+      // answer to a click.
+      const first = parsed.error.issues[0]
+      if (first) setServerError(t(first.message as MessageKey))
       return
     }
 
