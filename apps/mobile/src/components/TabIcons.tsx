@@ -16,43 +16,28 @@ import { useTheme } from '../lib/theme'
 type Props = { color: ColorValue; size?: number }
 
 export function MapIcon({ color, size = 22 }: Props) {
-  const head = Math.round(size * 0.66)
+  const panel = Math.round(size * 0.32)
+  const tall = Math.round(size * 0.72)
   return (
-    <View style={[styles.box, { width: size, height: size }]}>
-      <View
-        style={{
-          width: head,
-          height: head,
-          borderRadius: head / 2,
-          borderWidth: 2,
-          borderColor: color,
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
+    <View style={[styles.box, { width: size, height: size, flexDirection: 'row' }]}>
+      {/* A paper map: three panels side by side with the middle one dipping,
+          the way a folded map hangs when you hold it open. The panels overlap
+          by a border width so the creases read as single lines rather than
+          two outlines touching. */}
+      {[0, 1, 2].map((i) => (
         <View
+          key={i}
           style={{
-            width: 4,
-            height: 4,
-            borderRadius: 2,
-            backgroundColor: color,
+            width: panel,
+            height: tall,
+            marginTop: i === 1 ? 4 : 0,
+            marginLeft: i === 0 ? 0 : -1.5,
+            borderWidth: 1.5,
+            borderColor: color,
+            borderRadius: 1.5,
           }}
         />
-      </View>
-      {/* The point of the pin: a triangle made from borders. */}
-      <View
-        style={{
-          width: 0,
-          height: 0,
-          marginTop: -3,
-          borderLeftWidth: 4,
-          borderRightWidth: 4,
-          borderTopWidth: 6,
-          borderLeftColor: 'transparent',
-          borderRightColor: 'transparent',
-          borderTopColor: color,
-        }}
-      />
+      ))}
     </View>
   )
 }
