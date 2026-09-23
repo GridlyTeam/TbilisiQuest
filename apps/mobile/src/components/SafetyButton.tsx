@@ -318,13 +318,16 @@ function Option({
 
 const makeStyles = (c: Palette) =>
   StyleSheet.create({
+    // Same diameter and the same plate as the recentre control it stacks
+    // with: two circles of different sizes sitting one above the other read
+    // as a mistake, however small the difference.
     button: {
-      backgroundColor: c.surfaceRaised,
-      borderRadius: 22,
+      backgroundColor: c.surface,
+      borderRadius: 24,
       borderWidth: 1,
       borderColor: c.border,
-      width: 44,
-      height: 44,
+      width: 48,
+      height: 48,
       alignItems: 'center',
       justifyContent: 'center',
       shadowColor: '#000',
@@ -336,7 +339,7 @@ const makeStyles = (c: Palette) =>
     pressed: { opacity: 0.8 },
     buttonText: {
       color: c.text,
-      fontSize: 19,
+      fontSize: 20,
       fontWeight: '900',
       letterSpacing: 0,
       // The glyph's own bearing sits it left of centre in the circle.
