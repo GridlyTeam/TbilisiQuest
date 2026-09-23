@@ -37,6 +37,37 @@ Generated art drops in behind that component; nothing else moves. The
 | sticker | `khachapuri`, `funicular`, `river`, `boba`, `grape`, `metro`, `sulfur`, `balcony` |
 | card theme | `dusk`, `grape`, `mono`, `neon`, `sunrise` |
 
+### Which models, and how not to spend a fortune
+
+Checked against the Higgsfield catalogue on 2026-09-23.
+
+**Images, not video.** Video per character does not scale: colours x outfits x
+backgrounds is hundreds of clips, each one a file the phone has to download.
+Kling 3.0 Turbo is the budget image-to-video model and Seedance 2.5 the default
+one, but both are billed per clip, and the combinations multiply against you.
+
+**Layer the assets, do not combine them.** Generate the creature body once per
+colour and each outfit once as a transparent layer over the same pose. Six
+colours plus six outfits is twelve assets; six colours times six outfits is
+thirty-six. The app composes them.
+
+**Animation is done in the app, not bought.** Reanimated is already in the
+project and already drives the map puck. A breathing bob, a slow sway, a blink
+swapped between two eye frames, a shadow that scales with the bob -- that reads
+as alive, costs nothing per player, works offline and adds no download. This is
+what "little animations so the environment feels alive" should be built from.
+
+**Where video is actually worth paying for:** one or two marketing clips for the
+landing page and the Play Store listing. A one-off cost, not a per-character
+one.
+
+**On the subscription:** several image models carry `supports_unlim` -- Soul
+2.0, Nano Banana Pro, and Kling v3.0 among them -- meaning a plan with
+unlimited generations covers them. If a tier includes unlim on Soul 2.0 or Nano
+Banana Pro, that is the one to buy: the whole character set is images, and
+images would then be effectively free. Buying video credits for idle animation
+would be paying for the expensive version of something Reanimated does better.
+
 ---
 
 ## Registration and first run
@@ -93,6 +124,14 @@ conversation.
 
 Three modes. **Ghost is the default** and stays the default for everyone.
 
+**Under 16, ghost is not a default but a lock.** A player whose birth date puts
+them under sixteen cannot leave ghost mode at all -- the control is shown
+disabled with the reason, not hidden. Decided 2026-09-23. A thirteen year old
+cannot meaningfully weigh "let strangers see roughly where I am", so the app
+does not ask them to. The under-16s who want to be seen are seen by their squad,
+which is who they actually care about -- squad mode stays available at the age
+squad play already opens at.
+
 | Mode | Who sees you |
 |---|---|
 | **Ghost** | Nobody. You are on the map for yourself only. |
@@ -119,6 +158,10 @@ having it:
 Consequence to accept: in public mode the head boxes of other players are
 approximate by design. A player cannot use the map to walk up to a specific
 person, which is the entire point.
+
+Because of that, **another player's head box must be labelled approximate** --
+on the card, in words. An icon that hops 400 m while somebody watches it, with
+nothing explaining why, is read as a broken map and reported as a bug.
 
 ## The four tabs
 
@@ -164,6 +207,27 @@ that is what players feel. They are different boards answering different
 questions and both can exist -- but if only one is shown, say which.
 
 ---
+
+## What can be built before any art exists
+
+None of this waits on Higgsfield. The drawn placeholder creature in
+`components/Avatar.tsx` stands in, and generated art replaces it inside that one
+component.
+
+1. **Visibility modes, end to end.** Column on `users`, ghost as default, the
+   under-16 lock, the seeded server-side displacement, and the RPC that returns
+   other players already fuzzed. Pure backend plus one settings screen. Everything
+   on the map depends on it, so it goes first.
+2. **The four tabs.** Map, Vouchers, Character, Season. The pass folds into
+   Season; settings move to a header button.
+3. **The character stage.** Full-size creature on its pedestal with the gear
+   around it, and a background slot -- a drawn gradient until there is a
+   Mtatsminda Park image to put in it.
+4. **Head boxes on the map.** Own dot first, then other players through the
+   visibility rules, with the approximate label.
+5. **Nickname and colour at sign-up.** The colour is real data from day one; only
+   the picture it tints changes later.
+6. **XP leaderboard** on the Season tab.
 
 ## Standing rules
 
