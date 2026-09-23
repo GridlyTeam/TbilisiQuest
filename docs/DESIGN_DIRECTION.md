@@ -182,37 +182,33 @@ This replaces the current four (map, vouchers, pass, profile): the pass folds
 into Season, and profile settings need a home that is not a tab -- likely a
 header button on Character or Season.
 
-## The creature: shapes and colours
+## The creature: one body, many colours
 
-Reference Sandro sent on 2026-09-23: a Fall Guys style line-up, four soft
-rounded bodies in different silhouettes -- tall cylinder, egg, triangle, short
-cylinder -- each with a colour swatch under it, captioned "choose your standard
-shape".
+Decided 2026-09-23, after the Fall Guys style reference: **one character shape
+for everyone.** Not a line-up of silhouettes -- one creature, in a choice of
+colours, and everything else comes from what it wears and what it stands in
+front of.
 
-That is the direction: **shape plus colour at sign-up**, both changeable later.
+That decision removes the only expensive thing about this whole design. With one
+body:
 
-Two cautions, one cheap and one expensive.
+- **8 colours = 8 pictures** of the creature.
+- **Each outfit = 1 picture**, a layer over the same body.
+- **Each background = 1 picture.**
+- **A season of new content is roughly 20 pictures.**
 
-**Do not clone Fall Guys.** The bean silhouette with the two white oval eyes is
-a recognisable design belonging to a company with lawyers. Take the register --
-soft, toy-like, pastel, no faces beyond eyes -- and make the silhouettes our
-own. A creature from Tbilisi does not have to look like a jellybean.
+Nothing multiplies. The shape_bound / anchored split in `0043` stays in the
+schema because it costs nothing to keep and answers the question if a second
+shape is ever wanted, but with one shape every item costs one render and the
+distinction does no work.
 
-**The expensive part is not the system, it is the art pipeline.** The app can
-composite layers all day; what multiplies is what has to be drawn:
+**Do not clone Fall Guys.** The bean silhouette with two white oval eyes belongs
+to a company with lawyers. Take the register -- soft, toy-like, pastel, eyes and
+nothing else -- and make the creature ours.
 
-| | Assets |
-|---|---|
-| bodies | shapes x colours |
-| every outfit | one render **per shape** |
-
-Four shapes and eight colours is 32 bodies, which is fine. But every outfit
-added afterwards costs four renders instead of one, forever. **Start with three
-shapes**, and only add a fourth when the outfit catalogue has stopped growing.
-
-Colour is applied by generating each body in each colour, not by tinting at
-runtime: `tintColor` flattens an image to one solid colour and throws the
-shading away, which is exactly what makes these characters look like toys.
+**Colour is generated, not tinted.** `tintColor` in React Native flattens an
+image to one flat colour and throws the shading away, and the shading is exactly
+what makes these characters look like toys.
 
 ## Seasonal rotation -- how to run it without the art cost running away
 
