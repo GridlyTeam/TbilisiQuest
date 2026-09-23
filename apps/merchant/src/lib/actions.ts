@@ -91,7 +91,7 @@ export async function createDrop(input: CreateDropInput) {
     .select('id')
     .single()
 
-  if (error) throw new Error(error.message)
+  if (error) throw new Error(explainDropError(error.message))
 
   // Create the voucher rows before the drop is claimable. Doing this up front
   // is what lets claim_voucher() allocate with SKIP LOCKED instead of inserting
@@ -138,4 +138,36 @@ export async function markDropReviewed(dropId: string, notes?: string) {
   if (error) throw new Error(error.message)
 
   revalidatePath('/drops')
+}
+
+
+/**
+ * Turn a database refusal into something a merchant can act on.
+ *
+ * These constraints exist for good reasons, but their messages are written for
+ * whoever wrote the schema. Left raw, they reach the client as an unhandled
+ * server error -- React strips the text in production and shows "#441", which
+ * tells nobody anything. The form validates the same rules first; this is the
+ * backstop for the paths it cannot see.
+ */
+function explainDropError(raw: string): string {
+  if (raw.includes('drops_rarity_matches_offer')) {
+    return (
+      'ეს შეთავაზება არ შეესაბამება არჩეულ იშვიათობას. ' +
+      'Common: 5-40%, Rare: 1+1 ან 41-69%, Legendary: უფასო ან 70-100%.'
+    )
+  }
+  if (raw.includes('OVER_PER_DROP_LIMIT')) {
+    return 'ერთ დროფზე დაშვებულ ლიმიტს აჭარბებს.'
+  }
+  if (raw.includes('OVER_MONTHLY_ALLOWANCE')) {
+    return 'თვიური ლიმიტი ამოწურულია.'
+  }
+  if (raw.includes('drops_window_valid')) {
+    return 'დასრულების დრო დაწყებაზე გვიან უნდა იყოს.'
+  }
+  if (raw.includes('LOCATION_IS_OPERATOR_SET')) {
+    return 'მდებარეობას მხოლოდ ოპერატორი ცვლის.'
+  }
+  return raw
 }

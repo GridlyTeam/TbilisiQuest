@@ -57,6 +57,18 @@ const dropSchema = z
     message: 'creator.errDiscount',
     path: ['discountPercent'],
   })
+  // The percentage has to sit inside the band its rarity promises. Switching
+  // rarity already clamps it, but nothing stopped someone typing 50 into a
+  // Common afterwards -- and the database refuses that, which surfaced as an
+  // unexplained server error rather than as a form message.
+  .refine(
+    (v) =>
+      v.offer !== 'percent_off' ||
+      v.discountPercent == null ||
+      (v.discountPercent >= RARITY_RULES[v.rarity].min &&
+        v.discountPercent <= RARITY_RULES[v.rarity].max),
+    { message: 'creator.errDiscountBand', path: ['discountPercent'] },
+  )
 
 export type DropFormValues = z.infer<typeof dropSchema>
 

@@ -145,6 +145,10 @@ const catalogue = {
     en: 'End time must be after start time',
   },
   'creator.errDiscount': { ka: 'მიუთითე ფასდაკლების პროცენტი', en: 'Set a discount percentage' },
+  'creator.errDiscountBand': {
+    ka: 'ეს პროცენტი არ შეესაბამება არჩეულ იშვიათობას',
+    en: 'That percentage does not match the chosen rarity',
+  },
   'creator.errDate': { ka: 'აირჩიე თარიღი', en: 'Pick a date' },
 
   // Rarity
