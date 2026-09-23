@@ -124,6 +124,7 @@ export default function ProfileScreen() {
                 style={[styles.weekCell, isToday && styles.weekCellToday]}
               >
                 <Text
+                  numberOfLines={1}
                   style={[
                     styles.weekDay,
                     covered && styles.weekDayOn,
@@ -242,7 +243,7 @@ export default function ProfileScreen() {
  * It used to be a rolling seven days ending today, which put Thursday first on
  * a Thursday -- accurate about the streak and unreadable as a week.
  */
-const WEEK_KA = ['ორ', 'სა', 'ოთ', 'ხუ', 'პა', 'შა', 'კვ']
+const WEEK_KA = ['ორშ', 'სამ', 'ოთხ', 'ხუთ', 'პარ', 'შაბ', 'კვ']
 const WEEK_EN = ['M', 'T', 'W', 'T', 'F', 'S', 'S']
 
 /** Monday is 0, Sunday is 6 -- getDay() puts Sunday first, which we do not. */
@@ -321,18 +322,18 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   },
   week: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
-    gap: 6,
+    gap: 4,
     marginTop: space.md,
   },
   // Each day is a cell rather than a bare letter: a filled square reads as a
   // day that counted, which an underline never did.
-  // Sized from its content rather than a fixed 28px square: the Georgian
-  // labels are two letters wide and were touching the box on every side.
+  // An equal share of the row rather than a fixed square: the Georgian labels
+  // are three letters wide, and seven fixed cells wide enough for them would
+  // run past the edge of the card.
   weekCell: {
-    minWidth: 34,
-    height: 34,
-    paddingHorizontal: 8,
+    flex: 1,
+    height: 32,
+    paddingHorizontal: 2,
     borderRadius: radius.sm,
     alignItems: 'center',
     justifyContent: 'center',
@@ -340,7 +341,7 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   weekCellToday: {
     backgroundColor: c.accent,
   },
-  weekDay: { color: c.textFaint, fontSize: 13, fontWeight: '700' },
+  weekDay: { color: c.textFaint, fontSize: 11, fontWeight: '700' },
   weekDayOn: { color: c.accentInk, fontWeight: '900' },
   weekDayToday: { color: c.bg, fontWeight: '900' },
   statRow: { flexDirection: 'row', gap: space.md },
