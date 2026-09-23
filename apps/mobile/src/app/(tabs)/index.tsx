@@ -5,7 +5,7 @@ import {
   UserLocation,
   type CameraRef,
 } from '@maplibre/maplibre-react-native'
-import { useRouter } from 'expo-router'
+import { useFocusEffect, useRouter } from 'expo-router'
 import { useCallback, useEffect, useRef, useState, useMemo } from 'react'
 import {
   ActivityIndicator,
@@ -77,6 +77,10 @@ export default function MapScreen() {
   const [loading, setLoading] = useState(true)
   // Set when a tapped marker holds more than one drop.
   const [picker, setPicker] = useState<NearbyDrop[] | null>(null)
+  // The recentre button is only useful when the map is somewhere else. It
+  // hides once the camera is on the player and comes back the moment they pan
+  // or zoom away -- a control that does nothing is just clutter over the map.
+  const [centred, setCentred] = useState(true)
   const lastQuery = useRef<{ lat: number; lng: number } | null>(null)
   const cameraRef = useRef<CameraRef>(null)
   const centredOnce = useRef(false)
@@ -113,6 +117,27 @@ export default function MapScreen() {
     }
     setDrops((data ?? []) as NearbyDrop[])
   }, [])
+
+  // Refetch on a timer as well as on movement. Drops appear, sell out and
+  // expire while the app sits open on a table, and a map that only re-queries
+  // when the player walks 50 metres shows a city that stopped changing when
+  // they stopped moving -- including a drop created a minute ago, which is
+  // exactly what a merchant does while watching their phone.
+  useEffect(() => {
+    if (!fix || safety.blocked) return
+    const timer = setInterval(() => {
+      void load(fix.latitude, fix.longitude)
+    }, 60_000)
+    return () => clearInterval(timer)
+  }, [fix, load, safety.blocked])
+
+  // And whenever the map comes back into view, so switching tabs is a refresh.
+  useFocusEffect(
+    useCallback(() => {
+      if (!fix || safety.blocked) return
+      void load(fix.latitude, fix.longitude)
+    }, [fix, load, safety.blocked]),
+  )
 
   // Refetch when the player has actually moved. Re-querying on every GPS tick
   // would hammer the API while standing still and change nothing.
@@ -180,6 +205,7 @@ export default function MapScreen() {
 
   const recentre = useCallback(() => {
     if (!fix) return
+    setCentred(true)
     cameraRef.current?.easeTo({
       center: [fix.longitude, fix.latitude],
       zoom: 15,
@@ -194,6 +220,12 @@ export default function MapScreen() {
       <MapLibreMap
         style={StyleSheet.absoluteFill}
         mapStyle={c.mapStyle}
+        // Only a gesture un-centres the map; our own easeTo calls fire this
+        // too, and treating those as "the player moved the map" would make
+        // the button reappear the instant it was pressed.
+        onRegionDidChange={(event) => {
+          if (event.nativeEvent.userInteraction) setCentred(false)
+        }}
       >
         <Camera
           ref={cameraRef}
@@ -297,7 +329,7 @@ export default function MapScreen() {
       {/* Always reachable, over the map and under the safety overlay. */}
       {!safety.blocked && (
         <View style={styles.controls}>
-          {fix && (
+          {fix && !centred && (
             <Pressable
               style={styles.recentre}
               onPress={recentre}
