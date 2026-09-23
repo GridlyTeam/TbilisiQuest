@@ -373,3 +373,21 @@ export async function setReportStatus(
   if (error) throw new Error(error.message)
   revalidatePath('/admin/reports')
 }
+
+/**
+ * Ban and erase, as one deliberate action.
+ *
+ * Distinct from setPlayerStatus('banned'), which keeps everything and can be
+ * undone. This removes the person -- profile, position, push token, referrals,
+ * XP, quests, badges -- and leaves their redemptions in place with no owner,
+ * so a merchant's settled numbers do not move because a player left.
+ */
+export async function erasePlayer(userId: string, reason?: string) {
+  const supabase = await createServerSupabase()
+  const { error } = await supabase.rpc('admin_erase_player', {
+    p_user_id: userId,
+    p_reason: reason ?? null,
+  })
+  if (error) throw new Error(error.message)
+  revalidatePath('/admin/players')
+}

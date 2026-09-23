@@ -6,6 +6,7 @@ import {
   searchPlayers,
   loadPlayerActivity,
   setPlayerStatus,
+  erasePlayer,
   type Player,
   type PlayerActivity,
 } from '@/lib/admin-actions'
@@ -89,6 +90,35 @@ function PlayerRow({
     }
   }
 
+  async function erase() {
+    // Irreversible and it removes a person's data, so it asks -- the one
+    // action in this portal that cannot be undone by clicking the other
+    // button.
+    const ok = window.confirm(
+      `Erase ${player.email}? Their profile, progress and location data are ` +
+        'deleted and the account is banned. Their redemptions stay, without ' +
+        'an owner, so venue analytics are unaffected. This cannot be undone.',
+    )
+    if (!ok) return
+
+    setBusy(true)
+    setError(null)
+    try {
+      await erasePlayer(player.user_id, reason || undefined)
+      onChanged({
+        ...player,
+        status: 'banned',
+        status_reason: reason || 'erased',
+        display_name: 'Deleted player',
+      })
+      setReason('')
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Failed')
+    } finally {
+      setBusy(false)
+    }
+  }
+
   async function moderate(status: 'active' | 'suspended' | 'banned') {
     setBusy(true)
     setError(null)
@@ -156,6 +186,19 @@ function PlayerRow({
             <Stat label="Last seen" value={formatDate(player.last_seen_at)} />
             <Stat label="Last redeem" value={formatDate(player.last_activity)} />
             <Stat label="Locale" value={player.locale} />
+          </div>
+
+          <div className="flex flex-wrap gap-2">
+            <button
+              onClick={erase}
+              disabled={busy}
+              className="rounded-lg border border-danger-ink px-3 py-1.5 text-xs font-semibold text-danger-ink disabled:opacity-40"
+            >
+              Erase personal data
+            </button>
+            <span className="self-center text-xs text-faint">
+              Keeps redemptions, removes the person. Cannot be undone.
+            </span>
           </div>
 
           {player.status !== 'active' && player.status_reason && (
