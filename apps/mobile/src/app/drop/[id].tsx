@@ -264,7 +264,10 @@ export default function DropDetailScreen() {
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
       <View style={styles.pillRow}>
-        <View style={[styles.rarityPill, { backgroundColor: meta.glow, borderColor: meta.color }]}>
+        {/* The fill used to be meta.glow, which for Rare is a 75% violet --
+            the same hue as the text on top of it, so the word disappeared.
+            A dark plate with the rarity as ink reads at any size. */}
+        <View style={[styles.rarityPill, { borderColor: meta.color }]}>
           <Text style={[styles.rarityText, { color: meta.color }]}>
             {meta.label[ka ? 'ka' : 'en'].toUpperCase()}
           </Text>
@@ -524,6 +527,7 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   },
   rarityPill: {
     alignSelf: 'flex-start',
+    backgroundColor: c.surfaceRaised,
     borderWidth: 1,
     borderRadius: radius.pill,
     paddingHorizontal: space.md,
