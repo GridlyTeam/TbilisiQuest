@@ -401,6 +401,7 @@ function DropMarker({
   ka: boolean
 }) {
   const styles = useStyles()
+  const { c } = useTheme()
   const rarity = useRarity()
   const meta = rarity[drop.rarity] ?? rarity.common
   const size = drop.is_boss_chest ? 74 : 58
@@ -417,7 +418,12 @@ function DropMarker({
           { backgroundColor: soldOut ? styles.badgeSoldOut.color : meta.color },
         ]}
       >
-        <Text style={styles.badgeText}>
+        <Text
+          style={[
+            styles.badgeText,
+            soldOut && { color: c.isDark ? '#CFC9DE' : '#3A3350' },
+          ]}
+        >
           {soldOut
             ? ka
               ? 'ვაუჩერები ამოიწურა'
@@ -611,19 +617,32 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     shadowRadius: 10,
     elevation: 7,
   },
+  // Map labels sit on whatever the basemap draws -- pale streets, dark parks,
+  // a river. Neither a light nor a dark text colour survives all of it, so
+  // both plates are opaque and carry a contrasting ring, and the text colour
+  // is chosen against the plate rather than against the map.
   badge: {
-    paddingHorizontal: 9,
-    paddingVertical: 3,
+    paddingHorizontal: 10,
+    paddingVertical: 4,
     borderRadius: radius.pill,
-    marginBottom: 4,
+    marginBottom: 5,
     alignItems: 'center',
+    borderWidth: 1.5,
+    borderColor: c.isDark ? 'rgba(8,6,15,0.85)' : 'rgba(255,255,255,0.9)',
+    shadowColor: '#000',
+    shadowOpacity: c.isDark ? 0.5 : 0.22,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 4,
   },
   badgeText: {
-    color: '#12101C',
-    fontSize: 10.5,
-    fontWeight: '800',
+    // Near-black on every rarity fill: cyan, violet and amber are all bright
+    // enough that white text on them fails at this size.
+    color: '#0A0813',
+    fontSize: 11,
+    fontWeight: '900',
   },
-  badgeSoldOut: { color: c.textFaint },
+  badgeSoldOut: { color: c.isDark ? '#2A2440' : '#D8D3E0' },
   pickerBackdrop: { flex: 1, backgroundColor: c.overlay, justifyContent: 'flex-end' },
   pickerSheet: {
     backgroundColor: c.surface,
@@ -665,7 +684,7 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     paddingVertical: 1,
   },
   squadPipText: {
-    color: c.text,
+    color: c.isDark ? '#F7F5FF' : '#171526',
     fontSize: 10,
     fontWeight: '900',
     letterSpacing: 0,
@@ -685,18 +704,29 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     paddingHorizontal: 3,
   },
   offerCountText: {
-    color: '#08060F',
+    color: '#0A0813',
     fontSize: 12,
     fontWeight: '900',
   },
   markerLabel: {
-    marginTop: 4,
+    marginTop: 5,
     alignSelf: 'center',
-    maxWidth: 120,
-    backgroundColor: c.surface,
+    maxWidth: 132,
+    backgroundColor: c.isDark ? 'rgba(10,8,19,0.92)' : 'rgba(255,255,255,0.96)',
     borderRadius: radius.sm,
-    paddingHorizontal: 6,
-    paddingVertical: 2,
+    borderWidth: 1,
+    borderColor: c.isDark ? 'rgba(247,245,255,0.18)' : 'rgba(23,21,38,0.12)',
+    paddingHorizontal: 7,
+    paddingVertical: 3,
+    shadowColor: '#000',
+    shadowOpacity: c.isDark ? 0.55 : 0.18,
+    shadowRadius: 5,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
   },
-  markerLabelText: { color: c.text, fontSize: 10, fontWeight: '600' },
+  markerLabelText: {
+    color: c.isDark ? '#F7F5FF' : '#171526',
+    fontSize: 11,
+    fontWeight: '700',
+  },
 })
