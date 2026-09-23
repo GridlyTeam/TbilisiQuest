@@ -35,6 +35,8 @@ type Cosmetic = {
   style_key: string
   rarity: Rarity
   owned: boolean
+  available: boolean
+  season_code: string | null
 }
 
 type AvatarRow = {
@@ -237,9 +239,13 @@ export default function InventoryScreen() {
                             ? ka
                               ? 'ჩაიცვი'
                               : 'Wear'
-                            : ka
-                              ? 'ჩაკეტილი'
-                              : 'Locked'}
+                            : item.available === false
+                              ? ka
+                                ? 'სეზონი დასრულდა'
+                                : 'Vaulted'
+                              : ka
+                                ? 'ჩაკეტილი'
+                                : 'Locked'}
                       </Text>
                     </Pressable>
                   )

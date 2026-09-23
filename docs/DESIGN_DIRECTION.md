@@ -214,6 +214,39 @@ Colour is applied by generating each body in each colour, not by tinting at
 runtime: `tintColor` flattens an image to one solid colour and throws the
 shading away, which is exactly what makes these characters look like toys.
 
+## Seasonal rotation -- how to run it without the art cost running away
+
+The rhythm asked for is Fortnite's: a set of things this season, a different set
+next, and a reason to come back. The trap is copying how Fortnite fills it,
+which is full outfits, because an outfit has to be drawn once per body shape.
+
+So content is split by whether it touches the body, and this is recorded on
+every cosmetic as `shape_bound`:
+
+| | Cost | Examples |
+|---|---|---|
+| **Anchored** | one render, whatever the shapes | hats, back pieces, trails, auras, pins, stickers, backgrounds, titles, frames |
+| **Shape-bound** | one render **per shape** | outfits |
+
+A season is then mostly anchored items with **one or two shape-bound headline
+outfits**. `season_art_cost('S2')` gives the number before anybody commissions
+it: today season one reads 46 items, 40 anchored, 6 shape-bound, and at three
+shapes that would be 58 renders rather than 138.
+
+**Rotation never takes anything away.** Availability windows
+(`cosmetics.available_from` / `available_until`, and the store's own
+`on_sale_from` / `on_sale_until`) decide what can still be *acquired*. Nothing
+ever deletes from `user_cosmetics`. A player who earned season one's hoodie owns
+it in season ten -- that is the part Fortnite gets right and the part that makes
+people trust the pass.
+
+Vaulted items stay in the locker, greyed, reading "სეზონი დასრულდა". Hiding them
+would make a collection look complete when it is not, and the gap is the reason
+to be there for the next season.
+
+Turning a season over is one call: `rotate_season_cosmetics('S1', 'S2')`, which
+closes the outgoing tag and opens the incoming one.
+
 ## Character customisation
 
 The locker becomes the Character tab and grows a proper stage: the character
@@ -314,3 +347,4 @@ These come from decisions already made and apply to everything above.
 | Four tabs: Map, Vouchers, Character, Season | `2ef9a5f` |
 | Visibility modes, head boxes, player cards | `0040`, `84191ec` |
 | Coins, the store tab, six backgrounds | `0042` |
+| Seasonal rotation, vaulting, art-cost calculator | `0043` |
