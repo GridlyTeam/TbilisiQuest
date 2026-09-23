@@ -116,13 +116,12 @@ export default function ProfileScreen() {
               index <= today && today - index < xp.current_streak_days
             const isToday = index === today
             return (
+              // Only today wears the box; it moves along the row as the week
+              // does. The rest are plain letters, amber where the streak has
+              // reached them.
               <View
                 key={`${day}-${index}`}
-                style={[
-                  styles.weekCell,
-                  covered && styles.weekCellOn,
-                  isToday && styles.weekCellToday,
-                ]}
+                style={[styles.weekCell, isToday && styles.weekCellToday]}
               >
                 <Text
                   style={[
@@ -329,23 +328,14 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   // Each day is a cell rather than a bare letter: a filled square reads as a
   // day that counted, which an underline never did.
   weekCell: {
-    flex: 1,
-    aspectRatio: 1,
-    maxWidth: 40,
+    width: 28,
+    height: 28,
     borderRadius: radius.sm,
-    borderWidth: 1,
-    borderColor: c.border,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  weekCellOn: {
-    // Covered days: a tint of the accent, so the run reads as a block.
-    backgroundColor: c.isDark ? 'rgba(255,176,32,0.16)' : 'rgba(183,110,31,0.12)',
-    borderColor: c.accent,
-  },
   weekCellToday: {
     backgroundColor: c.accent,
-    borderColor: c.accent,
   },
   weekDay: { color: c.textFaint, fontSize: 13, fontWeight: '700' },
   weekDayOn: { color: c.accentInk, fontWeight: '900' },
