@@ -1,7 +1,13 @@
 import { Tabs } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { MapIcon, PassIcon, ProfileIcon, VoucherIcon } from '../../components/TabIcons'
+import {
+  MapIcon,
+  PassIcon,
+  ProfileIcon,
+  StoreIcon,
+  VoucherIcon,
+} from '../../components/TabIcons'
 
 import { useTheme } from '../../lib/theme'
 import { useTranslation } from '../../lib/i18n'
@@ -36,7 +42,7 @@ export default function TabsLayout() {
           paddingBottom: bottomInset,
         },
         tabBarLabelStyle: {
-          fontSize: 11,
+          fontSize: 10,
           fontWeight: '800',
           letterSpacing: 0,
         },
@@ -64,6 +70,13 @@ export default function TabsLayout() {
         options={{
           title: ka ? 'პერსონაჟი' : 'Character',
           tabBarIcon: ({ color }) => <ProfileIcon color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="store"
+        options={{
+          title: ka ? 'მაღაზია' : 'Store',
+          tabBarIcon: ({ color }) => <StoreIcon color={color} />,
         }}
       />
       <Tabs.Screen

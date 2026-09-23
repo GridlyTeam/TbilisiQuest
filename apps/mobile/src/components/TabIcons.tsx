@@ -97,6 +97,42 @@ export function VoucherIcon({ color, size = 22 }: Props) {
   )
 }
 
+export function StoreIcon({ color, size = 22 }: Props) {
+  const w = Math.round(size * 0.82)
+  return (
+    <View style={[styles.box, { width: size, height: size }]}>
+      {/* A shop: an awning over a counter. The scallops are what stop it
+          reading as a plain box. */}
+      <View style={{ flexDirection: 'row', gap: 0 }}>
+        {[0, 1, 2].map((i) => (
+          <View
+            key={i}
+            style={{
+              width: w / 3,
+              height: 6,
+              borderWidth: 1.5,
+              borderColor: color,
+              borderTopLeftRadius: i === 0 ? 2 : 0,
+              borderTopRightRadius: i === 2 ? 2 : 0,
+              marginLeft: i === 0 ? 0 : -1.5,
+            }}
+          />
+        ))}
+      </View>
+      <View
+        style={{
+          width: w - 4,
+          height: Math.round(size * 0.42),
+          borderWidth: 1.5,
+          borderTopWidth: 0,
+          borderColor: color,
+          marginTop: -1,
+        }}
+      />
+    </View>
+  )
+}
+
 export function PassIcon({ color, size = 22 }: Props) {
   const medal = Math.round(size * 0.5)
   return (

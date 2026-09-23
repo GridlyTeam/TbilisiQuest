@@ -163,7 +163,7 @@ Because of that, **another player's head box must be labelled approximate** --
 on the card, in words. An icon that hops 400 m while somebody watches it, with
 nothing explaining why, is read as a broken map and reported as a bug.
 
-## The four tabs
+## The five tabs
 
 1. **Map** -- the default tab, as now.
 2. **Vouchers** -- what you have claimed.
@@ -171,12 +171,48 @@ nothing explaining why, is read as a broken map and reported as a bug.
    they have earned or bought lives here, with a large view of the character
    wearing it. Backgrounds are locations: Mtatsminda Park, and others like it.
    All of it produced with Higgsfield later.
-4. **Season** -- progress, achievements, when the current season ends and the
+4. **Store** -- added 2026-09-23. Backgrounds and gear bought with coins.
+5. **Season** -- progress, achievements, when the current season ends and the
    next begins, and the one **XP leaderboard** every player is in automatically.
+
+Five is the ceiling. A sixth tab does not fit a phone and the labels are already
+at 10px.
 
 This replaces the current four (map, vouchers, pass, profile): the pass folds
 into Season, and profile settings need a home that is not a tab -- likely a
 header button on Character or Season.
+
+## The creature: shapes and colours
+
+Reference Sandro sent on 2026-09-23: a Fall Guys style line-up, four soft
+rounded bodies in different silhouettes -- tall cylinder, egg, triangle, short
+cylinder -- each with a colour swatch under it, captioned "choose your standard
+shape".
+
+That is the direction: **shape plus colour at sign-up**, both changeable later.
+
+Two cautions, one cheap and one expensive.
+
+**Do not clone Fall Guys.** The bean silhouette with the two white oval eyes is
+a recognisable design belonging to a company with lawyers. Take the register --
+soft, toy-like, pastel, no faces beyond eyes -- and make the silhouettes our
+own. A creature from Tbilisi does not have to look like a jellybean.
+
+**The expensive part is not the system, it is the art pipeline.** The app can
+composite layers all day; what multiplies is what has to be drawn:
+
+| | Assets |
+|---|---|
+| bodies | shapes x colours |
+| every outfit | one render **per shape** |
+
+Four shapes and eight colours is 32 bodies, which is fine. But every outfit
+added afterwards costs four renders instead of one, forever. **Start with three
+shapes**, and only add a fourth when the outfit catalogue has stopped growing.
+
+Colour is applied by generating each body in each colour, not by tinting at
+runtime: `tintColor` flattens an image to one solid colour and throws the
+shading away, which is exactly what makes these characters look like toys.
 
 ## Character customisation
 
@@ -188,8 +224,18 @@ Slots as they exist today (title, frame, map pin, outfit, sticker, card theme)
 plus **background**, which is new and matters most -- a Mtatsminda Park
 backdrop is the thing worth showing off.
 
-Sources of gear: the City Pass tracks, achievements, and **a store**. The store
-is new; nothing about payments is decided yet.
+Sources of gear: the City Pass tracks, achievements, and the store.
+
+**The store takes coins, not money.** Decided 2026-09-23. Most of these players
+are minors, and selling them digital goods is a different business with
+different law around it -- refund rights, parental consent, and Play's rule that
+digital goods inside an Android app go through Play Billing and its cut. The
+currency we already have is also the better one: coins come from redeeming
+vouchers, 50 a time, so the way to afford the Mtatsminda background is to walk
+into a shop. That is exactly the behaviour the venues are paying for.
+
+Six backgrounds seeded at 200 to 1000 coins -- four visits for a common one,
+twenty for the Bridge of Peace.
 
 ## Season
 
@@ -266,4 +312,5 @@ These come from decisions already made and apply to everything above.
 | Drawn avatar the gear sits on | `b067696` |
 | One XP leaderboard, campuses removed | `8ac4446` |
 | Four tabs: Map, Vouchers, Character, Season | `2ef9a5f` |
-| Visibility modes, head boxes, player cards | `0040` |
+| Visibility modes, head boxes, player cards | `0040`, `84191ec` |
+| Coins, the store tab, six backgrounds | `0042` |
