@@ -220,6 +220,11 @@ export default function MapScreen() {
       <MapLibreMap
         style={StyleSheet.absoluteFill}
         mapStyle={c.mapStyle}
+        // MapLibre's logo and its attribution "i" sat in the corners under our
+        // own controls, and two info buttons on one screen is one too many.
+        // The credit they carry moved into the safety sheet.
+        logo={false}
+        attribution={false}
         // Only a gesture un-centres the map; our own easeTo calls fire this
         // too, and treating those as "the player moved the map" would make
         // the button reappear the instant it was pressed.

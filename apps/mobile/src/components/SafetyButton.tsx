@@ -278,6 +278,16 @@ export default function SafetyButton({
                   onPress={call112}
                 />
 
+                {/* The map's own logo and attribution button are switched
+                    off so they do not sit under our controls, and OpenStreetMap
+                    and CARTO are credited here instead -- their licences ask
+                    for attribution, not for a badge on the map itself. */}
+                <Text style={styles.credit}>
+                  {ka
+                    ? 'რუკა: © OpenStreetMap-ის მონაწილეები, © CARTO'
+                    : 'Map data © OpenStreetMap contributors, tiles © CARTO'}
+                </Text>
+
                 <Pressable onPress={close}>
                   <Text style={styles.back}>{ka ? 'დახურვა' : 'Close'}</Text>
                 </Pressable>
@@ -344,6 +354,13 @@ const makeStyles = (c: Palette) =>
       letterSpacing: 0,
       // The glyph's own bearing sits it left of centre in the circle.
       marginLeft: 1,
+    },
+
+    credit: {
+      color: c.textFaint,
+      fontSize: 11,
+      textAlign: 'center',
+      marginTop: space.sm,
     },
 
     backdrop: { flex: 1, backgroundColor: c.overlay, justifyContent: 'flex-end' },
