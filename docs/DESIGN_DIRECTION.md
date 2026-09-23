@@ -217,17 +217,20 @@ None of this waits on Higgsfield. The drawn placeholder creature in
 `components/Avatar.tsx` stands in, and generated art replaces it inside that one
 component.
 
-1. **Visibility modes, end to end.** Column on `users`, ghost as default, the
-   under-16 lock, the seeded server-side displacement, and the RPC that returns
-   other players already fuzzed. Pure backend plus one settings screen. Everything
-   on the map depends on it, so it goes first.
+1. ~~Visibility modes, end to end~~ -- built, `0040`. Ghost default, the under-16
+   lock enforced in both the RPC and a trigger, displacement seeded on player and
+   hour (measured at 374 m and 416 m for two accounts, and stable across repeated
+   calls), `nearby_players` and `player_card` gated on it, and the picker at the
+   top of Settings.
 2. ~~The four tabs~~ -- built, `see Done`. Map, Vouchers, Character, Season;
    the pass folded into Season and settings moved to a header button on it.
 3. **The character stage.** Full-size creature on its pedestal with the gear
    around it, and a background slot -- a drawn gradient until there is a
    Mtatsminda Park image to put in it.
-4. **Head boxes on the map.** Own dot first, then other players through the
-   visibility rules, with the approximate label.
+4. ~~Head boxes on the map~~ -- built. Other players draw as a head box above
+   their point, tapping opens their card, and an approximate position says so on
+   that card. Still drawn rather than illustrated, and the player's own head box
+   is not on the map yet -- their own dot is still the puck.
 5. **Nickname and colour at sign-up.** The colour is real data from day one; only
    the picture it tints changes later.
 6. ~~XP leaderboard~~ -- built, `0039`. Still to move onto the Season tab.
@@ -262,4 +265,5 @@ These come from decisions already made and apply to everything above.
 | Locker, campus table, merchant beacon button | `d9fdae2` |
 | Drawn avatar the gear sits on | `b067696` |
 | One XP leaderboard, campuses removed | `8ac4446` |
-| Four tabs: Map, Vouchers, Character, Season | `see below` |
+| Four tabs: Map, Vouchers, Character, Season | `2ef9a5f` |
+| Visibility modes, head boxes, player cards | `0040` |

@@ -25,7 +25,25 @@ import SafetyOverlay from '../../components/SafetyOverlay'
 import SafetyBriefing from '../../components/SafetyBriefing'
 import SafetyButton from '../../components/SafetyButton'
 import UserPuck from '../../components/UserPuck'
+import HeadBox from '../../components/HeadBox'
 import { useTheme, useRarity, radius, space, font, type Palette, type Rarity } from '../../lib/theme'
+
+type NearbyPlayer = {
+  player_id: string
+  display_name: string
+  avatar_config: { colour?: string } | null
+  lat: number
+  lng: number
+  approximate: boolean
+}
+
+type PlayerCard = {
+  display_name: string
+  avatar_config: { colour?: string } | null
+  level: number
+  season_xp: number
+  approximate: boolean
+}
 
 function useStyles() {
   const { c } = useTheme()
@@ -203,6 +221,52 @@ export default function MapScreen() {
     return [...byPlace.values()]
   }, [drops])
 
+  // Other players, and our own position going the other way.
+  //
+  // Everything about who may be seen and how precisely is decided in the
+  // database -- see migration 0040. What arrives here for a public player is
+  // already displaced by 300-500 m, so there is no exact position in this
+  // process to leak. The app's only job is to draw it and say it is
+  // approximate.
+  const [players, setPlayers] = useState<NearbyPlayer[]>([])
+  const [card, setCard] = useState<PlayerCard | null>(null)
+
+  useEffect(() => {
+    if (!fix) return
+    let cancelled = false
+
+    const tick = async () => {
+      await supabase.rpc('heartbeat_position', {
+        p_lat: fix.latitude,
+        p_lng: fix.longitude,
+      })
+      const { data } = await supabase.rpc('nearby_players', {
+        p_lat: fix.latitude,
+        p_lng: fix.longitude,
+        p_radius_m: 3000,
+      })
+      if (!cancelled) setPlayers((data as NearbyPlayer[]) ?? [])
+    }
+
+    void tick()
+    const timer = setInterval(() => void tick(), 30000)
+    return () => {
+      cancelled = true
+      clearInterval(timer)
+    }
+  }, [fix])
+
+  const openCard = useCallback(
+    async (player: NearbyPlayer) => {
+      const { data } = await supabase.rpc('player_card', { p_user_id: player.player_id })
+      const row = (Array.isArray(data) ? data[0] : data) as PlayerCard | undefined
+      // A player who went ghost between the list arriving and the tap simply
+      // has no card; saying nothing is better than saying they vanished.
+      if (row) setCard({ ...row, approximate: player.approximate })
+    },
+    [],
+  )
+
   const recentre = useCallback(() => {
     if (!fix) return
     setCentred(true)
@@ -245,6 +309,18 @@ export default function MapScreen() {
             <UserPuck />
           </Marker>
         )}
+
+        {/* Other people, under the drops: a voucher is what the map is for,
+            and a head box should never sit over one. */}
+        {players.map((player) => (
+          <Marker
+            key={player.player_id}
+            lngLat={[player.lng, player.lat]}
+            onPress={() => openCard(player)}
+          >
+            <HeadBox colour={player.avatar_config?.colour} dimmed={player.approximate} />
+          </Marker>
+        ))}
 
         {groups.map((group) => {
           // The marker wears the best thing on offer here: a shop with a
@@ -353,6 +429,39 @@ export default function MapScreen() {
           <SafetyButton fix={fix} />
         </View>
       )}
+
+      <Modal
+        visible={card != null}
+        transparent
+        animationType="fade"
+        statusBarTranslucent
+        onRequestClose={() => setCard(null)}
+      >
+        <Pressable style={styles.pickerBackdrop} onPress={() => setCard(null)}>
+          <Pressable style={styles.cardSheet} onPress={(e) => e.stopPropagation()}>
+            {card && (
+              <>
+                <HeadBox colour={card.avatar_config?.colour} size={72} />
+                <Text style={styles.cardName}>{card.display_name}</Text>
+                <Text style={styles.cardMeta}>
+                  {ka
+                    ? `დონე ${card.level} - ${card.season_xp} XP სეზონზე`
+                    : `Level ${card.level} - ${card.season_xp} XP this season`}
+                </Text>
+                {/* Said plainly, because an icon that hops 400 m with no
+                    explanation is read as a broken map. */}
+                {card.approximate && (
+                  <Text style={styles.cardApprox}>
+                    {ka
+                      ? 'ადგილი მიახლოებითია - ზუსტი ადგილი არავის უჩანს'
+                      : 'Location is approximate - exact positions are never shown'}
+                  </Text>
+                )}
+              </>
+            )}
+          </Pressable>
+        </Pressable>
+      </Modal>
 
       <Modal
         visible={picker != null}
@@ -687,6 +796,26 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   },
   badgeSoldOut: { color: c.isDark ? '#2A2440' : '#D8D3E0' },
   pickerBackdrop: { flex: 1, backgroundColor: c.overlay, justifyContent: 'flex-end' },
+  cardSheet: {
+    margin: space.lg,
+    marginBottom: space.xl,
+    backgroundColor: c.surface,
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    borderColor: c.border,
+    padding: space.xl,
+    alignItems: 'center',
+    gap: space.sm,
+  },
+  cardName: { color: c.text, fontSize: 20, fontWeight: '900', letterSpacing: 0 },
+  cardMeta: { color: c.textMuted, fontSize: 13, fontWeight: '700' },
+  cardApprox: {
+    color: c.textFaint,
+    fontSize: 12,
+    textAlign: 'center',
+    lineHeight: 17,
+    marginTop: space.xs,
+  },
   pickerSheet: {
     backgroundColor: c.surface,
     borderTopLeftRadius: radius.xl,
