@@ -125,7 +125,7 @@ const catalogue = {
   'creator.earlyAccessLevel': { ka: 'ადრეული წვდომა დონიდან', en: 'Early access from level' },
   'creator.earlyAccessHint': { ka: '0 გამორთავს ამ ფუნქციას', en: '0 disables early access' },
   'creator.earlyMinutes': { ka: 'რამდენი წუთით ადრე', en: 'Minutes early' },
-  'creator.bossChest': { ka: 'გამოყოფა როგორც ბოს-ზარდახშა', en: 'Highlight as a Boss Chest' },
+  'creator.bossChest': { ka: 'გამოყოფა როგორც პრემიუმ ზარდახშა', en: 'Highlight as a Premium Chest' },
   'creator.bossChestOn': {
     ka: 'გადიდებული, მანათობელი აღნიშვნა მოთამაშის რუკაზე.',
     en: 'Oversized marker with a glow effect on the player map.',
