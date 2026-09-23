@@ -133,6 +133,13 @@ export async function createDrop(
  * when. RLS restricts the update to staff at that venue; the reviewer id comes
  * from the session rather than the request body.
  */
+/**
+ * Retired from the merchant portal in 0033: venue pins are operator-set and
+ * cannot be moved, so a merchant marking their own drop "checked" verified
+ * nothing. Kept because the database gate still exists and can be switched
+ * back on (safety_config.require_manual_review) if drops are ever placed away
+ * from venues.
+ */
 export async function markDropReviewed(dropId: string, notes?: string) {
   const supabase = await createServerSupabase()
 

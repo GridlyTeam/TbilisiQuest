@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { useI18n } from '@/lib/i18n'
-import { markDropReviewed } from '@/lib/actions'
 import type { VenueAllowance } from '@/lib/admin-actions'
 import DropCreator from './DropCreator'
 
@@ -91,9 +90,6 @@ export default function DropsView({
 
 function DropRow({ drop, now }: { drop: DropSummary; now: Date | null }) {
   const { t, locale } = useI18n()
-  const [reviewing, setReviewing] = useState(false)
-  const reviewed = drop.safety_reviewed_at != null
-
   const starts = new Date(drop.starts_at)
   const ends = new Date(drop.ends_at)
 
@@ -141,28 +137,8 @@ function DropRow({ drop, now }: { drop: DropSummary; now: Date | null }) {
         <p className="text-xs text-muted">{t('drops.claimed')}</p>
       </div>
 
-      {reviewed ? null : (
-        <button
-          onClick={async () => {
-            setReviewing(true)
-            try {
-              await markDropReviewed(drop.id)
-            } finally {
-              setReviewing(false)
-            }
-          }}
-          disabled={reviewing}
-          className="shrink-0 rounded-lg bg-warn-ink px-3 py-1.5 text-[11px] font-semibold text-white transition hover:opacity-90 disabled:opacity-40"
-        >
-          {t('drops.reviewAction')}
-        </button>
-      )}
-
       <span
         className={`w-20 shrink-0 rounded-full px-2 py-1 text-center text-[11px] font-medium ${
-          !reviewed
-            ? 'bg-warn text-warn-ink'
-            : 
           isLive
             ? 'bg-live text-live-ink'
             : isPast
