@@ -114,17 +114,26 @@ export default function ProfileScreen() {
             // never mark a day that has not happened yet this week.
             const covered =
               index <= today && today - index < xp.current_streak_days
+            const isToday = index === today
             return (
-              <Text
+              <View
                 key={`${day}-${index}`}
                 style={[
-                  styles.weekDay,
-                  covered && styles.weekDayOn,
-                  index === today && styles.weekDayToday,
+                  styles.weekCell,
+                  covered && styles.weekCellOn,
+                  isToday && styles.weekCellToday,
                 ]}
               >
-                {day}
-              </Text>
+                <Text
+                  style={[
+                    styles.weekDay,
+                    covered && styles.weekDayOn,
+                    isToday && styles.weekDayToday,
+                  ]}
+                >
+                  {day}
+                </Text>
+              </View>
             )
           })}
         </View>
@@ -314,11 +323,33 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   week: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    gap: 6,
     marginTop: space.md,
   },
-  weekDay: { color: c.textFaint, fontSize: 12, fontWeight: '600' },
-  weekDayOn: { color: c.accent, fontWeight: '900' },
-  weekDayToday: { textDecorationLine: 'underline' },
+  // Each day is a cell rather than a bare letter: a filled square reads as a
+  // day that counted, which an underline never did.
+  weekCell: {
+    flex: 1,
+    aspectRatio: 1,
+    maxWidth: 40,
+    borderRadius: radius.sm,
+    borderWidth: 1,
+    borderColor: c.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  weekCellOn: {
+    // Covered days: a tint of the accent, so the run reads as a block.
+    backgroundColor: c.isDark ? 'rgba(255,176,32,0.16)' : 'rgba(183,110,31,0.12)',
+    borderColor: c.accent,
+  },
+  weekCellToday: {
+    backgroundColor: c.accent,
+    borderColor: c.accent,
+  },
+  weekDay: { color: c.textFaint, fontSize: 13, fontWeight: '700' },
+  weekDayOn: { color: c.accentInk, fontWeight: '900' },
+  weekDayToday: { color: c.bg, fontWeight: '900' },
   statRow: { flexDirection: 'row', gap: space.md },
   stat: {
     flex: 1,
