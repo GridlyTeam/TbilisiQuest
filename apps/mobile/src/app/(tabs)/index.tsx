@@ -412,16 +412,20 @@ function DropMarker({
 
   return (
     <View style={styles.markerWrap}>
+      {/* A neutral plate with the rarity in the ink and the border, rather
+          than a saturated fill. Bright cyan or amber behind small text is
+          hard to look at on a map you are scanning, and the colour reads
+          just as clearly as an outline. */}
       <View
         style={[
           styles.badge,
-          { backgroundColor: soldOut ? styles.badgeSoldOut.color : meta.color },
+          !soldOut && { borderColor: meta.color },
         ]}
       >
         <Text
           style={[
             styles.badgeText,
-            soldOut && { color: c.isDark ? '#CFC9DE' : '#3A3350' },
+            { color: soldOut ? c.textMuted : meta.color },
           ]}
         >
           {soldOut
@@ -627,8 +631,9 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     borderRadius: radius.pill,
     marginBottom: 5,
     alignItems: 'center',
+    backgroundColor: c.isDark ? 'rgba(10,8,19,0.92)' : 'rgba(255,255,255,0.96)',
     borderWidth: 1.5,
-    borderColor: c.isDark ? 'rgba(8,6,15,0.85)' : 'rgba(255,255,255,0.9)',
+    borderColor: c.border,
     shadowColor: '#000',
     shadowOpacity: c.isDark ? 0.5 : 0.22,
     shadowRadius: 5,
@@ -636,9 +641,6 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     elevation: 4,
   },
   badgeText: {
-    // Near-black on every rarity fill: cyan, violet and amber are all bright
-    // enough that white text on them fails at this size.
-    color: '#0A0813',
     fontSize: 11,
     fontWeight: '900',
   },
@@ -696,15 +698,15 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     minWidth: 22,
     height: 22,
     borderRadius: 11,
-    backgroundColor: c.accent,
+    backgroundColor: c.isDark ? 'rgba(10,8,19,0.95)' : 'rgba(255,255,255,0.98)',
     borderWidth: 2,
-    borderColor: c.bg,
+    borderColor: c.accent,
     alignItems: 'center',
     justifyContent: 'center',
     paddingHorizontal: 3,
   },
   offerCountText: {
-    color: '#0A0813',
+    color: c.accentInk,
     fontSize: 12,
     fontWeight: '900',
   },
