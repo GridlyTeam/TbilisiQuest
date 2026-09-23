@@ -26,7 +26,7 @@ export type PublicStats = {
 }
 
 const APK_URL =
-  'https://expo.dev/artifacts/eas/00uHppxXSqcJuMUGneNT6C3_oHdlSzTGV3MmiwdIhg0.apk'
+  'https://expo.dev/artifacts/eas/W_iIxZE2B11q-YWAsvkkZpTe1zwr94Re8bGsLqrgeN8.apk'
 
 const CONTACT_EMAIL = 'hello@tbilisiquest.ge'
 
