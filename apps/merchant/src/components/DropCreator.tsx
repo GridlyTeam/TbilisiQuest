@@ -69,6 +69,13 @@ const dropSchema = z
         v.discountPercent <= RARITY_RULES[v.rarity].max),
     { message: 'creator.errDiscountBand', path: ['discountPercent'] },
   )
+  // And the offer type itself. A Common with "1+1" passes every check above
+  // and is still refused by the database, which was the other half of the
+  // unexplained failure.
+  .refine(
+    (v) => (RARITY_RULES[v.rarity].offers as readonly string[]).includes(v.offer),
+    { message: 'creator.errOfferBand', path: ['offer'] },
+  )
 
 export type DropFormValues = z.infer<typeof dropSchema>
 
@@ -265,6 +272,12 @@ export default function DropCreator({
         timezone: venueTimezone,
         ...parsed.data,
       })
+
+      if (!result.ok) {
+        setServerError(result.message)
+        return
+      }
+
       onCreated?.(result.dropId)
       setValues(makeDefaults())
       setConfirmed(false)

@@ -149,6 +149,10 @@ const catalogue = {
     ka: 'ეს პროცენტი არ შეესაბამება არჩეულ იშვიათობას',
     en: 'That percentage does not match the chosen rarity',
   },
+  'creator.errOfferBand': {
+    ka: 'ეს შეთავაზება არ შეესაბამება არჩეულ იშვიათობას',
+    en: 'That offer type does not match the chosen rarity',
+  },
   'creator.errDate': { ka: 'აირჩიე თარიღი', en: 'Pick a date' },
 
   // Rarity

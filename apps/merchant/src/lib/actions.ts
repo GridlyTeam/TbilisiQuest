@@ -37,7 +37,19 @@ type CreateDropInput = {
   squadSize: number
 }
 
-export async function createDrop(input: CreateDropInput) {
+/**
+ * Next.js replaces anything thrown from a server action with a generic error
+ * and a digest before it reaches the browser -- that is what "Minified React
+ * error #441" is. A message the merchant needs to read therefore has to be
+ * RETURNED, not thrown.
+ */
+export type CreateDropResult =
+  | { ok: true; dropId: string }
+  | { ok: false; message: string }
+
+export async function createDrop(
+  input: CreateDropInput,
+): Promise<CreateDropResult> {
   const supabase = await createServerSupabase()
 
   // The merchant picked "14:00" meaning 14:00 in Tbilisi, not 14:00 UTC. Storing
@@ -91,7 +103,7 @@ export async function createDrop(input: CreateDropInput) {
     .select('id')
     .single()
 
-  if (error) throw new Error(explainDropError(error.message))
+  if (error) return { ok: false, message: explainDropError(error.message) }
 
   // Create the voucher rows before the drop is claimable. Doing this up front
   // is what lets claim_voucher() allocate with SKIP LOCKED instead of inserting
@@ -103,11 +115,14 @@ export async function createDrop(input: CreateDropInput) {
   if (inventoryError) {
     // Without inventory the drop would appear on the map and fail every claim.
     await supabase.from('drops').delete().eq('id', drop.id)
-    throw new Error(`Could not reserve inventory: ${inventoryError.message}`)
+    return {
+      ok: false,
+      message: `Could not reserve inventory: ${inventoryError.message}`,
+    }
   }
 
   revalidatePath('/drops')
-  return { dropId: drop.id as string }
+  return { ok: true, dropId: drop.id as string }
 }
 
 /**
