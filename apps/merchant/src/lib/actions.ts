@@ -193,3 +193,40 @@ function explainDropError(raw: string): string {
   }
   return raw
 }
+
+
+/**
+ * Light the venue up for a while.
+ *
+ * The beacon is the one thing a merchant can do between drops: it pushes their
+ * live drop to players who have notifications on and marks the venue on the
+ * map. Everything that decides whether they may -- ownership, the drop being
+ * live, the 15 to 240 minute bounds -- is decided in the database, so this
+ * only has to carry the refusal back to the button.
+ */
+export async function startBeacon(
+  dropId: string,
+  minutes: number,
+): Promise<{ ok: true; until: string } | { ok: false; message: string }> {
+  const supabase = await createServerSupabase()
+
+  const { data, error } = await supabase.rpc('start_beacon', {
+    p_drop_id: dropId,
+    p_minutes: minutes,
+  })
+
+  if (error) {
+    // Thrown errors are masked in production, so every failure is returned.
+    const message = error.message.includes('NOT_YOURS')
+      ? 'That drop belongs to another venue.'
+      : error.message.includes('DROP_NOT_LIVE')
+        ? 'A beacon only works while the drop is live.'
+        : error.message.includes('BEACON_LENGTH')
+          ? 'A beacon runs between 15 and 240 minutes.'
+          : 'The beacon could not start. Try again.'
+    return { ok: false, message }
+  }
+
+  revalidatePath('/drops')
+  return { ok: true, until: data as string }
+}

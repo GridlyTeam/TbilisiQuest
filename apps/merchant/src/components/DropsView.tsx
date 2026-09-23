@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 
 import { useI18n } from '@/lib/i18n'
+import { startBeacon } from '@/lib/actions'
 import type { VenueAllowance } from '@/lib/admin-actions'
 import DropCreator from './DropCreator'
 
@@ -18,6 +19,7 @@ export type DropSummary = {
   is_boss_chest: boolean
   remaining: number
   safety_reviewed_at: string | null
+  beacon_until: string | null
 }
 
 const RARITY_COLOR = {
@@ -137,6 +139,8 @@ function DropRow({ drop, now }: { drop: DropSummary; now: Date | null }) {
         <p className="text-xs text-muted">{t('drops.claimed')}</p>
       </div>
 
+      {isLive && <BeaconButton drop={drop} now={now} />}
+
       <span
         className={`w-20 shrink-0 rounded-full px-2 py-1 text-center text-[11px] font-medium ${
           isLive
@@ -155,5 +159,62 @@ function DropRow({ drop, now }: { drop: DropSummary; now: Date | null }) {
               : t('drops.queued')}
       </span>
     </li>
+  )
+}
+
+/**
+ * One button, two states.
+ *
+ * While a beacon is running it shows the minutes left rather than offering to
+ * start another -- the server would refuse a second push within the hour
+ * anyway, and a button that looks available but does nothing teaches the
+ * merchant to distrust it.
+ */
+function BeaconButton({ drop, now }: { drop: DropSummary; now: Date | null }) {
+  const { t } = useI18n()
+  const router = useRouter()
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const until = drop.beacon_until ? new Date(drop.beacon_until) : null
+  const running = until != null && now != null && until > now
+  const minutesLeft =
+    running && now != null && until != null
+      ? Math.max(1, Math.round((until.getTime() - now.getTime()) / 60000))
+      : 0
+
+  async function fire() {
+    setBusy(true)
+    setError(null)
+    const result = await startBeacon(drop.id, 60)
+    setBusy(false)
+    if (!result.ok) {
+      setError(result.message)
+      return
+    }
+    router.refresh()
+  }
+
+  if (running) {
+    return (
+      <span className="shrink-0 rounded-full bg-warn px-2.5 py-1 text-[11px] font-semibold text-warn-ink">
+        {t('drops.beaconOn')} · {minutesLeft}m
+      </span>
+    )
+  }
+
+  return (
+    <div className="shrink-0 text-right">
+      <button
+        type="button"
+        onClick={fire}
+        disabled={busy}
+        title={t('drops.beaconHint')}
+        className="rounded-full border border-line-strong px-2.5 py-1 text-[11px] font-semibold text-ink hover:border-ink disabled:opacity-50"
+      >
+        {busy ? '…' : t('drops.beacon')}
+      </button>
+      {error && <p className="mt-1 max-w-[9rem] text-[10px] text-bad">{error}</p>}
+    </div>
   )
 }

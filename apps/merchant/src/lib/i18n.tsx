@@ -63,6 +63,12 @@ const catalogue = {
   'drops.ended': { ka: 'დასრულდა', en: 'Ended' },
   'drops.queued': { ka: 'რიგში', en: 'Queued' },
   'drops.boss': { ka: 'ბოსი', en: 'Boss' },
+  'drops.beacon': { ka: 'სიგნალი', en: 'Beacon' },
+  'drops.beaconOn': { ka: 'სიგნალი ჩართულია', en: 'Beacon on' },
+  'drops.beaconHint': {
+    ka: 'აცნობებს ახლომდებარე მოთამაშეებს, რომ შენთან შეთავაზებაა',
+    en: 'Tells nearby players there is an offer at your counter',
+  },
   'drops.noAccess': {
     ka: 'შენი როლი არ მოიცავს დროფების მართვას. გადადი სალაროს ტაბზე.',
     en: "Your role doesn't include drop management. Head to the Counter tab.",

@@ -1,5 +1,5 @@
 import { useCallback, useState, useMemo } from 'react'
-import { useFocusEffect } from 'expo-router'
+import { useFocusEffect, useRouter } from 'expo-router'
 import {
   ActivityIndicator,
   Pressable,
@@ -36,6 +36,7 @@ type Threshold = { level: number; min_total_xp: number }
 
 export default function ProfileScreen() {
   const styles = useStyles()
+  const router = useRouter()
   const { c, mode, setMode } = useTheme()
   const { locale, setLocale } = useTranslation()
   const [xp, setXp] = useState<Xp | null>(null)
@@ -161,6 +162,23 @@ export default function ProfileScreen() {
             {ka ? 'სულ XP' : 'Total XP'}
           </Text>
         </View>
+      </View>
+
+      {/* Two screens that live off the tab bar: the locker and the campus
+          table are things you visit, not things you check every session. */}
+      <View style={styles.links}>
+        <Pressable style={styles.link} onPress={() => router.push('/inventory')}>
+          <Text style={styles.linkTitle}>{ka ? 'ჩემი ნივთები' : 'My locker'}</Text>
+          <Text style={styles.linkHint}>
+            {ka ? 'ჩაიცვი ნაშოვნი' : 'Wear what you have earned'}
+          </Text>
+        </Pressable>
+        <Pressable style={styles.link} onPress={() => router.push('/campus')}>
+          <Text style={styles.linkTitle}>{ka ? 'კამპუსები' : 'Campuses'}</Text>
+          <Text style={styles.linkHint}>
+            {ka ? 'ვინ იგებს ამ თვეში' : 'Who is winning this month'}
+          </Text>
+        </Pressable>
       </View>
 
       <SeasonCard />
@@ -344,6 +362,18 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   weekDay: { color: c.textFaint, fontSize: 11, fontWeight: '700' },
   weekDayOn: { color: c.accentInk, fontWeight: '900' },
   weekDayToday: { color: c.bg, fontWeight: '900' },
+  links: { flexDirection: 'row', gap: space.md },
+  link: {
+    flex: 1,
+    backgroundColor: c.surface,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: c.border,
+    padding: space.md,
+  },
+  linkTitle: { color: c.text, fontSize: 14, fontWeight: '800' },
+  linkHint: { color: c.textFaint, fontSize: 11, marginTop: 3 },
+
   statRow: { flexDirection: 'row', gap: space.md },
   stat: {
     flex: 1,
