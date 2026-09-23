@@ -154,7 +154,10 @@ export default function SafetyButton({
         accessibilityRole="button"
         accessibilityLabel={ka ? 'უსაფრთხოება' : 'Safety'}
       >
-        <Text style={styles.buttonText}>{ka ? 'დახმარება' : 'Safety'}</Text>
+        {/* An "i", not a word: the button sits over the map, where a pill
+            wide enough for "დახმარება" covers a street. The label it used to
+            carry lives on as the accessibility label above. */}
+        <Text style={styles.buttonText}>i</Text>
       </Pressable>
 
       <Modal
@@ -317,12 +320,11 @@ const makeStyles = (c: Palette) =>
   StyleSheet.create({
     button: {
       backgroundColor: c.surfaceRaised,
-      borderRadius: radius.pill,
+      borderRadius: 22,
       borderWidth: 1,
       borderColor: c.border,
-      paddingHorizontal: space.lg,
+      width: 44,
       height: 44,
-      minWidth: 72,
       alignItems: 'center',
       justifyContent: 'center',
       shadowColor: '#000',
@@ -334,9 +336,11 @@ const makeStyles = (c: Palette) =>
     pressed: { opacity: 0.8 },
     buttonText: {
       color: c.text,
-      fontSize: 13,
-      fontWeight: '800',
+      fontSize: 19,
+      fontWeight: '900',
       letterSpacing: 0,
+      // The glyph's own bearing sits it left of centre in the circle.
+      marginLeft: 1,
     },
 
     backdrop: { flex: 1, backgroundColor: c.overlay, justifyContent: 'flex-end' },
