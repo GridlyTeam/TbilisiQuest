@@ -199,8 +199,8 @@ export default function AgeGate() {
 
         <Text style={styles.note}>
           {ka
-            ? '16 წლიდან ხელმისაწვდომი იქნება ჯგუფური დროფები. თარიღის შეცვლა შემდეგ აღარ შეიძლება.'
-            : 'Group drops open up at 16. You cannot change this date later.'}
+            ? '16 წლიდან ხელმისაწვდომი იქნება ჯგუფური ვაუჩერები. თარიღის შეცვლა შემდეგ აღარ შეიძლება.'
+            : 'Group vouchers open up at 16. You cannot change this date later.'}
         </Text>
       </ScrollView>
     </Modal>

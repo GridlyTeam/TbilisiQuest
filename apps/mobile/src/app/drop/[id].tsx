@@ -218,7 +218,7 @@ export default function DropDetailScreen() {
             <Text style={styles.hint}>
               {ka
                 ? 'ჩართე GPS და გამოდი ღია ცის ქვეშ.'
-                : 'Turn on GPS and step outside - the drop needs your position to measure distance.'}
+                : 'Turn on GPS and step outside - the voucher needs your position to measure distance.'}
             </Text>
           </>
         ) : (
@@ -315,14 +315,14 @@ export default function DropDetailScreen() {
       {isSquad && (
         <View style={[styles.squad, { borderColor: meta.color }]}>
           <Text style={styles.squadLabel}>
-            {ka ? 'ჯგუფური დროფი' : 'Squad drop'}
+            {ka ? 'ჯგუფური ვაუჩერი' : 'Squad voucher'}
           </Text>
 
           {!drop.squad_allowed ? (
             <Text style={styles.squadBody}>
               {ka
-                ? 'ჯგუფური დროფები 16 წლიდანაა.'
-                : 'Squad drops are for ages 16 and up.'}
+                ? 'ჯგუფური ვაუჩერები 16 წლიდანაა.'
+                : 'Squad vouchers are for ages 16 and up.'}
             </Text>
           ) : (
             <>
@@ -474,13 +474,13 @@ function translateClaimError(raw: string, ka: boolean): string {
     case 'NOT_YET_OPEN':
       return ka ? 'ჯერ არ დაწყებულა' : 'Not open yet'
     case 'DROP_EXPIRED':
-      return ka ? 'ვადა გავიდა' : 'This drop has ended'
+      return ka ? 'ვადა გავიდა' : 'This voucher has ended'
     case 'AGE_NOT_SET':
       return ka
         ? 'ჯერ მიუთითე დაბადების თარიღი'
         : 'Tell us your date of birth first'
     case 'AGE_RESTRICTED':
-      return ka ? 'ჯგუფური დროფები 16 წლიდანაა' : 'Squad drops are for ages 16+'
+      return ka ? 'ჯგუფური ვაუჩერები 16 წლიდანაა' : 'Squad vouchers are for ages 16+'
     case 'SQUAD_NOT_READY':
       return ka ? 'ჯგუფი ჯერ არ შეკრებილა' : 'Not enough of you here yet'
     case 'OVER_PER_DROP_LIMIT':

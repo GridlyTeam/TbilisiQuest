@@ -86,13 +86,13 @@ export default function SafetyBriefing() {
   const rules: Array<[string, string]> = ka
     ? [
         ['ყურადღებით იყავი', 'გადასვლამდე და გზაზე - შეხედე ტელეფონს მხოლოდ გაჩერებისას.'],
-        ['გზები', 'არასდროს გადახვიდე გზაზე ტელეფონის ყურებით. დროფი არსად წავა.'],
+        ['გზები', 'არასდროს გადახვიდე გზაზე ტელეფონის ყურებით. ვაუჩერი არსად წავა.'],
         ['ფეხით', 'აპლიკაცია პაუზდება თუ ჩქარა მოძრაობ. ნუ გამოიყენებ აპლიკაციას მანქანის ან სხვა ტრანსპორტის მართვისას.'],
         ['დღისით', 'თამაში მუშაობს 11:00-19:00, დღის სინათლეზე.'],
       ]
     : [
         ['Look up', 'Check your surroundings before you check your phone. Stop walking to read the screen.'],
-        ['Roads', 'Never cross a road looking at your phone. The drop will still be there.'],
+        ['Roads', 'Never cross a road looking at your phone. The voucher will still be there.'],
         ['Walking pace', 'The app pauses if you move too fast. Never use it while driving or riding in a vehicle.'],
         ['Daylight', 'Hunting runs 11:00-19:00 only.'],
       ]

@@ -278,10 +278,10 @@ export default function MapScreen() {
                 {loading
                   ? ka ? 'იტვირთება' : 'Loading'
                   : ka
-                    ? 'დროფი ახლოს'
+                    ? 'ვაუჩერი ახლოს'
                     : nearbyCount === 1
-                      ? 'drop nearby'
-                      : 'drops nearby'}
+                      ? 'voucher nearby'
+                      : 'vouchers nearby'}
               </Text>
 
               <Text style={styles.headerSub}>
@@ -291,7 +291,7 @@ export default function MapScreen() {
                     : 'Get within 20 m to claim'
                   : nearestM != null
                     ? ka
-                      ? `უახლოესი დროფი ${formatDistance(nearestM, true)}-ზეა`
+                      ? `უახლოესი ვაუჩერი ${formatDistance(nearestM, true)}-ზეა`
                       : `Nearest drop is ${formatDistance(nearestM, false)} away`
                     : ka
                       ? 'მიუახლოვდი 20 მ-ზე ასაღებად'
@@ -301,8 +301,8 @@ export default function MapScreen() {
               {!loading && drops.length === 0 && (
                 <Text style={styles.headerWarn}>
                   {ka
-                    ? 'აქტიური დროფი არ არის - შეამოწმე დრო და მიმოხილვა'
-                    : 'No live drops right now'}
+                    ? 'აქტიური ვაუჩერი არ არის - შეამოწმე დრო და მიმოხილვა'
+                    : 'No live vouchers right now'}
                 </Text>
               )}
             </View>
@@ -314,8 +314,8 @@ export default function MapScreen() {
         <View style={styles.footer}>
           <Text style={styles.footerText}>
             {ka
-              ? 'ჩართე ლოკაცია დროფების სანახავად'
-              : 'Enable location to find drops near you'}
+              ? 'ჩართე ლოკაცია ვაუჩერების სანახავად'
+              : 'Enable location to find vouchers near you'}
           </Text>
         </View>
       )}

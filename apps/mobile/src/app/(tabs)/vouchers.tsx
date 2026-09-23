@@ -178,8 +178,8 @@ export default function VouchersScreen() {
           </Text>
           <Text style={styles.emptyBody}>
             {ka
-              ? 'იპოვე დროფი რუკაზე და მიუახლოვდი'
-              : 'Find a drop on the map and walk up to it'}
+              ? 'იპოვე ვაუჩერი რუკაზე და მიუახლოვდი'
+              : 'Find a voucher on the map and walk up to it'}
           </Text>
         </View>
       }
