@@ -32,6 +32,8 @@ function useStyles() {
 
 
 type Xp = { total_xp: number; level: number; current_streak_days: number }
+type BoardRow = { rank: number; display_name: string; xp: number; is_me: boolean }
+type Standing = { rank: number; xp: number; players: number }
 type Threshold = { level: number; min_total_xp: number }
 
 export default function SeasonScreen() {
@@ -42,16 +44,26 @@ export default function SeasonScreen() {
   const [xp, setXp] = useState<Xp | null>(null)
   const [thresholds, setThresholds] = useState<Threshold[]>([])
   const [redeemed, setRedeemed] = useState(0)
+  const [board, setBoard] = useState<BoardRow[]>([])
+  const [standing, setStanding] = useState<Standing | null>(null)
   const [loading, setLoading] = useState(true)
 
   const ka = locale === 'ka'
 
   const load = useCallback(async () => {
-    const [xpRes, thrRes, redRes] = await Promise.all([
+    const [xpRes, thrRes, redRes, boardRes, standingRes] = await Promise.all([
       supabase.from('user_xp').select('total_xp, level, current_streak_days').maybeSingle(),
       supabase.from('level_thresholds').select('level, min_total_xp').order('level'),
       supabase.from('redemptions').select('id', { count: 'exact', head: true }),
+      supabase.rpc('season_leaderboard', { p_limit: 10 }),
+      supabase.rpc('my_season_rank'),
     ])
+
+    setBoard((boardRes.data as BoardRow[]) ?? [])
+    const standingRow = (
+      Array.isArray(standingRes.data) ? standingRes.data[0] : standingRes.data
+    ) as Standing | undefined
+    setStanding(standingRow ?? null)
 
     setXp((xpRes.data as Xp | null) ?? { total_xp: 0, level: 1, current_streak_days: 0 })
     setThresholds((thrRes.data ?? []) as Threshold[])
@@ -180,17 +192,53 @@ export default function SeasonScreen() {
         </View>
       </View>
 
-      <Pressable
-        style={styles.link}
-        onPress={() => router.push('/leaderboard')}
-      >
-        <Text style={styles.linkTitle}>
-          {ka ? 'სეზონის ლიდერები' : 'Season leaders'}
-        </Text>
-        <Text style={styles.linkHint}>
-          {ka ? 'ტოპ 100 - ყველა ავტომატურად მონაწილეობს' : 'Top 100 - everyone is in it'}
-        </Text>
-      </Pressable>
+      {/* The board itself rather than a door to it: a rank you have to go
+          looking for is a rank nobody looks at. The top three, where you
+          stand, and a way through to the rest. */}
+      <View style={styles.boardCard}>
+        <View style={styles.boardHead}>
+          <Text style={styles.boardTitle}>
+            {ka ? 'სეზონის ლიდერები' : 'Season leaders'}
+          </Text>
+          <Pressable onPress={() => router.push('/leaderboard')}>
+            <Text style={styles.boardMore}>{ka ? 'ყველა' : 'See all'}</Text>
+          </Pressable>
+        </View>
+
+        {board.length === 0 ? (
+          <Text style={styles.boardEmpty}>
+            {ka
+              ? 'ჯერ არავის აქვს XP ამ სეზონზე.'
+              : 'Nobody has XP this season yet.'}
+          </Text>
+        ) : (
+          board.slice(0, 3).map((row) => (
+            <View key={`${row.rank}-${row.display_name}`} style={styles.boardRow}>
+              <Text
+                style={[
+                  styles.boardRank,
+                  row.rank === 1 && { color: c.accent },
+                  row.rank === 3 && { color: c.indigo },
+                ]}
+              >
+                {row.rank}
+              </Text>
+              <Text style={styles.boardName} numberOfLines={1}>
+                {row.display_name}
+              </Text>
+              <Text style={styles.boardXp}>{row.xp}</Text>
+            </View>
+          ))
+        )}
+
+        {standing && standing.rank > 0 && (
+          <Text style={styles.boardMine}>
+            {ka
+              ? `შენ - ${standing.rank} ადგილი ${standing.players}-დან`
+              : `You are ${standing.rank} of ${standing.players}`}
+          </Text>
+        )}
+      </View>
 
       <CityPass />
 
@@ -320,6 +368,34 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   },
   linkTitle: { color: c.text, fontSize: 14, fontWeight: '800' },
   linkHint: { color: c.textFaint, fontSize: 11, marginTop: 3 },
+  boardCard: {
+    backgroundColor: c.surface,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: c.border,
+    padding: space.md,
+    gap: 6,
+  },
+  boardHead: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    marginBottom: 2,
+  },
+  boardTitle: { color: c.text, fontSize: 15, fontWeight: '800' },
+  boardMore: { color: c.accent, fontSize: 12, fontWeight: '800' },
+  boardEmpty: { color: c.textMuted, fontSize: 13 },
+  boardRow: { flexDirection: 'row', alignItems: 'center', gap: space.sm },
+  boardRank: {
+    color: c.textFaint,
+    fontSize: 14,
+    fontWeight: '900',
+    width: 20,
+    textAlign: 'right',
+  },
+  boardName: { color: c.text, fontSize: 14, fontWeight: '700', flex: 1 },
+  boardXp: { color: c.text, fontSize: 14, fontWeight: '900' },
+  boardMine: { color: c.textFaint, fontSize: 12, marginTop: 4 },
   gear: { paddingHorizontal: space.md },
   gearText: { color: c.accent, fontSize: 13, fontWeight: '800' },
 

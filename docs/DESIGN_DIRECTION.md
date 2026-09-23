@@ -299,16 +299,19 @@ component.
    top of Settings.
 2. ~~The four tabs~~ -- built, `see Done`. Map, Vouchers, Character, Season;
    the pass folded into Season and settings moved to a header button on it.
-3. **The character stage.** Full-size creature on its pedestal with the gear
-   around it, and a background slot -- a drawn gradient until there is a
-   Mtatsminda Park image to put in it.
+3. ~~The character stage~~ -- built. Full-size creature on a pedestal at the top
+   of the Character tab, standing in whatever background is equipped, gear
+   below. Backgrounds are a colour pair and a horizon until the pictures exist;
+   swapping in an Image is a change inside `components/Stage.tsx`.
 4. ~~Head boxes on the map~~ -- built. Other players draw as a head box above
    their point, tapping opens their card, and an approximate position says so on
    that card. Still drawn rather than illustrated, and the player's own head box
    is not on the map yet -- their own dot is still the puck.
-5. **Nickname and colour at sign-up.** The colour is real data from day one; only
-   the picture it tints changes later.
-6. ~~XP leaderboard~~ -- built, `0039`. Still to move onto the Season tab.
+5. ~~Nickname and colour at sign-up~~ -- built. Shown after the age gate, never
+   beside it. Two choices and nothing else, and the name field says in plain
+   words not to use a real name or a school.
+6. ~~XP leaderboard~~ -- built, `0039`, and now on the Season tab itself: top
+   three, your own rank, and a way through to the full hundred.
 
 ## Standing rules
 
@@ -344,3 +347,4 @@ These come from decisions already made and apply to everything above.
 | Visibility modes, head boxes, player cards | `0040`, `84191ec` |
 | Coins, the store tab, six backgrounds | `0042` |
 | Seasonal rotation, vaulting, art-cost calculator | `0043` |
+| Animated creature, stage, sign-up, board on Season | this commit |

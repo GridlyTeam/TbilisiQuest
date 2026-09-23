@@ -9,6 +9,7 @@ import { ThemeProvider, useTheme } from '../lib/theme'
 import { applyTextDefaults } from '../lib/text-defaults'
 import { usePushToken } from '../lib/usePushToken'
 import AgeGate from '../components/AgeGate'
+import Onboarding from '../components/Onboarding'
 
 
 // Once, at module load, before anything renders.
@@ -101,6 +102,10 @@ function RootNavigator() {
           rather than inside the tabs so it cannot be dodged by deep-linking
           straight to a drop. */}
       {session && <AgeGate />}
+
+      {/* After the gate, never beside it: someone who has not said how old
+          they are should not be shown a screen that implies they are in. */}
+      {session && <Onboarding />}
     </>
   )
 }

@@ -1,6 +1,7 @@
 import { StyleSheet, View } from 'react-native'
 
 import { useTheme } from '../lib/theme'
+import { CREATURE_COLOURS as CREATURE } from './Creature'
 
 /**
  * A player on the map: a crop of their character's head in a small box, sitting
@@ -12,17 +13,13 @@ import { useTheme } from '../lib/theme'
  * and nothing that positions it has to change.
  */
 
-/** The creature colours offered at sign-up. */
-export const CREATURE_COLOURS: Record<string, string> = {
-  red: '#FF5C7A',
-  orange: '#FF9A3B',
-  amber: '#FFB020',
-  green: '#3BE08A',
-  cyan: '#3BD6FF',
-  blue: '#5B8CFF',
-  violet: '#A855F7',
-  pink: '#FF7AD5',
-}
+/**
+ * One palette, defined with the creature. Two lists of colours called the same
+ * names is how a player ends up cyan on the map and blue on their own profile.
+ */
+export const CREATURE_COLOURS: Record<string, string> = Object.fromEntries(
+  Object.entries(CREATURE).map(([key, value]) => [key, value.body]),
+)
 
 export const DEFAULT_COLOUR = 'cyan'
 

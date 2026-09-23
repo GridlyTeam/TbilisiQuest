@@ -9,7 +9,8 @@ import {
   View,
 } from 'react-native'
 
-import Avatar, { type AvatarStyles } from '../../components/Avatar'
+import Creature from '../../components/Creature'
+import Stage from '../../components/Stage'
 import { supabase } from '../../lib/supabase'
 import { useTranslation } from '../../lib/i18n'
 import {
@@ -58,6 +59,7 @@ const SLOTS: Array<{ slot: string; kind: string; ka: string; en: string }> = [
   { slot: 'outfit', kind: 'outfit',       ka: 'ტანსაცმელი', en: 'Outfit' },
   { slot: 'sticker', kind: 'sticker',     ka: 'სტიკერი',  en: 'Sticker' },
   { slot: 'theme',  kind: 'card_theme',   ka: 'თემა',     en: 'Card theme' },
+  { slot: 'background', kind: 'background', ka: 'ფონი',    en: 'Background' },
 ]
 
 /**
@@ -132,18 +134,12 @@ export default function InventoryScreen() {
 
   const owned = items.filter((i) => i.owned).length
 
-  // The avatar takes style keys, not codes: the catalogue is already here, so
-  // the component never has to query anything.
-  const worn: AvatarStyles = useMemo(() => {
-    const keyFor = (slot: string) =>
-      items.find((i) => i.code === config[slot])?.style_key
-    return {
-      outfit: keyFor('outfit'),
-      frame: keyFor('frame'),
-      marker: keyFor('marker'),
-      sticker: keyFor('sticker'),
-    }
-  }, [config, items])
+  // Style keys, not codes: the catalogue is already loaded here, so the stage
+  // never has to query anything.
+  const keyFor = useCallback(
+    (slot: string) => items.find((i) => i.code === config[slot])?.style_key,
+    [config, items],
+  )
 
   const equippedTitle = items.find((i) => i.code === config.title)
 
@@ -161,27 +157,32 @@ export default function InventoryScreen() {
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
-        {/* The point of the screen: what you are wearing, changing as you
-            tap. Without it the locker is a list of words. */}
-        <View style={styles.preview}>
-          <Avatar styles={worn} size={132} />
-          <View style={styles.previewMeta}>
-            <Text style={styles.previewTitle} numberOfLines={2}>
-              {equippedTitle
-                ? ka
-                  ? equippedTitle.title_ka
-                  : equippedTitle.title_en
-                : ka
-                  ? 'წოდება არ გაქვს არჩეული'
-                  : 'No title equipped'}
-            </Text>
-            <Text style={styles.summary}>
-              {ka
-                ? `${owned} ${items.length}-დან შეგროვებული`
-                : `${owned} of ${items.length} collected`}
-            </Text>
-          </View>
-        </View>
+        {/* The stage. The creature is the point of the screen, so it gets the
+            top of it at full size, standing in whatever background is
+            equipped, moving on its own. */}
+        <Stage background={keyFor('background')}>
+          <Creature
+            colour={config.colour}
+            outfit={keyFor('outfit')}
+            size={210}
+          />
+        </Stage>
+
+        <Text style={styles.previewTitle} numberOfLines={2}>
+          {equippedTitle
+            ? ka
+              ? equippedTitle.title_ka
+              : equippedTitle.title_en
+            : ka
+              ? 'წოდება არ გაქვს არჩეული'
+              : 'No title equipped'}
+        </Text>
+        <Text style={styles.summary}>
+          {ka
+            ? `${owned} ${items.length}-დან შეგროვებული`
+            : `${owned} of ${items.length} collected`}
+        </Text>
+
         {error && <Text style={styles.error}>{error}</Text>}
 
         {SLOTS.map((slot) => {
@@ -274,25 +275,21 @@ const makeStyles = (c: Palette) =>
       alignItems: 'center',
       justifyContent: 'center',
     },
-    preview: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: space.lg,
-      backgroundColor: c.surface,
-      borderRadius: radius.md,
-      borderWidth: 1,
-      borderColor: c.border,
-      padding: space.lg,
-    },
-    previewMeta: { flex: 1 },
     previewTitle: {
+      textAlign: 'center',
       color: c.text,
       fontSize: 17,
       fontWeight: '900',
       letterSpacing: 0,
-      marginBottom: 4,
+      marginTop: space.md,
+      marginBottom: 2,
     },
-    summary: { color: c.textMuted, fontSize: 13, fontWeight: '700' },
+    summary: {
+      color: c.textMuted,
+      fontSize: 13,
+      fontWeight: '700',
+      textAlign: 'center',
+    },
     error: { color: c.bad, fontSize: 13, marginTop: space.sm },
 
     section: { marginTop: space.lg },
