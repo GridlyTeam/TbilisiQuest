@@ -323,11 +323,11 @@ const makeStyles = (c: Palette) =>
     // as a mistake, however small the difference.
     button: {
       backgroundColor: c.surface,
-      borderRadius: 24,
+      borderRadius: 20,
       borderWidth: 1,
       borderColor: c.border,
-      width: 48,
-      height: 48,
+      width: 40,
+      height: 40,
       alignItems: 'center',
       justifyContent: 'center',
       shadowColor: '#000',
@@ -339,7 +339,7 @@ const makeStyles = (c: Palette) =>
     pressed: { opacity: 0.8 },
     buttonText: {
       color: c.text,
-      fontSize: 20,
+      fontSize: 17,
       fontWeight: '900',
       letterSpacing: 0,
       // The glyph's own bearing sits it left of centre in the circle.

@@ -622,9 +622,9 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     gap: space.md,
   },
   recentre: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
     backgroundColor: c.surface,
     borderWidth: 1,
     borderColor: c.border,
