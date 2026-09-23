@@ -221,8 +221,8 @@ component.
    under-16 lock, the seeded server-side displacement, and the RPC that returns
    other players already fuzzed. Pure backend plus one settings screen. Everything
    on the map depends on it, so it goes first.
-2. **The four tabs.** Map, Vouchers, Character, Season. The pass folds into
-   Season; settings move to a header button.
+2. ~~The four tabs~~ -- built, `see Done`. Map, Vouchers, Character, Season;
+   the pass folded into Season and settings moved to a header button on it.
 3. **The character stage.** Full-size creature on its pedestal with the gear
    around it, and a background slot -- a drawn gradient until there is a
    Mtatsminda Park image to put in it.
@@ -261,3 +261,5 @@ These come from decisions already made and apply to everything above.
 | City Pass tab, 50 levels, two tracks | `2ee9e5e` |
 | Locker, campus table, merchant beacon button | `d9fdae2` |
 | Drawn avatar the gear sits on | `b067696` |
+| One XP leaderboard, campuses removed | `8ac4446` |
+| Four tabs: Map, Vouchers, Character, Season | `see below` |

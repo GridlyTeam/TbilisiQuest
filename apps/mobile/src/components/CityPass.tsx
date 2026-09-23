@@ -9,9 +9,9 @@ import {
   View,
 } from 'react-native'
 
-import { supabase } from '../../lib/supabase'
-import { useTranslation } from '../../lib/i18n'
-import { useTheme, radius, space, font, type Palette } from '../../lib/theme'
+import { supabase } from '../lib/supabase'
+import { useTranslation } from '../lib/i18n'
+import { useTheme, radius, space, font, type Palette } from '../lib/theme'
 
 function useStyles() {
   const { c } = useTheme()
@@ -49,7 +49,7 @@ type Pass = {
 const COLUMN = 92
 
 /**
- * The City Pass.
+ * The City Pass, as a section of the Season tab.
  *
  * Two tracks over one ladder, read left to right: the free row is what
  * everyone climbs, the premium row above it is what a partner perk opens. The
@@ -60,7 +60,7 @@ const COLUMN = 92
  * the button is what grants -- so a reward is something you took, and the
  * server has a receipt saying so.
  */
-export default function PassScreen() {
+export default function CityPass() {
   const styles = useStyles()
   const { c } = useTheme()
   const { locale } = useTranslation()
@@ -173,11 +173,7 @@ export default function PassScreen() {
   }
 
   return (
-    <ScrollView
-      style={styles.root}
-      contentContainerStyle={styles.content}
-      showsVerticalScrollIndicator={false}
-    >
+    <View style={styles.root}>
       <Text style={styles.eyebrow}>
         {ka ? 'ქალაქის ბილეთი' : 'City Pass'}
       </Text>
@@ -276,7 +272,7 @@ export default function PassScreen() {
           ? 'XP მოდის ვაუჩერებიდან, დავალებებიდან და სერიიდან. ჯილდო თვითონ უნდა აიღო.'
           : 'XP comes from vouchers, quests and your streak. Rewards are taken, not given.'}
       </Text>
-    </ScrollView>
+    </View>
   )
 }
 
@@ -358,10 +354,8 @@ function Cell({
 
 const makeStyles = (c: Palette) =>
   StyleSheet.create({
-    root: { flex: 1, backgroundColor: c.bg },
-    content: { padding: space.lg, paddingBottom: space.xl },
+    root: { backgroundColor: c.bg },
     centre: {
-      flex: 1,
       backgroundColor: c.bg,
       alignItems: 'center',
       justifyContent: 'center',

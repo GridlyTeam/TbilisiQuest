@@ -1,5 +1,5 @@
 import { useCallback, useState, useMemo } from 'react'
-import { useFocusEffect, useRouter } from 'expo-router'
+import { Stack, useFocusEffect, useRouter } from 'expo-router'
 import {
   ActivityIndicator,
   Pressable,
@@ -10,10 +10,10 @@ import {
 } from 'react-native'
 
 import { supabase } from '../../lib/supabase'
-import { useTranslation, LOCALES } from '../../lib/i18n'
+import { useTranslation } from '../../lib/i18n'
 import InviteCard from '../../components/InviteCard'
 import QuestBoard from '../../components/QuestBoard'
-import SeasonCard from '../../components/SeasonCard'
+import CityPass from '../../components/CityPass'
 import BadgeCase from '../../components/BadgeCase'
 import {
   useTheme,
@@ -34,11 +34,11 @@ function useStyles() {
 type Xp = { total_xp: number; level: number; current_streak_days: number }
 type Threshold = { level: number; min_total_xp: number }
 
-export default function ProfileScreen() {
+export default function SeasonScreen() {
   const styles = useStyles()
   const router = useRouter()
-  const { c, mode, setMode } = useTheme()
-  const { locale, setLocale } = useTranslation()
+  const { c } = useTheme()
+  const { locale } = useTranslation()
   const [xp, setXp] = useState<Xp | null>(null)
   const [thresholds, setThresholds] = useState<Threshold[]>([])
   const [redeemed, setRedeemed] = useState(0)
@@ -81,6 +81,22 @@ export default function ProfileScreen() {
 
   return (
     <ScrollView style={styles.root} contentContainerStyle={styles.content}>
+      {/* Settings are not a tab any more: they are visited a handful of times
+          ever, and the fourth tab is worth more as the season. */}
+      <Stack.Screen
+        options={{
+          title: ka ? 'სეზონი' : 'Season',
+          headerRight: () => (
+            <Pressable
+              onPress={() => router.push('/settings')}
+              accessibilityLabel={ka ? 'პარამეტრები' : 'Settings'}
+              style={styles.gear}
+            >
+              <Text style={styles.gearText}>{ka ? 'პარამეტრები' : 'Settings'}</Text>
+            </Pressable>
+          ),
+        }}
+      />
       <View style={styles.levelCard}>
         <Text style={styles.levelLabel}>{ka ? 'დონე' : 'Level'}</Text>
         <Text style={styles.levelValue}>{xp.level}</Text>
@@ -164,24 +180,19 @@ export default function ProfileScreen() {
         </View>
       </View>
 
-      {/* Two screens that live off the tab bar: the locker and the campus
-          table are things you visit, not things you check every session. */}
-      <View style={styles.links}>
-        <Pressable style={styles.link} onPress={() => router.push('/inventory')}>
-          <Text style={styles.linkTitle}>{ka ? 'ჩემი ნივთები' : 'My locker'}</Text>
-          <Text style={styles.linkHint}>
-            {ka ? 'ჩაიცვი ნაშოვნი' : 'Wear what you have earned'}
-          </Text>
-        </Pressable>
-        <Pressable style={styles.link} onPress={() => router.push('/leaderboard')}>
-          <Text style={styles.linkTitle}>{ka ? 'ლიდერები' : 'Leaders'}</Text>
-          <Text style={styles.linkHint}>
-            {ka ? 'სეზონის ტოპ 100' : 'Top 100 this season'}
-          </Text>
-        </Pressable>
-      </View>
+      <Pressable
+        style={styles.link}
+        onPress={() => router.push('/leaderboard')}
+      >
+        <Text style={styles.linkTitle}>
+          {ka ? 'სეზონის ლიდერები' : 'Season leaders'}
+        </Text>
+        <Text style={styles.linkHint}>
+          {ka ? 'ტოპ 100 - ყველა ავტომატურად მონაწილეობს' : 'Top 100 - everyone is in it'}
+        </Text>
+      </Pressable>
 
-      <SeasonCard />
+      <CityPass />
 
       <QuestBoard />
 
@@ -189,68 +200,6 @@ export default function ProfileScreen() {
 
       <InviteCard />
 
-      <View style={styles.row}>
-        <Text style={styles.rowLabel}>{ka ? 'იერსახე' : 'Appearance'}</Text>
-        <View style={styles.segmented}>
-          {(['system', 'light', 'dark'] as const).map((option) => (
-            <Pressable
-              key={option}
-              onPress={() => setMode(option)}
-              style={[styles.segment, mode === option && styles.segmentActive]}
-            >
-              <Text
-                style={[
-                  styles.segmentText,
-                  mode === option && styles.segmentTextActive,
-                ]}
-              >
-                {option === 'system'
-                  ? ka ? 'ავტო' : 'Auto'
-                  : option === 'light'
-                    ? ka ? 'ღია' : 'Light'
-                    : ka ? 'მუქი' : 'Dark'}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      </View>
-
-      {/* A picker rather than a tap-to-flip row: with a toggle the label has to
-          double as both the current language and the thing you get if you
-          press it, which is ambiguous in either reading. Here the selected
-          language is simply the highlighted one. */}
-      <View style={styles.row}>
-        <Text style={styles.rowLabel}>{ka ? 'ენა' : 'Language'}</Text>
-        <View style={styles.segmented}>
-          {LOCALES.map((option) => (
-            <Pressable
-              key={option.code}
-              onPress={() => setLocale(option.code)}
-              accessibilityRole="radio"
-              accessibilityState={{ selected: locale === option.code }}
-              style={[
-                styles.segment,
-                locale === option.code && styles.segmentActive,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.segmentText,
-                  locale === option.code && styles.segmentTextActive,
-                ]}
-              >
-                {option.label}
-              </Text>
-            </Pressable>
-          ))}
-        </View>
-      </View>
-
-      <Pressable style={styles.row} onPress={() => supabase.auth.signOut()}>
-        <Text style={[styles.rowLabel, { color: c.bad }]}>
-          {ka ? 'გამოსვლა' : 'Sign out'}
-        </Text>
-      </Pressable>
     </ScrollView>
   )
 }
@@ -362,9 +311,7 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   weekDay: { color: c.textFaint, fontSize: 11, fontWeight: '700' },
   weekDayOn: { color: c.accentInk, fontWeight: '900' },
   weekDayToday: { color: c.bg, fontWeight: '900' },
-  links: { flexDirection: 'row', gap: space.md },
   link: {
-    flex: 1,
     backgroundColor: c.surface,
     borderRadius: radius.md,
     borderWidth: 1,
@@ -373,6 +320,8 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   },
   linkTitle: { color: c.text, fontSize: 14, fontWeight: '800' },
   linkHint: { color: c.textFaint, fontSize: 11, marginTop: 3 },
+  gear: { paddingHorizontal: space.md },
+  gearText: { color: c.accent, fontSize: 13, fontWeight: '800' },
 
   statRow: { flexDirection: 'row', gap: space.md },
   stat: {
@@ -408,7 +357,6 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     borderColor: c.border,
     padding: space.lg,
   },
-  rowLabel: { color: c.text, fontSize: 15, fontWeight: '700' },
   segmented: {
     flexDirection: 'row',
     backgroundColor: c.bg,
@@ -421,7 +369,4 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     paddingVertical: 6,
     borderRadius: radius.sm - 2,
   },
-  segmentActive: { backgroundColor: c.accent },
-  segmentText: { color: c.textMuted, fontSize: 13, fontWeight: '600' },
-  segmentTextActive: { color: c.bg },
 })

@@ -60,17 +60,17 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen
-        name="pass"
+        name="character"
         options={{
-          title: ka ? 'ბილეთი' : 'Pass',
-          tabBarIcon: ({ color }) => <PassIcon color={color} />,
+          title: ka ? 'პერსონაჟი' : 'Character',
+          tabBarIcon: ({ color }) => <ProfileIcon color={color} />,
         }}
       />
       <Tabs.Screen
-        name="profile"
+        name="season"
         options={{
-          title: ka ? 'პროფილი' : 'Profile',
-          tabBarIcon: ({ color }) => <ProfileIcon color={color} />,
+          title: ka ? 'სეზონი' : 'Season',
+          tabBarIcon: ({ color }) => <PassIcon color={color} />,
         }}
       />
     </Tabs>

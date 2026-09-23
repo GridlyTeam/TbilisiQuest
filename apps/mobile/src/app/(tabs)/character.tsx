@@ -1,5 +1,5 @@
 import { useCallback, useMemo, useState } from 'react'
-import { Stack, useFocusEffect } from 'expo-router'
+import { useFocusEffect } from 'expo-router'
 import {
   ActivityIndicator,
   Pressable,
@@ -9,9 +9,9 @@ import {
   View,
 } from 'react-native'
 
-import Avatar, { type AvatarStyles } from '../components/Avatar'
-import { supabase } from '../lib/supabase'
-import { useTranslation } from '../lib/i18n'
+import Avatar, { type AvatarStyles } from '../../components/Avatar'
+import { supabase } from '../../lib/supabase'
+import { useTranslation } from '../../lib/i18n'
 import {
   useTheme,
   useRarity,
@@ -20,7 +20,7 @@ import {
   font,
   type Palette,
   type Rarity,
-} from '../lib/theme'
+} from '../../lib/theme'
 
 function useStyles() {
   const { c } = useTheme()
@@ -154,11 +154,7 @@ export default function InventoryScreen() {
   }
 
   return (
-    <>
-      <Stack.Screen
-        options={{ title: ka ? 'ჩემი ნივთები' : 'My locker' }}
-      />
-      <ScrollView
+    <ScrollView
         style={styles.root}
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
@@ -258,8 +254,7 @@ export default function InventoryScreen() {
             ? 'ნივთები იხსნება ქალაქის ბილეთით, სერიით და ნიშნებით.'
             : 'Gear unlocks through the City Pass, streaks and badges.'}
         </Text>
-      </ScrollView>
-    </>
+    </ScrollView>
   )
 }
 
