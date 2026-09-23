@@ -336,7 +336,7 @@ export default function MapScreen() {
               accessibilityRole="button"
               accessibilityLabel={ka ? 'ჩემს ადგილას' : 'Centre on me'}
             >
-              <Text style={styles.recentreIcon}>◎</Text>
+              <Crosshair color={c.accentInk} />
             </Pressable>
           )}
           <SafetyButton fix={fix} />
@@ -386,6 +386,36 @@ export default function MapScreen() {
  * the thing that actually moves someone off a sofa, so it gets the loudest
  * treatment of the three.
  */
+/**
+ * The recentre control's mark.
+ *
+ * Drawn from views rather than set as a character: the old ◎ rendered as
+ * whatever the system font felt like, which on Android is a thin circle that
+ * reads as a smudge at this size. Four ticks and a ring is unambiguous at any
+ * scale and costs nothing.
+ */
+function Crosshair({ color }: { color: string }) {
+  const ring = {
+    width: 15,
+    height: 15,
+    borderRadius: 8,
+    borderWidth: 1.8,
+    borderColor: color,
+  }
+  const tick = { position: 'absolute' as const, backgroundColor: color }
+
+  return (
+    <View style={{ width: 24, height: 24, alignItems: 'center', justifyContent: 'center' }}>
+      <View style={ring} />
+      <View style={{ position: 'absolute', width: 3.5, height: 3.5, borderRadius: 2, backgroundColor: color }} />
+      <View style={[tick, { top: 0, width: 1.8, height: 5 }]} />
+      <View style={[tick, { bottom: 0, width: 1.8, height: 5 }]} />
+      <View style={[tick, { left: 0, height: 1.8, width: 5 }]} />
+      <View style={[tick, { right: 0, height: 1.8, width: 5 }]} />
+    </View>
+  )
+}
+
 function DropMarker({
   drop,
   count,
