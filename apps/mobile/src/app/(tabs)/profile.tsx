@@ -327,9 +327,12 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   },
   // Each day is a cell rather than a bare letter: a filled square reads as a
   // day that counted, which an underline never did.
+  // Sized from its content rather than a fixed 28px square: the Georgian
+  // labels are two letters wide and were touching the box on every side.
   weekCell: {
-    width: 28,
-    height: 28,
+    minWidth: 34,
+    height: 34,
+    paddingHorizontal: 8,
     borderRadius: radius.sm,
     alignItems: 'center',
     justifyContent: 'center',
