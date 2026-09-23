@@ -2,7 +2,6 @@ import {
   Camera,
   Map as MapLibreMap,
   Marker,
-  UserLocation,
   type CameraRef,
 } from '@maplibre/maplibre-react-native'
 import { useFocusEffect, useRouter } from 'expo-router'
@@ -25,6 +24,7 @@ import { useSafetyGate } from '../../lib/useSafetyGate'
 import SafetyOverlay from '../../components/SafetyOverlay'
 import SafetyBriefing from '../../components/SafetyBriefing'
 import SafetyButton from '../../components/SafetyButton'
+import UserPuck from '../../components/UserPuck'
 import { useTheme, useRarity, radius, space, font, type Palette, type Rarity } from '../../lib/theme'
 
 function useStyles() {
@@ -233,7 +233,13 @@ export default function MapScreen() {
           minZoom={9}
           maxZoom={18}
         />
-        {permission === 'granted' && <UserLocation animated accuracy />}
+        {/* Our own puck rather than the library's: same position, brand
+            colour, and a pulse. See components/UserPuck. */}
+        {permission === 'granted' && fix && (
+          <Marker lngLat={[fix.longitude, fix.latitude]}>
+            <UserPuck />
+          </Marker>
+        )}
 
         {groups.map((group) => {
           // The marker wears the best thing on offer here: a shop with a
