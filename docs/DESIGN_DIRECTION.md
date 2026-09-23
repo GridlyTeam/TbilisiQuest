@@ -172,8 +172,7 @@ nothing explaining why, is read as a broken map and reported as a bug.
    wearing it. Backgrounds are locations: Mtatsminda Park, and others like it.
    All of it produced with Higgsfield later.
 4. **Season** -- progress, achievements, when the current season ends and the
-   next begins, and the **leaderboard ranked on XP** so players compete for
-   seasonal prizes.
+   next begins, and the one **XP leaderboard** every player is in automatically.
 
 This replaces the current four (map, vouchers, pass, profile): the pass folds
 into Season, and profile settings need a home that is not a tab -- likely a
@@ -199,12 +198,16 @@ Everything seasonal in one place:
 - Progress through the pass.
 - Achievements earned.
 - Countdown to the end of the season, and when the next one starts.
-- **XP leaderboard** for seasonal prizes.
+- **One leaderboard, ranked on season XP.** Nobody joins it: XP comes from
+  claiming and using vouchers, so every active player is already in it, and the
+  leaders take the prizes when the season ends.
 
-Note against the campus leaderboard already built: that one ranks on
-redemptions because that is what venues pay for. This one ranks on XP because
-that is what players feel. They are different boards answering different
-questions and both can exist -- but if only one is shown, say which.
+**The campus rivalry is gone.** Decided 2026-09-23, a day after it was built and
+before anybody used it: it asked a player to pick a university before they could
+compete, and a player who skipped that choice competed in nothing. Two boards
+also forced a question nobody wanted -- which one am I supposed to care about.
+The schema is dropped, not dormant; `git show 0034` has it if it is ever wanted
+back.
 
 ---
 
@@ -227,7 +230,7 @@ component.
    visibility rules, with the approximate label.
 5. **Nickname and colour at sign-up.** The colour is real data from day one; only
    the picture it tints changes later.
-6. **XP leaderboard** on the Season tab.
+6. ~~XP leaderboard~~ -- built, `0039`. Still to move onto the Season tab.
 
 ## Standing rules
 

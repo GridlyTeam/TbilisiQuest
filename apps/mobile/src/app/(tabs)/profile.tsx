@@ -173,10 +173,10 @@ export default function ProfileScreen() {
             {ka ? 'ჩაიცვი ნაშოვნი' : 'Wear what you have earned'}
           </Text>
         </Pressable>
-        <Pressable style={styles.link} onPress={() => router.push('/campus')}>
-          <Text style={styles.linkTitle}>{ka ? 'კამპუსები' : 'Campuses'}</Text>
+        <Pressable style={styles.link} onPress={() => router.push('/leaderboard')}>
+          <Text style={styles.linkTitle}>{ka ? 'ლიდერები' : 'Leaders'}</Text>
           <Text style={styles.linkHint}>
-            {ka ? 'ვინ იგებს ამ თვეში' : 'Who is winning this month'}
+            {ka ? 'სეზონის ტოპ 100' : 'Top 100 this season'}
           </Text>
         </Pressable>
       </View>
