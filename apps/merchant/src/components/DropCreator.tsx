@@ -376,15 +376,28 @@ export default function DropCreator({
         </div>
 
         <div className="grid grid-cols-3 gap-4">
-          <Field label={t('creator.offerType')}>
+          {/* Only the offers this rarity permits. Listing all three and then
+              refusing the choice on submit is how a merchant ends up staring
+              at "that offer does not match the rarity" with no idea which of
+              the two to change. */}
+          <Field
+            label={t('creator.offerType')}
+            error={errors.offer && t(errors.offer as MessageKey)}
+          >
             <select
               className={inputClass}
               value={values.offer}
               onChange={(e) => set('offer', e.target.value as DropFormValues['offer'])}
             >
-              <option value="percent_off">{t('creator.percentOff')}</option>
-              <option value="bogo">{t('creator.bogo')}</option>
-              <option value="free_item">{t('creator.freeItem')}</option>
+              {RARITY_RULES[values.rarity].offers.map((offer) => (
+                <option key={offer} value={offer}>
+                  {offer === 'percent_off'
+                    ? t('creator.percentOff')
+                    : offer === 'bogo'
+                      ? t('creator.bogo')
+                      : t('creator.freeItem')}
+                </option>
+              ))}
             </select>
           </Field>
 
