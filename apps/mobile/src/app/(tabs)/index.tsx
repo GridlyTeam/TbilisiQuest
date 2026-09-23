@@ -230,6 +230,17 @@ export default function MapScreen() {
   // approximate.
   const [players, setPlayers] = useState<NearbyPlayer[]>([])
   const [card, setCard] = useState<PlayerCard | null>(null)
+  const [myColour, setMyColour] = useState<string | null>(null)
+
+  useEffect(() => {
+    void (async () => {
+      const { data } = await supabase.rpc('my_avatar')
+      const row = (Array.isArray(data) ? data[0] : data) as
+        | { avatar_config: { colour?: string } | null }
+        | undefined
+      setMyColour(row?.avatar_config?.colour ?? null)
+    })()
+  }, [])
 
   useEffect(() => {
     if (!fix) return
@@ -306,7 +317,13 @@ export default function MapScreen() {
             colour, and a pulse. See components/UserPuck. */}
         {permission === 'granted' && fix && (
           <Marker lngLat={[fix.longitude, fix.latitude]}>
-            <UserPuck />
+            {/* The dot stays the dot -- it is the accurate thing on the screen
+                -- and the head box sits above it, the same box other players
+                see. */}
+            <View style={styles.selfMarker}>
+              <HeadBox colour={myColour} size={38} />
+              <UserPuck />
+            </View>
           </Marker>
         )}
 
@@ -796,6 +813,7 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   },
   badgeSoldOut: { color: c.isDark ? '#2A2440' : '#D8D3E0' },
   pickerBackdrop: { flex: 1, backgroundColor: c.overlay, justifyContent: 'flex-end' },
+  selfMarker: { alignItems: 'center', marginBottom: -18 },
   cardSheet: {
     margin: space.lg,
     marginBottom: space.xl,
