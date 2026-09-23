@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router'
 import { useSafeAreaInsets } from 'react-native-safe-area-context'
 
-import { MapIcon, ProfileIcon, VoucherIcon } from '../../components/TabIcons'
+import { MapIcon, PassIcon, ProfileIcon, VoucherIcon } from '../../components/TabIcons'
 
 import { useTheme } from '../../lib/theme'
 import { useTranslation } from '../../lib/i18n'
@@ -57,6 +57,13 @@ export default function TabsLayout() {
         options={{
           title: ka ? 'ვაუჩერები' : 'Vouchers',
           tabBarIcon: ({ color }) => <VoucherIcon color={color} />,
+        }}
+      />
+      <Tabs.Screen
+        name="pass"
+        options={{
+          title: ka ? 'ბილეთი' : 'Pass',
+          tabBarIcon: ({ color }) => <PassIcon color={color} />,
         }}
       />
       <Tabs.Screen

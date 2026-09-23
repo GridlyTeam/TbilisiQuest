@@ -97,6 +97,50 @@ export function VoucherIcon({ color, size = 22 }: Props) {
   )
 }
 
+export function PassIcon({ color, size = 22 }: Props) {
+  const medal = Math.round(size * 0.5)
+  return (
+    <View style={[styles.box, { width: size, height: size }]}>
+      {/* A medal: the ribbon first so the disc sits over its ends. */}
+      <View style={{ flexDirection: 'row', gap: 3, marginBottom: -4 }}>
+        {[-14, 14].map((angle) => (
+          <View
+            key={angle}
+            style={{
+              width: 4,
+              height: 9,
+              borderWidth: 1.5,
+              borderColor: color,
+              transform: [{ rotate: `${angle}deg` }],
+            }}
+          />
+        ))}
+      </View>
+      <View
+        style={{
+          width: medal,
+          height: medal,
+          borderRadius: medal / 2,
+          borderWidth: 2,
+          borderColor: color,
+          backgroundColor: 'transparent',
+          alignItems: 'center',
+          justifyContent: 'center',
+        }}
+      >
+        <View
+          style={{
+            width: 3,
+            height: 3,
+            borderRadius: 1.5,
+            backgroundColor: color,
+          }}
+        />
+      </View>
+    </View>
+  )
+}
+
 export function ProfileIcon({ color, size = 22 }: Props) {
   const head = Math.round(size * 0.38)
   const shoulders = Math.round(size * 0.74)
