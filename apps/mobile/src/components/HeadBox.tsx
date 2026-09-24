@@ -80,7 +80,14 @@ export default function HeadBox({
         <View
           style={[
             styles.plate,
-            { borderColor: ring, backgroundColor: c.surface, maxWidth: size * 2.6 },
+            {
+              borderColor: c.border,
+              backgroundColor: c.isDark
+                ? 'rgba(10,8,19,0.92)'
+                : 'rgba(255,255,255,0.96)',
+              shadowOpacity: c.isDark ? 0.5 : 0.22,
+              maxWidth: size * 2.6,
+            },
           ]}
         >
           <Text style={[styles.name, { color: ring }]} numberOfLines={1}>
@@ -97,6 +104,13 @@ export default function HeadBox({
           borderWidth: outline,
           borderColor: ring,
           backgroundColor: c.surface,
+          // The same glow the venue rings carry: a coloured shadow rather
+          // than a coloured fill is what lifts a marker off the basemap
+          // without making it hard to look at.
+          shadowColor: ring,
+          shadowOpacity: 0.55,
+          shadowRadius: 10,
+          elevation: 7,
           overflow: 'hidden',
           alignItems: 'center',
           // A little air above the head, so the crop reads as framing rather
@@ -152,12 +166,20 @@ export default function HeadBox({
 const makeStyles = () =>
   StyleSheet.create({
     wrap: { alignItems: 'center' },
+    // Names sit on whatever the basemap draws -- pale streets, dark parks, a
+    // river -- and no text colour survives all of it. So the plate is opaque
+    // and the name is coloured against the plate rather than against the map,
+    // which is how the venue badges solve the same problem.
     plate: {
       borderWidth: 1.5,
       borderRadius: 999,
       paddingHorizontal: 7,
       paddingVertical: 2,
       marginBottom: 3,
+      shadowColor: '#000',
+      shadowRadius: 5,
+      shadowOffset: { width: 0, height: 2 },
+      elevation: 4,
     },
     name: { fontSize: 10, fontWeight: '900', letterSpacing: 0 },
     // Overlaps the bubble's own outline so the tail grows out of it rather
