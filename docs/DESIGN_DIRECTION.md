@@ -51,6 +51,19 @@ colour and each outfit once as a transparent layer over the same pose. Six
 colours plus six outfits is twelve assets; six colours times six outfits is
 thirty-six. The app composes them.
 
+**In practice it was cheaper still.** The body was generated once, in green, and
+the other seven colours derived from it by rotating hue while keeping each
+pixel's lightness and saturation -- which a single-hue matte character allows.
+One generation for the whole palette. `tools/recolour-creature.py` does it, and
+also cuts the figure out, kills the halo left by cutting from a light
+background, and tames the render's rim light into a contour. Point it at the
+next base render and it produces the set again.
+
+**The base render wants to be bigger.** The current one crops to 308x407, which
+a 3x phone upscales 1.66x at the size the Character tab draws it, and that
+softness is what reads as cheap. Ask for a single front view at 2K rather than a
+three-view sheet, with flat even lighting and no rim light.
+
 **Animation is done in the app, not bought.** Reanimated is already in the
 project and already drives the map puck. A breathing bob, a slow sway, a blink
 swapped between two eye frames, a shadow that scales with the bob -- that reads
@@ -163,24 +176,42 @@ Because of that, **another player's head box must be labelled approximate** --
 on the card, in words. An icon that hops 400 m while somebody watches it, with
 nothing explaining why, is read as a broken map and reported as a bug.
 
-## The five tabs
+## The four tabs, and the store button
 
-1. **Map** -- the default tab, as now.
+1. **Map** -- the default tab.
 2. **Vouchers** -- what you have claimed.
 3. **Character** -- customisation. Every piece of merch, clothing and background
-   they have earned or bought lives here, with a large view of the character
-   wearing it. Backgrounds are locations: Mtatsminda Park, and others like it.
-   All of it produced with Higgsfield later.
-4. **Store** -- added 2026-09-23. Backgrounds and gear bought with coins.
-5. **Season** -- progress, achievements, when the current season ends and the
+   they have earned or bought lives here, with the creature full size on its
+   stage above them. Backgrounds are locations: Mtatsminda Park and others.
+4. **Season** -- progress, achievements, when the current season ends and the
    next begins, and the one **XP leaderboard** every player is in automatically.
 
-Five is the ceiling. A sixth tab does not fit a phone and the labels are already
-at 10px.
+**The store is not a tab.** It was one briefly, which put a shop on the same
+footing as the map and the player's own character -- five tabs for somewhere you
+drop into when you happen to have coins. It is a button at the bottom left of
+the map now, opposite the crosshair and the info button, opening a scrollable
+panel that the same button puts away. The map stays visible behind it, so buying
+a background never means leaving the city.
 
-This replaces the current four (map, vouchers, pass, profile): the pass folds
-into Season, and profile settings need a home that is not a tab -- likely a
-header button on Character or Season.
+Settings are not a tab either: theme, language and sign out are touched a
+handful of times ever and sit behind a header button on Season.
+
+## Markers: why they shrink
+
+Map markers keep a constant size on screen and never grow -- which is right in a
+street and wrong over a city. The same sixty pixels that mark one shop at zoom
+15 cover several blocks at zoom 11, so venues a street apart stack on each other
+and a crowd of players becomes one unreadable heap.
+
+So both venue pins and player bubbles scale with the map: full size at the zoom
+the recentre button gives you, down to just over half once the whole city is in
+frame. Below zoom 13.5 they drop their names and voucher counts, which are the
+widest part of a marker and collide long before the icon does.
+
+Player bubbles are speech balloons -- a rounded box with a tail pointing at the
+dot, ringed and glowing in that player's own creature colour, which is what
+tells two people apart before either is tapped. Tapping any bubble, including
+your own, opens that character full size on its stage.
 
 ## The creature: one body, many colours
 
@@ -347,4 +378,9 @@ These come from decisions already made and apply to everything above.
 | Visibility modes, head boxes, player cards | `0040`, `84191ec` |
 | Coins, the store tab, six backgrounds | `0042` |
 | Seasonal rotation, vaulting, art-cost calculator | `0043` |
-| Animated creature, stage, sign-up, board on Season | this commit |
+| Animated creature, stage, sign-up, board on Season | `9d6c11c` |
+| Creature as artwork, eight colours from one render | `a8b7164` |
+| Store off the tab bar, onto the map | `dffa886` |
+| Player bubbles, nicknames, tap to see a character | `8b6911a`, `144e7fb` |
+| Illustrated icons, mascot face on the Character tab | `302f3ec` |
+| Markers shrink with the map | `107c908` |
