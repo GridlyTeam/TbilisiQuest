@@ -5,7 +5,6 @@ import {
   MapIcon,
   PassIcon,
   ProfileIcon,
-  StoreIcon,
   VoucherIcon,
 } from '../../components/TabIcons'
 
@@ -42,7 +41,7 @@ export default function TabsLayout() {
           paddingBottom: bottomInset,
         },
         tabBarLabelStyle: {
-          fontSize: 10,
+          fontSize: 11,
           fontWeight: '800',
           letterSpacing: 0,
         },
@@ -70,13 +69,6 @@ export default function TabsLayout() {
         options={{
           title: ka ? 'პერსონაჟი' : 'Character',
           tabBarIcon: ({ color }) => <ProfileIcon color={color} />,
-        }}
-      />
-      <Tabs.Screen
-        name="store"
-        options={{
-          title: ka ? 'მაღაზია' : 'Store',
-          tabBarIcon: ({ color }) => <StoreIcon color={color} />,
         }}
       />
       <Tabs.Screen

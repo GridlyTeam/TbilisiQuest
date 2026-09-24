@@ -12,6 +12,22 @@ Run it again when a new base render arrives:
 
 where x0/x1 are the pixel columns bounding the front view in a turnaround
 sheet. It writes apps/mobile/assets/creature/creature-<colour>.png.
+
+Two things here exist because the first version of this script got them wrong
+and it showed on every creature in the app:
+
+  The eye mask was "any pale pixel inside the silhouette", which is not the
+  eyes -- it is the eyes plus every rim-light highlight on the body. Those
+  highlights kept their original near-white colour through the hue rotation
+  and read as pale streaks down a blue creature. The eyes are found properly
+  now, as the holes binary_fill_holes closes: a region enclosed by body is an
+  eye, a highlight on the body's edge is not.
+
+  And cutting the character off a light background leaves a rim of pixels that
+  are part background, which survives as a white halo once the alpha is
+  applied. Every pixel's colour is now taken from the nearest fully opaque
+  pixel before the alpha goes on, so the semi-transparent edge carries body
+  colour rather than a blend with whatever it was photographed against.
 """
 
 import os
@@ -51,6 +67,21 @@ def hue_shift(rgb: np.ndarray, hue: float) -> np.ndarray:
     return (np.clip(np.dstack(channels), 0, 1) * 255).astype(np.uint8)
 
 
+def unfringe(rgb: np.ndarray, alpha: np.ndarray) -> np.ndarray:
+    """
+    Push body colour outwards into the soft edge.
+
+    Anything not fully opaque is part background, and keeping its colour is
+    what produces a white halo on a character cut from a pale render. Each
+    such pixel takes the colour of the nearest solid one instead.
+    """
+    core = alpha > 0.92
+    if not core.any():
+        return rgb
+    _, (iy, ix) = ndimage.distance_transform_edt(~core, return_indices=True)
+    return rgb[iy, ix]
+
+
 def main(src: str, x0: int, x1: int) -> None:
     os.makedirs(OUT, exist_ok=True)
 
@@ -65,17 +96,21 @@ def main(src: str, x0: int, x1: int) -> None:
     sub, ss = a[:, x0:x1], sat[:, x0:x1]
     solid = ss > 0.18
     ys = np.nonzero(solid.any(axis=1))[0]
-    sub, ss, solid = sub[ys.min():ys.max() + 1], ss[ys.min():ys.max() + 1], solid[ys.min():ys.max() + 1]
+    top, bottom = ys.min(), ys.max() + 1
+    sub, ss, solid = sub[top:bottom], ss[top:bottom], solid[top:bottom]
 
-    # The eyes are pale and fall out of a saturation mask; filling the holes
-    # inside the silhouette puts them back.
     filled = ndimage.binary_fill_holes(solid)
+
+    # The eyes are exactly the holes: regions with no colour of their own that
+    # the body encloses. A highlight on the body is not enclosed, so it stays
+    # part of the body and gets recoloured with it.
+    eyes = ndimage.binary_dilation(filled & ~solid, iterations=1)
+
     alpha = np.clip((ss - 0.08) / 0.12, 0, 1)
     alpha = ndimage.gaussian_filter(np.maximum(alpha, filled.astype(np.float32)), 0.6)
     alpha8 = (alpha * 255).astype(np.uint8)
 
-    rgb = (sub * 255).astype(np.uint8)
-    eyes = (ss < 0.22) & filled
+    rgb = unfringe((sub * 255).astype(np.uint8), alpha)
 
     Image.fromarray(np.dstack([rgb, alpha8]), "RGBA").save(
         os.path.join(OUT, "creature-green.png")

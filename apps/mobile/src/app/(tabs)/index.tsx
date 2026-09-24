@@ -26,6 +26,8 @@ import SafetyBriefing from '../../components/SafetyBriefing'
 import SafetyButton from '../../components/SafetyButton'
 import UserPuck from '../../components/UserPuck'
 import HeadBox from '../../components/HeadBox'
+import StorePanel from '../../components/StorePanel'
+import { StoreIcon } from '../../components/TabIcons'
 import { useTheme, useRarity, radius, space, font, type Palette, type Rarity } from '../../lib/theme'
 
 type NearbyPlayer = {
@@ -231,6 +233,7 @@ export default function MapScreen() {
   const [players, setPlayers] = useState<NearbyPlayer[]>([])
   const [card, setCard] = useState<PlayerCard | null>(null)
   const [myColour, setMyColour] = useState<string | null>(null)
+  const [storeOpen, setStoreOpen] = useState(false)
 
   useEffect(() => {
     void (async () => {
@@ -446,19 +449,37 @@ export default function MapScreen() {
 
       {/* Always reachable, over the map and under the safety overlay. */}
       {!safety.blocked && (
-        <View style={styles.controls}>
-          {fix && !centred && (
+        <>
+          {/* The store lives down here rather than in the tab bar: it is
+              somewhere you drop into when you have coins, not one of the four
+              things the app is for. Pressing the button again puts it away. */}
+          <View style={styles.controlsLeft}>
+            {storeOpen && <StorePanel onClose={() => setStoreOpen(false)} />}
             <Pressable
-              style={styles.recentre}
-              onPress={recentre}
+              style={[styles.storeButton, storeOpen && styles.storeButtonOpen]}
+              onPress={() => setStoreOpen((open) => !open)}
               accessibilityRole="button"
-              accessibilityLabel={ka ? 'ჩემს ადგილას' : 'Centre on me'}
+              accessibilityState={{ expanded: storeOpen }}
+              accessibilityLabel={ka ? 'მაღაზია' : 'Store'}
             >
-              <Crosshair color={c.accentInk} />
+              <StoreIcon color={storeOpen ? c.bg : c.accentInk} size={20} />
             </Pressable>
-          )}
-          <SafetyButton fix={fix} />
-        </View>
+          </View>
+
+          <View style={styles.controls}>
+            {fix && !centred && (
+              <Pressable
+                style={styles.recentre}
+                onPress={recentre}
+                accessibilityRole="button"
+                accessibilityLabel={ka ? 'ჩემს ადგილას' : 'Centre on me'}
+              >
+                <Crosshair color={c.accentInk} />
+              </Pressable>
+            )}
+            <SafetyButton fix={fix} />
+          </View>
+        </>
       )}
 
       <Modal
@@ -766,6 +787,29 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     alignItems: 'flex-end',
     gap: space.md,
   },
+  controlsLeft: {
+    position: 'absolute',
+    bottom: space.lg,
+    left: space.lg,
+    alignItems: 'flex-start',
+    gap: space.md,
+  },
+  storeButton: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: c.surface,
+    borderWidth: 1,
+    borderColor: c.border,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: '#000',
+    shadowOpacity: 0.25,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 5,
+  },
+  storeButtonOpen: { backgroundColor: c.accent, borderColor: c.accent },
   recentre: {
     width: 40,
     height: 40,

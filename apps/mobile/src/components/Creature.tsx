@@ -4,7 +4,6 @@ import Animated, {
   Easing,
   useAnimatedStyle,
   useSharedValue,
-  withDelay,
   withRepeat,
   withTiming,
 } from 'react-native-reanimated'
@@ -18,10 +17,9 @@ import Animated, {
  * which is why the whole set cost one generation rather than eight. The
  * recolouring script lives in the commit that added these files.
  *
- * The motion is code, as it always was: floating, squashing and breathing on
- * three loops deliberately out of step, because when they share a beat the
- * whole thing reads as a mechanism. That is the reason this app never needed a
- * 3D engine -- a still picture plus this file is a character that looks alive.
+ * The motion is code: it breathes, scaled from its feet so it never leaves the
+ * ground. It used to float as well, which was one idea too many -- a creature
+ * that hovers reads as a ghost rather than as somebody standing in a place.
  */
 
 const BODIES: Record<string, ImageSourcePropType> = {
@@ -67,42 +65,26 @@ export default function Creature({
 }) {
   const styles = makeStyles()
 
-  const bob = useSharedValue(0)
+  // It stands on the ground rather than hovering over it. What is left is
+  // breathing: the body widens and settles a little, anchored at the feet, so
+  // it is alive without drifting anywhere.
   const breath = useSharedValue(0)
 
   useEffect(() => {
     if (!animate) return
 
-    bob.value = withRepeat(
-      withTiming(1, { duration: 2200, easing: Easing.inOut(Easing.sin) }),
+    breath.value = withRepeat(
+      withTiming(1, { duration: 3100, easing: Easing.inOut(Easing.quad) }),
       -1,
       true,
     )
-    breath.value = withDelay(
-      400,
-      withRepeat(
-        withTiming(1, { duration: 3100, easing: Easing.inOut(Easing.quad) }),
-        -1,
-        true,
-      ),
-    )
-  }, [animate, bob, breath])
+  }, [animate, breath])
 
   const bodyStyle = useAnimatedStyle(() => ({
     transform: [
-      { translateY: -bob.value * size * 0.045 },
-      // Squash on the way down, stretch on the way up, conserving volume --
-      // the difference between something floating and something sliding.
-      { scaleX: 1 + (1 - bob.value) * 0.025 + breath.value * 0.01 },
-      { scaleY: 1 - (1 - bob.value) * 0.025 + breath.value * 0.015 },
+      { scaleX: 1 + breath.value * 0.012 },
+      { scaleY: 1 + breath.value * 0.018 },
     ],
-  }))
-
-  // The shadow does as much work as the body: without it the creature reads as
-  // pasted onto the screen rather than standing above something.
-  const shadowStyle = useAnimatedStyle(() => ({
-    transform: [{ scaleX: 1 - bob.value * 0.2 }],
-    opacity: 0.3 - bob.value * 0.12,
   }))
 
   const height = size * RATIO
@@ -113,7 +95,7 @@ export default function Creature({
           sticker under the feet, and React Native has no blur to soften it
           with. Three at a low alpha each pile up in the middle and thin out
           at the rim, which is what a real contact shadow does. */}
-      <Animated.View style={[styles.shadowSlot, shadowStyle]}>
+      <View style={[styles.shadowSlot, { opacity: 0.3 }]}>
         {[1, 0.7, 0.44].map((scale, i) => (
           <View
             key={i}
@@ -126,8 +108,8 @@ export default function Creature({
             }}
           />
         ))}
-      </Animated.View>
-      <Animated.View style={bodyStyle}>
+      </View>
+      <Animated.View style={[bodyStyle, { transformOrigin: 'bottom' }]}>
         <Image
           source={creatureSource(colour)}
           style={{ width: size, height }}
