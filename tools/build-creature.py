@@ -1,7 +1,7 @@
 """
 Build the creature's assets from renders.
 
-    python tools/build-creature.py <naked.png> [<outfit-name> <outfit.png> ...]
+    python tools/build-creature.py <bare.png> [<layer-name> <worn.png> ...]
 
 Takes a render of the bare creature on white and writes the eight colour
 variants; takes renders of the same creature wearing something and writes each
@@ -148,6 +148,54 @@ def tame_rim(rgb: np.ndarray, alpha: np.ndarray) -> np.ndarray:
     return np.clip(out, 0, 255)
 
 
+def hue_of(rgb: np.ndarray) -> np.ndarray:
+    """Hue in turns, 0 to 1."""
+    r, g, b = rgb[..., 0] / 255, rgb[..., 1] / 255, rgb[..., 2] / 255
+    mx = np.max([r, g, b], axis=0)
+    mn = np.min([r, g, b], axis=0)
+    d = np.maximum(mx - mn, 1e-6)
+    h = np.where(
+        mx == r, ((g - b) / d) % 6,
+        np.where(mx == g, (b - r) / d + 2, (r - g) / d + 4),
+    )
+    return (h / 6) % 1.0
+
+
+def neutralise_reflections(
+    rgb: np.ndarray, mask: np.ndarray, body_hue: float
+) -> np.ndarray:
+    """
+    Take the body's colour back out of a layer that reflected it.
+
+    A dark lens picks up whatever it was rendered against, so the glasses carry
+    reflections of the body -- which look wrong the moment they sit on a
+    creature of another colour. One shared layer cannot recolour its own
+    reflections per body, so they lose their colour instead: pushed towards
+    grey they read as highlights on any body, which is what a reflection is.
+
+    Keyed on the body's own hue rather than on a guess at what colour it is.
+    The first attempt tested for green and missed these, because the
+    reflections are yellow-green -- red and green near enough level that
+    "greener than it is red" is false.
+    """
+    out = rgb.astype(np.float32).copy()
+    hue = hue_of(out)
+    mx, mn = out.max(axis=2), out.min(axis=2)
+    sat = np.where(mx > 0, (mx - mn) / np.maximum(mx, 1e-6), 0)
+
+    # Circular distance, so a body hue near 0 still matches its own reflections.
+    delta = np.abs(hue - body_hue)
+    delta = np.minimum(delta, 1 - delta)
+
+    reflected = mask & (delta < 0.09) & (sat > 0.18)
+    if not reflected.any():
+        return out
+
+    grey = out[reflected].mean(axis=1, keepdims=True)
+    out[reflected] = out[reflected] * 0.2 + grey * 0.8
+    return out
+
+
 def hue_shift(rgb: np.ndarray, hue: float) -> np.ndarray:
     """Repaint every pixel at `hue`, keeping its own value and saturation."""
     r, g, b = rgb[..., 0] / 255, rgb[..., 1] / 255, rgb[..., 2] / 255
@@ -206,6 +254,11 @@ def main() -> None:
 
     body = tame_rim(unfringe(base_rgb, base_alpha), base_alpha)
 
+    # What colour the creature was rendered in, so a layer can be told which of
+    # its own pixels are reflections of it.
+    skin = base_solid & ~eyes
+    body_hue = float(np.median(hue_of(base_rgb)[skin]))
+
     save(body, base_alpha, "creature-green.png")
     for name, hue in PALETTE.items():
         shifted = hue_shift(body, hue).astype(np.float32)
@@ -227,8 +280,8 @@ def main() -> None:
         garment = ndimage.binary_erosion(garment, iterations=2)
 
         g_alpha = alpha_from(garment)
-        g_rgb = unfringe(rgb, g_alpha)
-        save(g_rgb, g_alpha, f"outfit-{name}.png")
+        g_rgb = neutralise_reflections(unfringe(rgb, g_alpha), garment, body_hue)
+        save(g_rgb, g_alpha, f"layer-{name}.png")
         print(f"  outfit {name}: {int(garment.sum())}px")
 
     print(f"canvas {x1 - x0} x {y1 - y0}, {len(PALETTE) + 1} bodies, {len(outfits)} outfits")

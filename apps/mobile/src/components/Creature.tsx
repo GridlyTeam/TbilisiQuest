@@ -54,17 +54,20 @@ export const DEFAULT_COLOUR = 'cyan'
 export const RATIO = 539 / 392
 
 /**
- * Garments, lifted out of a render of the creature wearing one by subtracting
- * the bare render from it. They carry their own colours, so one file dresses
- * all eight bodies -- which is the difference between one render per outfit
+ * Everything the creature can wear, lifted out of a render of it wearing that
+ * thing by subtracting the bare render. Each carries its own colours, so one
+ * file dresses all eight bodies -- the difference between one render per item
  * and eight.
+ *
+ * Keyed by style_key, which is what the database hands the app.
  */
-const OUTFITS: Record<string, ImageSourcePropType> = {
-  hoodie_fab: require('../../assets/creature/outfit-hoodie_fab.png'),
+const LAYERS: Record<string, ImageSourcePropType> = {
+  hoodie_fab: require('../../assets/creature/layer-hoodie_fab.png'),
+  shades_cat: require('../../assets/creature/layer-shades_cat.png'),
 }
 
-export function outfitSource(key?: string | null): ImageSourcePropType | null {
-  return OUTFITS[key ?? ''] ?? null
+export function layerSource(key?: string | null): ImageSourcePropType | null {
+  return LAYERS[key ?? ''] ?? null
 }
 
 export function creatureSource(colour?: string | null): ImageSourcePropType {
@@ -74,12 +77,14 @@ export function creatureSource(colour?: string | null): ImageSourcePropType {
 export default function Creature({
   colour,
   outfit,
+  eyewear,
   size = 180,
   animate = true,
 }: {
   colour?: string | null
-  /** A style_key from the outfit cosmetics; unknown keys wear nothing. */
+  /** style_keys from the cosmetics; unknown keys wear nothing. */
   outfit?: string | null
+  eyewear?: string | null
   size?: number
   animate?: boolean
 }) {
@@ -107,7 +112,8 @@ export default function Creature({
     ],
   }))
 
-  const garment = outfitSource(outfit)
+  // Drawn in the order they sit: clothes on the body, glasses over the face.
+  const worn = [layerSource(outfit), layerSource(eyewear)].filter(Boolean)
   const height = size * RATIO
 
   return (
@@ -136,14 +142,16 @@ export default function Creature({
           style={{ width: size, height }}
           resizeMode="contain"
         />
-        {/* Over the body on the same canvas, so it lands where it was drawn. */}
-        {garment && (
+        {/* Over the body on the same canvas, so each lands where it was
+            drawn -- no offsets to get wrong. */}
+        {worn.map((layer, i) => (
           <Image
-            source={garment}
+            key={i}
+            source={layer as ImageSourcePropType}
             style={{ position: 'absolute', width: size, height }}
             resizeMode="contain"
           />
-        )}
+        ))}
       </Animated.View>
     </View>
   )

@@ -1,11 +1,17 @@
-import { Image, StyleSheet, Text, View } from 'react-native'
+import {
+  Image,
+  StyleSheet,
+  Text,
+  View,
+  type ImageSourcePropType,
+} from 'react-native'
 
 import { useTheme } from '../lib/theme'
 import {
   CREATURE_COLOURS as CREATURE,
   RATIO,
   creatureSource,
-  outfitSource,
+  layerSource,
 } from './Creature'
 
 /**
@@ -49,6 +55,7 @@ const ZOOM = 1.15
 export default function HeadBox({
   colour,
   outfit,
+  eyewear,
   name,
   size = 40,
   dimmed = false,
@@ -56,6 +63,7 @@ export default function HeadBox({
   colour?: string | null
   /** Anything worn high enough to show in the crop -- a hood, glasses, a hat. */
   outfit?: string | null
+  eyewear?: string | null
   /** Shown above the bubble. Omitted on the player card, where it is below. */
   name?: string | null
   size?: number
@@ -72,7 +80,7 @@ export default function HeadBox({
   // reason the palette carries both: the dark basemap needs the bright body
   // colour to read against it, the light one needs the darker shade. Picking
   // one for both is how the outline was invisible before.
-  const garment = outfitSource(outfit)
+  const worn = [layerSource(outfit), layerSource(eyewear)].filter(Boolean)
   const skin = CREATURE[colour ?? ''] ?? CREATURE[DEFAULT_COLOUR]
   const ring = c.isDark ? skin.body : skin.shade
 
@@ -137,9 +145,10 @@ export default function HeadBox({
         />
         {/* The same canvas as the body, cropped by the same box, so whatever
             is worn high enough to be in frame comes with it. */}
-        {garment && (
+        {worn.map((layer, i) => (
           <Image
-            source={garment}
+            key={i}
+            source={layer as ImageSourcePropType}
             style={{
               position: 'absolute',
               top: size * 0.08,
@@ -148,7 +157,7 @@ export default function HeadBox({
             }}
             resizeMode="contain"
           />
-        )}
+        ))}
       </View>
 
       {/* The tail, drawn twice: the outer triangle carries the bubble's

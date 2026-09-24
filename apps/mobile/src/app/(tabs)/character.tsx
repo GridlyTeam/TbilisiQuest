@@ -57,6 +57,7 @@ const SLOTS: Array<{ slot: string; kind: string; ka: string; en: string }> = [
   { slot: 'frame',  kind: 'avatar_frame', ka: 'ჩარჩო',    en: 'Frame' },
   { slot: 'marker', kind: 'marker_skin',  ka: 'პინი',     en: 'Map pin' },
   { slot: 'outfit', kind: 'outfit',       ka: 'ტანსაცმელი', en: 'Outfit' },
+  { slot: 'eyewear', kind: 'eyewear',    ka: 'სათვალე',   en: 'Eyewear' },
   { slot: 'sticker', kind: 'sticker',     ka: 'სტიკერი',  en: 'Sticker' },
   { slot: 'theme',  kind: 'card_theme',   ka: 'თემა',     en: 'Card theme' },
   { slot: 'background', kind: 'background', ka: 'ფონი',    en: 'Background' },
@@ -164,6 +165,7 @@ export default function InventoryScreen() {
           <Creature
             colour={config.colour}
             outfit={keyFor('outfit')}
+            eyewear={keyFor('eyewear')}
             size={170}
           />
         </Stage>

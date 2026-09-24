@@ -37,6 +37,7 @@ type NearbyPlayer = {
   display_name: string
   avatar_config: { colour?: string } | null
   outfit_key: string | null
+  eyewear_key: string | null
   lat: number
   lng: number
   approximate: boolean
@@ -46,6 +47,7 @@ type PlayerCard = {
   display_name: string
   avatar_config: { colour?: string } | null
   outfit_key: string | null
+  eyewear_key: string | null
   background_key: string | null
   level: number
   season_xp: number
@@ -276,6 +278,7 @@ export default function MapScreen() {
   const [myColour, setMyColour] = useState<string | null>(null)
   const [myName, setMyName] = useState<string | null>(null)
   const [myOutfit, setMyOutfit] = useState<string | null>(null)
+  const [myEyewear, setMyEyewear] = useState<string | null>(null)
   const [storeOpen, setStoreOpen] = useState(false)
   const [zoom, setZoom] = useState(FOCUS_ZOOM)
 
@@ -295,11 +298,13 @@ export default function MapScreen() {
             avatar_config: { colour?: string } | null
             display_name: string | null
             outfit_key: string | null
+            eyewear_key: string | null
           }
         | undefined
       setMyColour(row?.avatar_config?.colour ?? null)
       setMyName(row?.display_name ?? null)
       setMyOutfit(row?.outfit_key ?? null)
+      setMyEyewear(row?.eyewear_key ?? null)
       setMyId(auth.data.user?.id ?? null)
     })()
   }, [])
@@ -430,6 +435,7 @@ export default function MapScreen() {
                 <HeadBox
                   colour={myColour}
                   outfit={myOutfit}
+                  eyewear={myEyewear}
                   name={showLabels ? myName : null}
                   size={44 * markerScale}
                 />
@@ -453,6 +459,7 @@ export default function MapScreen() {
             <HeadBox
               colour={player.avatar_config?.colour}
               outfit={player.outfit_key}
+              eyewear={player.eyewear_key}
               name={showLabels ? player.display_name : null}
               size={40 * markerScale}
               dimmed={player.approximate}
@@ -612,6 +619,7 @@ export default function MapScreen() {
                     <Creature
                       colour={card.avatar_config?.colour}
                       outfit={card.outfit_key}
+                      eyewear={card.eyewear_key}
                       size={150}
                     />
                   </Stage>
