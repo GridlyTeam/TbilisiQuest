@@ -19,6 +19,12 @@ import { CREATURE_COLOURS as CREATURE, creatureSource } from './Creature'
  * The image is oversized inside a clipped box rather than shipped as a second
  * set of head-only renders. One file per colour, and a map icon that can never
  * disagree with the profile.
+ *
+ * The outline is drawn in the text colour rather than the background one. That
+ * looks like a detail and is not: the basemap follows the theme, so an outline
+ * the colour of the background is the colour of the map behind it -- near-black
+ * on the dark basemap, near-white on the light one. It was invisible in both
+ * modes for the same reason.
  */
 
 /** One palette, defined with the creature: two lists would drift apart. */
@@ -60,7 +66,7 @@ export default function HeadBox({
           height: size,
           borderRadius: size * 0.34,
           borderWidth: outline,
-          borderColor: c.bg,
+          borderColor: c.text,
           backgroundColor: c.surface,
           overflow: 'hidden',
           alignItems: 'center',
@@ -92,7 +98,7 @@ export default function HeadBox({
             borderTopWidth: tailH,
             borderLeftColor: 'transparent',
             borderRightColor: 'transparent',
-            borderTopColor: c.bg,
+            borderTopColor: c.text,
           }}
         />
         <View
