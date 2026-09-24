@@ -83,6 +83,27 @@ const FOCUS_ZOOM = 15
 /** UserPuck's own box. Its dot sits in the middle of this, not at the bottom. */
 const PUCK_BOX = 66
 
+/**
+ * Markers keep a constant size on screen, which is right when you are standing
+ * in a street and wrong when you pull back over the city: the same 60 pixels
+ * that mark one shop at zoom 15 cover several blocks at zoom 11, so venues a
+ * street apart stack on top of each other and a crowd of players becomes one
+ * unreadable pile.
+ *
+ * So they shrink as the map pulls back -- full size at the zoom the recentre
+ * button gives you, down to just over half by the time the whole city is in
+ * frame -- and below LABEL_ZOOM they drop their names and counts, which are
+ * the widest part of a marker and collide long before the icon does.
+ */
+const MIN_MARKER_ZOOM = 11
+const MIN_MARKER_SCALE = 0.55
+const LABEL_ZOOM = 13.5
+
+function scaleForZoom(zoom: number): number {
+  const t = (zoom - MIN_MARKER_ZOOM) / (FOCUS_ZOOM - MIN_MARKER_ZOOM)
+  return Math.max(MIN_MARKER_SCALE, Math.min(1, t))
+}
+
 /** Which rarity a shared marker should advertise. */
 const RARITY_RANK: Record<Rarity, number> = { common: 0, rare: 1, legendary: 2 }
 
@@ -253,6 +274,10 @@ export default function MapScreen() {
   const [myColour, setMyColour] = useState<string | null>(null)
   const [myName, setMyName] = useState<string | null>(null)
   const [storeOpen, setStoreOpen] = useState(false)
+  const [zoom, setZoom] = useState(FOCUS_ZOOM)
+
+  const markerScale = scaleForZoom(zoom)
+  const showLabels = zoom >= LABEL_ZOOM
 
   const [myId, setMyId] = useState<string | null>(null)
 
@@ -357,6 +382,10 @@ export default function MapScreen() {
         // the button reappear the instant it was pressed.
         onRegionDidChange={(event) => {
           if (event.nativeEvent.userInteraction) setCentred(false)
+          // Rounded to a quarter level: this fires continuously through a
+          // pinch, and every distinct value re-renders every marker.
+          const next = Math.round(event.nativeEvent.zoom * 4) / 4
+          setZoom((current) => (current === next ? current : next))
         }}
       >
         <Camera
@@ -390,7 +419,11 @@ export default function MapScreen() {
               {/* Tucked down over the puck's empty upper half so the tail
                   ends just above the dot rather than a puck-height away. */}
               <View style={styles.selfBubble}>
-                <HeadBox colour={myColour} name={myName} size={44} />
+                <HeadBox
+                  colour={myColour}
+                  name={showLabels ? myName : null}
+                  size={44 * markerScale}
+                />
               </View>
               <UserPuck />
             </View>
@@ -410,7 +443,8 @@ export default function MapScreen() {
           >
             <HeadBox
               colour={player.avatar_config?.colour}
-              name={player.display_name}
+              name={showLabels ? player.display_name : null}
+              size={40 * markerScale}
               dimmed={player.approximate}
             />
           </Marker>
@@ -438,6 +472,8 @@ export default function MapScreen() {
                 count={group.length}
                 totalRemaining={group.reduce((sum, d) => sum + (d.remaining ?? 0), 0)}
                 ka={ka}
+                scale={markerScale}
+                showLabels={showLabels}
               />
             </Marker>
           )
@@ -666,6 +702,8 @@ function DropMarker({
   count,
   totalRemaining,
   ka,
+  scale = 1,
+  showLabels = true,
 }: {
   drop: NearbyDrop
   /** How many drops share this position. */
@@ -674,12 +712,15 @@ function DropMarker({
    *  with from this shop. */
   totalRemaining: number
   ka: boolean
+  /** Shrinks with the map, so a pulled-back view does not become a pile. */
+  scale?: number
+  showLabels?: boolean
 }) {
   const styles = useStyles()
   const { c } = useTheme()
   const rarity = useRarity()
   const meta = rarity[drop.rarity] ?? rarity.common
-  const size = drop.is_boss_chest ? 74 : 58
+  const size = (drop.is_boss_chest ? 74 : 58) * scale
   const venueName = (ka ? drop.venue_name_ka : drop.venue_name_en) ?? ''
   const soldOut = totalRemaining === 0
   const squad = (drop.squad_size ?? 1) > 1
@@ -691,27 +732,29 @@ function DropMarker({
           than a saturated fill. Bright cyan or amber behind small text is
           hard to look at on a map you are scanning, and the colour reads
           just as clearly as an outline. */}
-      <View
-        style={[
-          styles.badge,
-          !soldOut && { borderColor: meta.color },
-        ]}
-      >
-        <Text
+      {showLabels && (
+        <View
           style={[
-            styles.badgeText,
-            { color: soldOut ? c.textMuted : meta.color },
+            styles.badge,
+            !soldOut && { borderColor: meta.color },
           ]}
         >
-          {soldOut
-            ? ka
-              ? 'ვაუჩერები ამოიწურა'
-              : 'No vouchers left'
-            : ka
-              ? `დარჩა ${totalRemaining} ვაუჩერი`
-              : `${totalRemaining} voucher${totalRemaining === 1 ? '' : 's'} left`}
-        </Text>
-      </View>
+          <Text
+            style={[
+              styles.badgeText,
+              { color: soldOut ? c.textMuted : meta.color },
+            ]}
+          >
+            {soldOut
+              ? ka
+                ? 'ვაუჩერები ამოიწურა'
+                : 'No vouchers left'
+              : ka
+                ? `დარჩა ${totalRemaining} ვაუჩერი`
+                : `${totalRemaining} voucher${totalRemaining === 1 ? '' : 's'} left`}
+          </Text>
+        </View>
+      )}
 
       <View
         style={[
@@ -751,7 +794,7 @@ function DropMarker({
         )}
       </View>
 
-      {venueName.length > 0 && (
+      {showLabels && venueName.length > 0 && (
         <View style={styles.markerLabel}>
           <Text style={styles.markerLabelText} numberOfLines={1}>
             {venueName}
