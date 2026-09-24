@@ -287,27 +287,34 @@ export default function MapScreen() {
 
   const [myId, setMyId] = useState<string | null>(null)
 
-  useEffect(() => {
-    void (async () => {
-      const [{ data }, auth] = await Promise.all([
-        supabase.rpc('my_avatar'),
-        supabase.auth.getUser(),
-      ])
-      const row = (Array.isArray(data) ? data[0] : data) as
-        | {
-            avatar_config: { colour?: string } | null
-            display_name: string | null
-            outfit_key: string | null
-            eyewear_key: string | null
-          }
-        | undefined
-      setMyColour(row?.avatar_config?.colour ?? null)
-      setMyName(row?.display_name ?? null)
-      setMyOutfit(row?.outfit_key ?? null)
-      setMyEyewear(row?.eyewear_key ?? null)
-      setMyId(auth.data.user?.id ?? null)
-    })()
+  const loadMyAvatar = useCallback(async () => {
+    const [{ data }, auth] = await Promise.all([
+      supabase.rpc('my_avatar'),
+      supabase.auth.getUser(),
+    ])
+    const row = (Array.isArray(data) ? data[0] : data) as
+      | {
+          avatar_config: { colour?: string } | null
+          display_name: string | null
+          outfit_key: string | null
+          eyewear_key: string | null
+        }
+      | undefined
+    setMyColour(row?.avatar_config?.colour ?? null)
+    setMyName(row?.display_name ?? null)
+    setMyOutfit(row?.outfit_key ?? null)
+    setMyEyewear(row?.eyewear_key ?? null)
+    setMyId(auth.data.user?.id ?? null)
   }, [])
+
+  // On every return to the map, not once on mount. Dressing the creature
+  // happens on another tab, so a one-shot load meant the bubble kept whatever
+  // was equipped the first time the map opened and never caught up.
+  useFocusEffect(
+    useCallback(() => {
+      void loadMyAvatar()
+    }, [loadMyAvatar]),
+  )
 
   // A ref rather than a dependency on `fix` itself: watchPositionAsync emits
   // roughly every 4-10 seconds while walking, and an effect keyed on the fix
