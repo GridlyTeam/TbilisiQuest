@@ -384,3 +384,44 @@ These come from decisions already made and apply to everything above.
 | Player bubbles, nicknames, tap to see a character | `8b6911a`, `144e7fb` |
 | Illustrated icons, mascot face on the Character tab | `302f3ec` |
 | Markers shrink with the map | `107c908` |
+
+---
+
+## The mascot, and how its assets are made
+
+The masters live in `brand/`:
+
+- `brand/renders/` -- the renders exactly as generated. Everything the app
+  ships is derived from these, so losing them means generating the character
+  again.
+- `brand/mascot.png` -- the creature cut out on transparency, for anything that
+  is not the app: the landing page, a store listing, a slide.
+
+`tools/build-creature.py` turns renders into app assets:
+
+```
+python tools/build-creature.py <bare.png> [<outfit-name> <outfit.png> ...]
+```
+
+Three ideas hold it up.
+
+**One render makes eight colours.** The body is a single hue over matte
+shading, so rotating hue while keeping each pixel's lightness and saturation
+gives a believable second colour. The eyes are held out of it -- found as the
+two low-saturation regions inside the silhouette, then their convex hulls,
+because the iris is dark and saturated enough to fail that test while reaching
+the edge of the white, so neither the threshold nor a hole-fill recovers it.
+
+**One render makes an outfit for all eight.** A garment is whatever differs
+between the dressed render and the bare one, so subtraction lifts it out, and
+since it carries its own colours it never needs recolouring.
+
+**Everything shares one canvas**, the union of every silhouette, so the app
+stacks body and garment with no offsets to get wrong.
+
+### Generating the next outfit
+
+Same chat as the bare render, so the creature stays consistent. Ask for the
+same creature, same pose, **same size and position in the frame**, wearing the
+garment, on pure white with no floor, no shadow and no rim light. Then run the
+tool with the bare render and the new one.

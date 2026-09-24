@@ -47,8 +47,25 @@ export const CREATURE_COLOURS: Record<string, { body: string; shade: string }> =
 
 export const DEFAULT_COLOUR = 'cyan'
 
-/** The image is 308x407, and everything positioned around it assumes that. */
-const RATIO = 407 / 308
+/**
+ * Every layer is written on one canvas at this shape, so the body and whatever
+ * it is wearing stack with no offsets to get wrong.
+ */
+export const RATIO = 539 / 392
+
+/**
+ * Garments, lifted out of a render of the creature wearing one by subtracting
+ * the bare render from it. They carry their own colours, so one file dresses
+ * all eight bodies -- which is the difference between one render per outfit
+ * and eight.
+ */
+const OUTFITS: Record<string, ImageSourcePropType> = {
+  hoodie_fab: require('../../assets/creature/outfit-hoodie_fab.png'),
+}
+
+export function outfitSource(key?: string | null): ImageSourcePropType | null {
+  return OUTFITS[key ?? ''] ?? null
+}
 
 export function creatureSource(colour?: string | null): ImageSourcePropType {
   return BODIES[colour ?? ''] ?? BODIES[DEFAULT_COLOUR]
@@ -56,10 +73,13 @@ export function creatureSource(colour?: string | null): ImageSourcePropType {
 
 export default function Creature({
   colour,
+  outfit,
   size = 180,
   animate = true,
 }: {
   colour?: string | null
+  /** A style_key from the outfit cosmetics; unknown keys wear nothing. */
+  outfit?: string | null
   size?: number
   animate?: boolean
 }) {
@@ -87,6 +107,7 @@ export default function Creature({
     ],
   }))
 
+  const garment = outfitSource(outfit)
   const height = size * RATIO
 
   return (
@@ -115,6 +136,14 @@ export default function Creature({
           style={{ width: size, height }}
           resizeMode="contain"
         />
+        {/* Over the body on the same canvas, so it lands where it was drawn. */}
+        {garment && (
+          <Image
+            source={garment}
+            style={{ position: 'absolute', width: size, height }}
+            resizeMode="contain"
+          />
+        )}
       </Animated.View>
     </View>
   )

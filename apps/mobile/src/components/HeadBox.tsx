@@ -1,7 +1,7 @@
 import { Image, StyleSheet, Text, View } from 'react-native'
 
 import { useTheme } from '../lib/theme'
-import { CREATURE_COLOURS as CREATURE, creatureSource } from './Creature'
+import { CREATURE_COLOURS as CREATURE, RATIO, creatureSource } from './Creature'
 
 /**
  * A player on the map: their creature, in a small bubble that points down at
@@ -122,7 +122,7 @@ export default function HeadBox({
           source={creatureSource(colour)}
           style={{
             width: size * ZOOM,
-            height: size * ZOOM * (407 / 308),
+            height: size * ZOOM * RATIO,
           }}
           resizeMode="contain"
         />

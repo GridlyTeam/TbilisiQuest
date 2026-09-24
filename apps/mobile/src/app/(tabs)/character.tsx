@@ -161,7 +161,11 @@ export default function InventoryScreen() {
             top of it at full size, standing in whatever background is
             equipped, moving on its own. */}
         <Stage background={keyFor('background')} tint={config.colour} ka={ka}>
-          <Creature colour={config.colour} size={170} />
+          <Creature
+            colour={config.colour}
+            outfit={keyFor('outfit')}
+            size={170}
+          />
         </Stage>
 
         <Text style={styles.previewTitle} numberOfLines={2}>
