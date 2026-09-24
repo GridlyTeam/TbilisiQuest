@@ -160,7 +160,7 @@ export default function InventoryScreen() {
         {/* The stage. The creature is the point of the screen, so it gets the
             top of it at full size, standing in whatever background is
             equipped, moving on its own. */}
-        <Stage background={keyFor('background')}>
+        <Stage background={keyFor('background')} tint={config.colour} ka={ka}>
           <Creature colour={config.colour} size={170} />
         </Stage>
 

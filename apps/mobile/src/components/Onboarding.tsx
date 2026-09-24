@@ -116,7 +116,9 @@ export default function Onboarding() {
           {ka ? 'შენი პერსონაჟი' : 'Your creature'}
         </Text>
 
-        <Stage background={null} height={260} ka={ka}>
+        {/* Tinted by whichever colour is selected, so tapping a swatch
+            changes the whole scene rather than just the creature. */}
+        <Stage background={null} tint={colour} height={260} ka={ka}>
           <Creature colour={colour} size={190} />
         </Stage>
 

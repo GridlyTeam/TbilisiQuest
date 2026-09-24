@@ -109,13 +109,24 @@ export default function Creature({
 
   return (
     <View style={[styles.root, { width: size, height: height + size * 0.08 }]}>
-      <Animated.View
-        style={[
-          styles.shadow,
-          { width: size * 0.62, height: size * 0.07 },
-          shadowStyle,
-        ]}
-      />
+      {/* Stacked rather than one ellipse: a single flat oval reads as a
+          sticker under the feet, and React Native has no blur to soften it
+          with. Three at a low alpha each pile up in the middle and thin out
+          at the rim, which is what a real contact shadow does. */}
+      <Animated.View style={[styles.shadowSlot, shadowStyle]}>
+        {[1, 0.7, 0.44].map((scale, i) => (
+          <View
+            key={i}
+            style={{
+              position: 'absolute',
+              width: size * 0.62 * scale,
+              height: size * 0.07 * scale,
+              borderRadius: 999,
+              backgroundColor: 'rgba(0,0,0,0.5)',
+            }}
+          />
+        ))}
+      </Animated.View>
       <Animated.View style={bodyStyle}>
         <Image
           source={creatureSource(colour)}
@@ -130,10 +141,10 @@ export default function Creature({
 const makeStyles = () =>
   StyleSheet.create({
     root: { alignItems: 'center', justifyContent: 'flex-end' },
-    shadow: {
+    shadowSlot: {
       position: 'absolute',
       bottom: 0,
-      borderRadius: 999,
-      backgroundColor: '#000',
+      alignItems: 'center',
+      justifyContent: 'center',
     },
   })
