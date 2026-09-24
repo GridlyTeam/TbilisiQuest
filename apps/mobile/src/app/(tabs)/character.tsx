@@ -9,8 +9,8 @@ import {
   View,
 } from 'react-native'
 
-import Creature from '../../components/Creature'
-import Stage from '../../components/Stage'
+import Creature, { CREATURE_COLOURS, layerSource } from '../../components/Creature'
+import Stage, { BACKGROUNDS } from '../../components/Stage'
 import { supabase } from '../../lib/supabase'
 import { useTranslation } from '../../lib/i18n'
 import {
@@ -51,17 +51,24 @@ type AvatarRow = {
  * Which cosmetic kind fills which slot. The slot name is what goes into
  * avatar_config, and the database mirrors two of them -- title and frame --
  * into their own columns.
+ *
+ * A slot only appears once something in it can be seen. Titles, frames, map
+ * pins, stickers and card themes are all real rows in the catalogue that
+ * nothing draws yet, and a locker full of gear that changes nothing when
+ * equipped teaches players that equipping does nothing. They come back with
+ * their artwork.
  */
 const SLOTS: Array<{ slot: string; kind: string; ka: string; en: string }> = [
-  { slot: 'title',  kind: 'title',        ka: 'წოდება',   en: 'Title' },
-  { slot: 'frame',  kind: 'avatar_frame', ka: 'ჩარჩო',    en: 'Frame' },
-  { slot: 'marker', kind: 'marker_skin',  ka: 'პინი',     en: 'Map pin' },
-  { slot: 'outfit', kind: 'outfit',       ka: 'ტანსაცმელი', en: 'Outfit' },
-  { slot: 'eyewear', kind: 'eyewear',    ka: 'სათვალე',   en: 'Eyewear' },
-  { slot: 'sticker', kind: 'sticker',     ka: 'სტიკერი',  en: 'Sticker' },
-  { slot: 'theme',  kind: 'card_theme',   ka: 'თემა',     en: 'Card theme' },
-  { slot: 'background', kind: 'background', ka: 'ფონი',    en: 'Background' },
+  { slot: 'outfit', kind: 'outfit', ka: 'ტანსაცმელი', en: 'Outfit' },
+  { slot: 'eyewear', kind: 'eyewear', ka: 'სათვალე', en: 'Eyewear' },
+  { slot: 'background', kind: 'background', ka: 'ფონი', en: 'Background' },
 ]
+
+/** Whether the app has anything to draw for this item yet. */
+function isDrawable(kind: string, styleKey: string): boolean {
+  if (kind === 'background') return BACKGROUNDS[styleKey] != null
+  return layerSource(styleKey) != null
+}
 
 /**
  * The locker.
@@ -106,6 +113,23 @@ export default function InventoryScreen() {
     }, [load]),
   )
 
+  // Set once at sign-up and then unreachable, which made the one choice
+  // everybody makes the one choice nobody could revisit.
+  const recolour = useCallback(
+    async (colour: string) => {
+      const next = { ...config, colour }
+      setConfig(next)
+      const { error: rpcError } = await supabase.rpc('set_avatar_config', {
+        p_config: next,
+      })
+      if (rpcError) {
+        setError(ka ? 'ვერ შეინახა. სცადე ხელახლა.' : 'That did not save. Try again.')
+        await load()
+      }
+    },
+    [config, ka, load],
+  )
+
   const equip = useCallback(
     async (slot: string, code: string) => {
       // Tapping what you are already wearing takes it off, which is the only
@@ -133,7 +157,10 @@ export default function InventoryScreen() {
     [config, ka, load],
   )
 
-  const owned = items.filter((i) => i.owned).length
+  // Counted over what the locker actually shows. Counting the whole catalogue
+  // while displaying a fraction of it reads as a broken screen.
+  const shown = items.filter((i) => isDrawable(i.kind, i.style_key))
+  const owned = shown.filter((i) => i.owned).length
 
   // Style keys, not codes: the catalogue is already loaded here, so the stage
   // never has to query anything.
@@ -181,14 +208,33 @@ export default function InventoryScreen() {
         </Text>
         <Text style={styles.summary}>
           {ka
-            ? `${owned} ${items.length}-დან შეგროვებული`
-            : `${owned} of ${items.length} collected`}
+            ? `${owned} ${shown.length}-დან შეგროვებული`
+            : `${owned} of ${shown.length} collected`}
         </Text>
+
+        <Text style={styles.sectionTitle}>{ka ? 'ფერი' : 'Colour'}</Text>
+        <View style={styles.swatches}>
+          {Object.entries(CREATURE_COLOURS).map(([key, tone]) => (
+            <Pressable
+              key={key}
+              onPress={() => recolour(key)}
+              accessibilityRole="radio"
+              accessibilityState={{ selected: config.colour === key }}
+              style={[
+                styles.swatch,
+                { backgroundColor: tone.body },
+                config.colour === key && { borderColor: c.text },
+              ]}
+            />
+          ))}
+        </View>
 
         {error && <Text style={styles.error}>{error}</Text>}
 
         {SLOTS.map((slot) => {
-          const group = items.filter((i) => i.kind === slot.kind)
+          const group = items.filter(
+            (i) => i.kind === slot.kind && isDrawable(i.kind, i.style_key),
+          )
           if (group.length === 0) return null
 
           return (
@@ -260,8 +306,8 @@ export default function InventoryScreen() {
 
         <Text style={styles.footnote}>
           {ka
-            ? 'ნივთები იხსნება ქალაქის ბილეთით, სერიით და ნიშნებით.'
-            : 'Gear unlocks through the City Pass, streaks and badges.'}
+            ? 'ნივთები იხსნება ქალაქის ბილეთით, მაღაზიაში და სერიით. მეტი მალე.'
+            : 'Gear comes from the City Pass, the store and streaks. More soon.'}
         </Text>
     </ScrollView>
   )
@@ -304,6 +350,14 @@ const makeStyles = (c: Palette) =>
       marginBottom: space.sm,
     },
 
+    swatches: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
+    swatch: {
+      width: 38,
+      height: 38,
+      borderRadius: 19,
+      borderWidth: 3,
+      borderColor: 'transparent',
+    },
     grid: { flexDirection: 'row', flexWrap: 'wrap', gap: space.sm },
     item: {
       width: '31%',
