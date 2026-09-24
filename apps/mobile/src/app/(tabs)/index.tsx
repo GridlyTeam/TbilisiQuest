@@ -549,7 +549,7 @@ export default function MapScreen() {
         statusBarTranslucent
         onRequestClose={() => setCard(null)}
       >
-        <Pressable style={styles.pickerBackdrop} onPress={() => setCard(null)}>
+        <Pressable style={styles.cardBackdrop} onPress={() => setCard(null)}>
           <Pressable style={styles.cardSheet} onPress={(e) => e.stopPropagation()}>
             {card && (
               <>
@@ -944,11 +944,15 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   },
   badgeSoldOut: { color: c.isDark ? '#2A2440' : '#D8D3E0' },
   pickerBackdrop: { flex: 1, backgroundColor: c.overlay, justifyContent: 'flex-end' },
+  // Centred, not a bottom sheet. A sheet is right for the offer list, which
+  // is a set of choices to act on; the character card is something to look at,
+  // and looking at it from the middle of the screen is easier than from the
+  // bottom edge.
+  cardBackdrop: { flex: 1, backgroundColor: c.overlay, justifyContent: 'center' },
   selfMarker: { alignItems: 'center' },
   selfBubble: { marginBottom: -PUCK_BOX * 0.34 },
   cardSheet: {
     margin: space.lg,
-    marginBottom: space.xl,
     backgroundColor: c.surface,
     borderRadius: radius.xl,
     borderWidth: 1,
