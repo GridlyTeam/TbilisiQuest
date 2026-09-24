@@ -1,4 +1,4 @@
-import { Image, StyleSheet, View } from 'react-native'
+import { Image, StyleSheet, Text, View } from 'react-native'
 
 import { useTheme } from '../lib/theme'
 import { CREATURE_COLOURS as CREATURE, creatureSource } from './Creature'
@@ -43,10 +43,13 @@ const ZOOM = 1.15
 
 export default function HeadBox({
   colour,
+  name,
   size = 40,
   dimmed = false,
 }: {
   colour?: string | null
+  /** Shown above the bubble. Omitted on the player card, where it is below. */
+  name?: string | null
   size?: number
   /** Approximate positions are drawn softer than the player's own. */
   dimmed?: boolean
@@ -60,6 +63,22 @@ export default function HeadBox({
 
   return (
     <View style={[styles.wrap, { opacity: dimmed ? 0.85 : 1 }]}>
+      {/* Above the bubble rather than below it: the tail belongs to the dot,
+          and a name between them would break that line. Same fill and outline
+          as the bubble, so the two read as one object. */}
+      {name ? (
+        <View
+          style={[
+            styles.plate,
+            { borderColor: c.text, backgroundColor: c.surface, maxWidth: size * 2.6 },
+          ]}
+        >
+          <Text style={[styles.name, { color: c.text }]} numberOfLines={1}>
+            {name}
+          </Text>
+        </View>
+      ) : null}
+
       <View
         style={{
           width: size,
@@ -123,6 +142,14 @@ export default function HeadBox({
 const makeStyles = () =>
   StyleSheet.create({
     wrap: { alignItems: 'center' },
+    plate: {
+      borderWidth: 1.5,
+      borderRadius: 999,
+      paddingHorizontal: 7,
+      paddingVertical: 2,
+      marginBottom: 3,
+    },
+    name: { fontSize: 10, fontWeight: '900', letterSpacing: 0 },
     // Overlaps the bubble's own outline so the tail grows out of it rather
     // than hanging below a seam.
     tail: { marginTop: -1, alignItems: 'center' },

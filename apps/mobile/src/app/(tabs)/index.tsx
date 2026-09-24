@@ -248,6 +248,7 @@ export default function MapScreen() {
   const [players, setPlayers] = useState<NearbyPlayer[]>([])
   const [card, setCard] = useState<PlayerCard | null>(null)
   const [myColour, setMyColour] = useState<string | null>(null)
+  const [myName, setMyName] = useState<string | null>(null)
   const [storeOpen, setStoreOpen] = useState(false)
 
   const [myId, setMyId] = useState<string | null>(null)
@@ -259,9 +260,10 @@ export default function MapScreen() {
         supabase.auth.getUser(),
       ])
       const row = (Array.isArray(data) ? data[0] : data) as
-        | { avatar_config: { colour?: string } | null }
+        | { avatar_config: { colour?: string } | null; display_name: string | null }
         | undefined
       setMyColour(row?.avatar_config?.colour ?? null)
+      setMyName(row?.display_name ?? null)
       setMyId(auth.data.user?.id ?? null)
     })()
   }, [])
@@ -316,6 +318,15 @@ export default function MapScreen() {
     [],
   )
 
+  // Your own bubble. The id is resolved at press time if the lookup on mount
+  // has not landed yet, so a slow first request cannot leave it dead.
+  const openOwnCard = useCallback(async () => {
+    const id = myId ?? (await supabase.auth.getUser()).data.user?.id
+    if (!id) return
+    if (!myId) setMyId(id)
+    await openCard(id, false, true)
+  }, [myId, openCard])
+
   const recentre = useCallback(() => {
     if (!fix) return
     setCentred(true)
@@ -354,19 +365,22 @@ export default function MapScreen() {
         {/* Our own puck rather than the library's: same position, brand
             colour, and a pulse. See components/UserPuck. */}
         {permission === 'granted' && fix && (
-          <Marker lngLat={[fix.longitude, fix.latitude]}>
+          <Marker
+            lngLat={[fix.longitude, fix.latitude]}
+            // The Marker's own press, not a Pressable inside it: on Android
+            // these are native views placed on the map projection and the
+            // map's gestures swallow touches aimed at React children, which
+            // is why tapping your own bubble did nothing while tapping
+            // everybody else's worked.
+            onPress={openOwnCard}
+          >
             {/* The dot stays the dot -- it is the accurate thing on the screen
                 -- and the head box sits above it, the same box other players
                 see. */}
-            <Pressable
-              style={styles.selfMarker}
-              onPress={() => myId && openCard(myId, false, true)}
-              accessibilityRole="button"
-              accessibilityLabel={ka ? 'ჩემი პერსონაჟი' : 'My character'}
-            >
-              <HeadBox colour={myColour} size={44} />
+            <View style={styles.selfMarker}>
+              <HeadBox colour={myColour} name={myName} size={44} />
               <UserPuck />
-            </Pressable>
+            </View>
           </Marker>
         )}
 
@@ -381,7 +395,11 @@ export default function MapScreen() {
             anchor="bottom"
             onPress={() => openCard(player.player_id, player.approximate)}
           >
-            <HeadBox colour={player.avatar_config?.colour} dimmed={player.approximate} />
+            <HeadBox
+              colour={player.avatar_config?.colour}
+              name={player.display_name}
+              dimmed={player.approximate}
+            />
           </Marker>
         ))}
 
