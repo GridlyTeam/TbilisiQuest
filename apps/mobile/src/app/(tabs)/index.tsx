@@ -36,6 +36,7 @@ type NearbyPlayer = {
   player_id: string
   display_name: string
   avatar_config: { colour?: string } | null
+  outfit_key: string | null
   lat: number
   lng: number
   approximate: boolean
@@ -44,6 +45,7 @@ type NearbyPlayer = {
 type PlayerCard = {
   display_name: string
   avatar_config: { colour?: string } | null
+  outfit_key: string | null
   background_key: string | null
   level: number
   season_xp: number
@@ -273,6 +275,7 @@ export default function MapScreen() {
   const [card, setCard] = useState<PlayerCard | null>(null)
   const [myColour, setMyColour] = useState<string | null>(null)
   const [myName, setMyName] = useState<string | null>(null)
+  const [myOutfit, setMyOutfit] = useState<string | null>(null)
   const [storeOpen, setStoreOpen] = useState(false)
   const [zoom, setZoom] = useState(FOCUS_ZOOM)
 
@@ -288,10 +291,15 @@ export default function MapScreen() {
         supabase.auth.getUser(),
       ])
       const row = (Array.isArray(data) ? data[0] : data) as
-        | { avatar_config: { colour?: string } | null; display_name: string | null }
+        | {
+            avatar_config: { colour?: string } | null
+            display_name: string | null
+            outfit_key: string | null
+          }
         | undefined
       setMyColour(row?.avatar_config?.colour ?? null)
       setMyName(row?.display_name ?? null)
+      setMyOutfit(row?.outfit_key ?? null)
       setMyId(auth.data.user?.id ?? null)
     })()
   }, [])
@@ -421,6 +429,7 @@ export default function MapScreen() {
               <View style={styles.selfBubble}>
                 <HeadBox
                   colour={myColour}
+                  outfit={myOutfit}
                   name={showLabels ? myName : null}
                   size={44 * markerScale}
                 />
@@ -443,6 +452,7 @@ export default function MapScreen() {
           >
             <HeadBox
               colour={player.avatar_config?.colour}
+              outfit={player.outfit_key}
               name={showLabels ? player.display_name : null}
               size={40 * markerScale}
               dimmed={player.approximate}
@@ -599,7 +609,11 @@ export default function MapScreen() {
                     ka={ka}
                     sparkle={false}
                   >
-                    <Creature colour={card.avatar_config?.colour} size={150} />
+                    <Creature
+                      colour={card.avatar_config?.colour}
+                      outfit={card.outfit_key}
+                      size={150}
+                    />
                   </Stage>
                 </View>
 

@@ -1,7 +1,12 @@
 import { Image, StyleSheet, Text, View } from 'react-native'
 
 import { useTheme } from '../lib/theme'
-import { CREATURE_COLOURS as CREATURE, RATIO, creatureSource } from './Creature'
+import {
+  CREATURE_COLOURS as CREATURE,
+  RATIO,
+  creatureSource,
+  outfitSource,
+} from './Creature'
 
 /**
  * A player on the map: their creature, in a small bubble that points down at
@@ -43,11 +48,14 @@ const ZOOM = 1.15
 
 export default function HeadBox({
   colour,
+  outfit,
   name,
   size = 40,
   dimmed = false,
 }: {
   colour?: string | null
+  /** Anything worn high enough to show in the crop -- a hood, glasses, a hat. */
+  outfit?: string | null
   /** Shown above the bubble. Omitted on the player card, where it is below. */
   name?: string | null
   size?: number
@@ -64,6 +72,7 @@ export default function HeadBox({
   // reason the palette carries both: the dark basemap needs the bright body
   // colour to read against it, the light one needs the darker shade. Picking
   // one for both is how the outline was invisible before.
+  const garment = outfitSource(outfit)
   const skin = CREATURE[colour ?? ''] ?? CREATURE[DEFAULT_COLOUR]
   const ring = c.isDark ? skin.body : skin.shade
 
@@ -126,6 +135,20 @@ export default function HeadBox({
           }}
           resizeMode="contain"
         />
+        {/* The same canvas as the body, cropped by the same box, so whatever
+            is worn high enough to be in frame comes with it. */}
+        {garment && (
+          <Image
+            source={garment}
+            style={{
+              position: 'absolute',
+              top: size * 0.08,
+              width: size * ZOOM,
+              height: size * ZOOM * RATIO,
+            }}
+            resizeMode="contain"
+          />
+        )}
       </View>
 
       {/* The tail, drawn twice: the outer triangle carries the bubble's
