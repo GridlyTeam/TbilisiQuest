@@ -27,6 +27,8 @@ import SafetyButton from '../../components/SafetyButton'
 import UserPuck from '../../components/UserPuck'
 import HeadBox from '../../components/HeadBox'
 import StorePanel from '../../components/StorePanel'
+import Creature from '../../components/Creature'
+import Stage from '../../components/Stage'
 import { StoreIcon } from '../../components/TabIcons'
 import { useTheme, useRarity, radius, space, font, type Palette, type Rarity } from '../../lib/theme'
 
@@ -42,9 +44,12 @@ type NearbyPlayer = {
 type PlayerCard = {
   display_name: string
   avatar_config: { colour?: string } | null
+  background_key: string | null
   level: number
   season_xp: number
-  approximate: boolean
+  /** Absent for your own card: your position is not approximated to you. */
+  approximate?: boolean
+  isMe?: boolean
 }
 
 function useStyles() {
@@ -64,6 +69,16 @@ const TBILISI_CENTER: [number, number] = [44.7935, 41.6998]
  * that the number means "you could go now".
  */
 const NEARBY_RADIUS_M = 500
+
+/**
+ * How close the camera sits when it is showing you yourself.
+ *
+ * The first centring used to land two zoom levels further out than the
+ * recentre button, so opening the map put your own dot somewhere in the
+ * distance and pressing the button was the only way to get the view you
+ * actually wanted. Both use this.
+ */
+const FOCUS_ZOOM = 15
 
 /** Which rarity a shared marker should advertise. */
 const RARITY_RANK: Record<Rarity, number> = { common: 0, rare: 1, legendary: 2 }
@@ -199,7 +214,7 @@ export default function MapScreen() {
     centredOnce.current = true
     cameraRef.current?.easeTo({
       center: [fix.longitude, fix.latitude],
-      zoom: 13,
+      zoom: FOCUS_ZOOM,
       duration: 800,
     })
   }, [fix])
@@ -235,13 +250,19 @@ export default function MapScreen() {
   const [myColour, setMyColour] = useState<string | null>(null)
   const [storeOpen, setStoreOpen] = useState(false)
 
+  const [myId, setMyId] = useState<string | null>(null)
+
   useEffect(() => {
     void (async () => {
-      const { data } = await supabase.rpc('my_avatar')
+      const [{ data }, auth] = await Promise.all([
+        supabase.rpc('my_avatar'),
+        supabase.auth.getUser(),
+      ])
       const row = (Array.isArray(data) ? data[0] : data) as
         | { avatar_config: { colour?: string } | null }
         | undefined
       setMyColour(row?.avatar_config?.colour ?? null)
+      setMyId(auth.data.user?.id ?? null)
     })()
   }, [])
 
@@ -285,12 +306,12 @@ export default function MapScreen() {
   }, [hasFix])
 
   const openCard = useCallback(
-    async (player: NearbyPlayer) => {
-      const { data } = await supabase.rpc('player_card', { p_user_id: player.player_id })
+    async (userId: string, approximate: boolean, isMe = false) => {
+      const { data } = await supabase.rpc('player_card', { p_user_id: userId })
       const row = (Array.isArray(data) ? data[0] : data) as PlayerCard | undefined
       // A player who went ghost between the list arriving and the tap simply
       // has no card; saying nothing is better than saying they vanished.
-      if (row) setCard({ ...row, approximate: player.approximate })
+      if (row) setCard({ ...row, approximate, isMe })
     },
     [],
   )
@@ -300,7 +321,7 @@ export default function MapScreen() {
     setCentred(true)
     cameraRef.current?.easeTo({
       center: [fix.longitude, fix.latitude],
-      zoom: 15,
+      zoom: FOCUS_ZOOM,
       duration: 500,
     })
   }, [fix])
@@ -337,10 +358,15 @@ export default function MapScreen() {
             {/* The dot stays the dot -- it is the accurate thing on the screen
                 -- and the head box sits above it, the same box other players
                 see. */}
-            <View style={styles.selfMarker}>
+            <Pressable
+              style={styles.selfMarker}
+              onPress={() => myId && openCard(myId, false, true)}
+              accessibilityRole="button"
+              accessibilityLabel={ka ? 'ჩემი პერსონაჟი' : 'My character'}
+            >
               <HeadBox colour={myColour} size={44} />
               <UserPuck />
-            </View>
+            </Pressable>
           </Marker>
         )}
 
@@ -353,7 +379,7 @@ export default function MapScreen() {
             // The tail points at the position, so the bubble's bottom is the
             // anchor rather than its middle.
             anchor="bottom"
-            onPress={() => openCard(player)}
+            onPress={() => openCard(player.player_id, player.approximate)}
           >
             <HeadBox colour={player.avatar_config?.colour} dimmed={player.approximate} />
           </Marker>
@@ -496,7 +522,20 @@ export default function MapScreen() {
           <Pressable style={styles.cardSheet} onPress={(e) => e.stopPropagation()}>
             {card && (
               <>
-                <HeadBox colour={card.avatar_config?.colour} size={78} />
+                {/* The whole character on its stage, not a cropped face: the
+                    reason to tap somebody is to see what they are wearing. */}
+                <View style={styles.cardStage}>
+                  <Stage
+                    background={card.background_key}
+                    tint={card.avatar_config?.colour}
+                    height={230}
+                    ka={ka}
+                    sparkle={false}
+                  >
+                    <Creature colour={card.avatar_config?.colour} size={150} />
+                  </Stage>
+                </View>
+
                 <Text style={styles.cardName}>{card.display_name}</Text>
                 <Text style={styles.cardMeta}>
                   {ka
@@ -505,7 +544,7 @@ export default function MapScreen() {
                 </Text>
                 {/* Said plainly, because an icon that hops 400 m with no
                     explanation is read as a broken map. */}
-                {card.approximate && (
+                {card.approximate === true && (
                   <Text style={styles.cardApprox}>
                     {ka
                       ? 'ადგილი მიახლოებითია - ზუსტი ადგილი არავის უჩანს'
@@ -882,10 +921,11 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     borderRadius: radius.xl,
     borderWidth: 1,
     borderColor: c.border,
-    padding: space.xl,
+    padding: space.lg,
     alignItems: 'center',
     gap: space.sm,
   },
+  cardStage: { alignSelf: 'stretch', marginBottom: space.xs },
   cardName: { color: c.text, fontSize: 20, fontWeight: '900', letterSpacing: 0 },
   cardMeta: { color: c.textMuted, fontSize: 13, fontWeight: '700' },
   cardApprox: {
