@@ -161,39 +161,38 @@ def hue_of(rgb: np.ndarray) -> np.ndarray:
     return (h / 6) % 1.0
 
 
-def neutralise_reflections(
-    rgb: np.ndarray, mask: np.ndarray, body_hue: float
+def drop_body_pixels(
+    worn: np.ndarray, bare: np.ndarray, mask: np.ndarray
 ) -> np.ndarray:
     """
-    Take the body's colour back out of a layer that reflected it.
+    Take the body back out of a layer that caught some of it.
 
-    A dark lens picks up whatever it was rendered against, so the glasses carry
-    reflections of the body -- which look wrong the moment they sit on a
-    creature of another colour. One shared layer cannot recolour its own
-    reflections per body, so they lose their colour instead: pushed towards
-    grey they read as highlights on any body, which is what a reflection is.
+    Subtracting one render from another finds more than the garment: it finds
+    the shadow the garment casts on the body and the body reflected in a lens.
+    Those pixels are the body, not the thing being worn, so keeping them
+    dresses every creature in a patch of the green one it was rendered on.
 
-    Keyed on the body's own hue rather than on a guess at what colour it is.
-    The first attempt tested for green and missed these, because the
-    reflections are yellow-green -- red and green near enough level that
-    "greener than it is red" is false.
+    Two earlier tests were wrong in instructive ways. Matching the body's hue
+    and recolouring those pixels turned a green smudge into a pale one, which
+    is the white outline it was meant to fix. Matching the hue and dropping
+    them shattered the frame, because black over green reads near that hue.
+    Asking whether a pixel was the bare one scaled down missed the worst of
+    them, because a shadow does not dim every channel equally -- under these
+    glasses blue falls away twice as fast as red.
+
+    What separates them here is plain: leftover body is bright and keeps the
+    body's chromaticity, while the garment itself is dark. Chromaticity because
+    it ignores how much light there is, and a brightness floor because black
+    has no reliable chromaticity to compare.
     """
-    out = rgb.astype(np.float32).copy()
-    hue = hue_of(out)
-    mx, mn = out.max(axis=2), out.min(axis=2)
-    sat = np.where(mx > 0, (mx - mn) / np.maximum(mx, 1e-6), 0)
+    total_w = worn.sum(axis=2, keepdims=True) + 1e-6
+    total_b = bare.sum(axis=2, keepdims=True) + 1e-6
+    chroma_shift = np.linalg.norm(
+        worn[..., :2] / total_w - bare[..., :2] / total_b, axis=2
+    )
 
-    # Circular distance, so a body hue near 0 still matches its own reflections.
-    delta = np.abs(hue - body_hue)
-    delta = np.minimum(delta, 1 - delta)
-
-    reflected = mask & (delta < 0.09) & (sat > 0.18)
-    if not reflected.any():
-        return out
-
-    grey = out[reflected].mean(axis=1, keepdims=True)
-    out[reflected] = out[reflected] * 0.2 + grey * 0.8
-    return out
+    lit = worn.mean(axis=2) > 48
+    return mask & ~(lit & (chroma_shift < 0.075))
 
 
 def hue_shift(rgb: np.ndarray, hue: float) -> np.ndarray:
@@ -254,10 +253,6 @@ def main() -> None:
 
     body = tame_rim(unfringe(base_rgb, base_alpha), base_alpha)
 
-    # What colour the creature was rendered in, so a layer can be told which of
-    # its own pixels are reflections of it.
-    skin = base_solid & ~eyes
-    body_hue = float(np.median(hue_of(base_rgb)[skin]))
 
     save(body, base_alpha, "creature-green.png")
     for name, hue in PALETTE.items():
@@ -279,8 +274,12 @@ def main() -> None:
         # original green fringing every recoloured creature.
         garment = ndimage.binary_erosion(garment, iterations=2)
 
+        garment = drop_body_pixels(rgb, base_rgb, garment)
+        garment = ndimage.binary_closing(garment, iterations=2)
+        garment = ndimage.binary_opening(garment, iterations=2)
+
         g_alpha = alpha_from(garment)
-        g_rgb = neutralise_reflections(unfringe(rgb, g_alpha), garment, body_hue)
+        g_rgb = unfringe(rgb, g_alpha)
         save(g_rgb, g_alpha, f"layer-{name}.png")
         print(f"  outfit {name}: {int(garment.sum())}px")
 
