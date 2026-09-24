@@ -350,6 +350,9 @@ export default function MapScreen() {
           <Marker
             key={player.player_id}
             lngLat={[player.lng, player.lat]}
+            // The tail points at the position, so the bubble's bottom is the
+            // anchor rather than its middle.
+            anchor="bottom"
             onPress={() => openCard(player)}
           >
             <HeadBox colour={player.avatar_config?.colour} dimmed={player.approximate} />
@@ -871,7 +874,7 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   },
   badgeSoldOut: { color: c.isDark ? '#2A2440' : '#D8D3E0' },
   pickerBackdrop: { flex: 1, backgroundColor: c.overlay, justifyContent: 'flex-end' },
-  selfMarker: { alignItems: 'center', marginBottom: -18 },
+  selfMarker: { alignItems: 'center', marginBottom: -26 },
   cardSheet: {
     margin: space.lg,
     marginBottom: space.xl,
