@@ -1,38 +1,27 @@
 # Tbilisi Quest
 
-A location-based quest app for Tbilisi, built as an installable PWA.
+A gamified, location-based discount platform driving foot traffic to Tbilisi
+businesses during off-peak hours.
 
-## Stack
+## Structure
 
-- **Vite + React + TypeScript** — build tooling and UI
-- **vite-plugin-pwa** — service worker, offline caching, home-screen install
-- **MapLibre GL** — maps, no API key or billing account required
-- **Cloudflare Pages** — hosting, auto-deploys on push to `main`
+```
+apps/mobile      Player app — Expo / React Native (Android; iOS pending)
+apps/merchant    Landing page, merchant portal and /admin operator area —
+                 Next.js on Cloudflare Workers
+supabase         Database schema and business logic — Postgres, PostGIS,
+                 row-level security, migrations in supabase/migrations
+docs             Architecture, safety and setup notes
+tools            One-off scripts (e.g. deriving the creature's colour
+                 palette from a single generated render)
+```
+
+See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the stack and the reasoning
+behind it, and [docs/DESIGN_DIRECTION.md](docs/DESIGN_DIRECTION.md) for what's
+built, what's decided, and what's still ahead.
 
 ## Local development
 
-```bash
-npm install
-npm run dev
-```
-
-Geolocation requires a secure context. `localhost` counts as secure, so the dev
-server works, but testing on a physical phone over the LAN needs HTTPS — the
-simplest route is to test against the deployed Cloudflare preview URL instead.
-
-## Build
-
-```bash
-npm run build     # outputs to dist/
-npm run preview   # serve the production build locally
-```
-
-## Deployment
-
-Cloudflare Pages is connected to this repository. Pushing to `main` triggers a
-production deploy; pull requests get their own preview URL.
-
-| Setting          | Value           |
-| ---------------- | --------------- |
-| Build command    | `npm run build` |
-| Build output dir | `dist`          |
+Each app runs independently — see [docs/MOBILE_SETUP.md](docs/MOBILE_SETUP.md)
+and `apps/merchant`'s own scripts. Database changes go through
+[docs/SUPABASE_SETUP.md](docs/SUPABASE_SETUP.md).
