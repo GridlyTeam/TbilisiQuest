@@ -462,7 +462,7 @@ export default function MapScreen() {
               accessibilityState={{ expanded: storeOpen }}
               accessibilityLabel={ka ? 'მაღაზია' : 'Store'}
             >
-              <StoreIcon color={storeOpen ? c.bg : c.accentInk} size={20} />
+              <StoreIcon color={storeOpen ? c.bg : c.accentInk} size={18} />
             </Pressable>
           </View>
 
@@ -804,9 +804,9 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
     elevation: 5,
   },
   storeButtonOpen: { backgroundColor: c.accent, borderColor: c.accent },
@@ -820,9 +820,9 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: '#000',
-    shadowOpacity: 0.25,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
+    shadowOffset: { width: 0, height: 4 },
     elevation: 5,
   },
   recentreIcon: { color: c.accentInk, fontSize: 22, fontWeight: '700' },

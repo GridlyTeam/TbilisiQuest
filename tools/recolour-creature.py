@@ -23,6 +23,10 @@ and it showed on every creature in the app:
   now, as the holes binary_fill_holes closes: a region enclosed by body is an
   eye, a highlight on the body's edge is not.
 
+  The render's own rim light survived the hue rotation as a pale halo inside
+  every silhouette, which is most of what made the character look like a cheap
+  cut-out. tame_rim() compresses and darkens that band into a contour.
+
   And cutting the character off a light background leaves a rim of pixels that
   are part background, which survives as a white halo once the alpha is
   applied. Every pixel's colour is now taken from the nearest fully opaque
@@ -65,6 +69,35 @@ def hue_shift(rgb: np.ndarray, hue: float) -> np.ndarray:
     p, q, t = v * (1 - s), v * (1 - f * s), v * (1 - (1 - f) * s)
     channels = [(v, t, p), (q, v, p), (p, v, t), (p, q, v), (t, p, v), (v, p, q)][i]
     return (np.clip(np.dstack(channels), 0, 1) * 255).astype(np.uint8)
+
+
+def tame_rim(rgb: np.ndarray, alpha: np.ndarray) -> np.ndarray:
+    """
+    Pull down the render's rim light and draw a contour in its place.
+
+    The source render is lit with a bright edge all the way round the
+    silhouette. Rotating its hue keeps that brightness, so every colour came
+    out with a pale halo just inside its outline -- the thing that reads as a
+    cheap cut-out. Two corrections, both on the band nearest the edge:
+    compress how bright it is allowed to get, then darken it slightly, so the
+    character ends in a defined contour the way a drawn asset does rather than
+    fading into a glow.
+    """
+    solid = alpha > 0.5
+    # How deep each pixel sits inside the silhouette, in pixels.
+    depth = ndimage.distance_transform_edt(solid)
+
+    # 0 at the outline, 1 once we are BAND pixels in.
+    BAND = 6.0
+    t = np.clip(depth / BAND, 0, 1)[..., None]
+
+    out = rgb.astype(np.float32)
+    # Highlights near the edge get compressed towards the body's own mid-tone.
+    mid = np.median(out[solid & (depth > BAND)], axis=0) if (solid & (depth > BAND)).any() else out.mean(axis=(0, 1))
+    out = out * t + (out * 0.55 + mid * 0.45) * (1 - t)
+    # And the outermost pixels darken into a contour.
+    out *= 0.80 + 0.20 * t
+    return np.clip(out, 0, 255).astype(np.uint8)
 
 
 def unfringe(rgb: np.ndarray, alpha: np.ndarray) -> np.ndarray:
@@ -111,6 +144,7 @@ def main(src: str, x0: int, x1: int) -> None:
     alpha8 = (alpha * 255).astype(np.uint8)
 
     rgb = unfringe((sub * 255).astype(np.uint8), alpha)
+    rgb = tame_rim(rgb, alpha)
 
     Image.fromarray(np.dstack([rgb, alpha8]), "RGBA").save(
         os.path.join(OUT, "creature-green.png")
