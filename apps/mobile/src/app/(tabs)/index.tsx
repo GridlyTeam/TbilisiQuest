@@ -522,7 +522,7 @@ export default function MapScreen() {
               accessibilityState={{ expanded: storeOpen }}
               accessibilityLabel={ka ? 'მაღაზია' : 'Store'}
             >
-              <StoreIcon color={storeOpen ? c.bg : c.accentInk} size={18} />
+              <StoreIcon size={22} />
             </Pressable>
           </View>
 
@@ -882,7 +882,9 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     shadowOffset: { width: 0, height: 4 },
     elevation: 5,
   },
-  storeButtonOpen: { backgroundColor: c.accent, borderColor: c.accent },
+  // Ringed rather than filled: the icon is full-colour artwork now, and an
+  // amber plate behind it fights the picture instead of marking the state.
+  storeButtonOpen: { borderColor: c.accent, borderWidth: 2 },
   recentre: {
     width: 40,
     height: 40,

@@ -1,199 +1,91 @@
-import { type ColorValue, StyleSheet, View } from 'react-native'
-
-import { useTheme } from '../lib/theme'
+import { Image, StyleSheet, View, type ImageSourcePropType } from 'react-native'
 
 /**
- * The tab bar used typographic glyphs -- a circle, a diamond, a filled
- * diamond -- which say nothing about where they lead. These are drawn instead.
+ * The tab bar's icons, and the two that sit on the map.
  *
- * They are built from plain Views rather than SVG on purpose: react-native-svg
- * is a native module, so adding it would cost a full rebuild for three small
- * shapes, and an outline pin, a ticket and a bust are all borders and radii.
- * Every line takes its colour from the tab bar's active/inactive tint, so the
- * icons light up with their label.
+ * These were drawn from Views for a while, because the alternative looked like
+ * adding react-native-svg -- a native module, and so a full rebuild -- for a
+ * handful of shapes. The artwork that replaced them is full-colour
+ * illustration rather than monochrome glyphs, which rules out tinting: an
+ * Image tinted with `tintColor` collapses to one flat colour, and these have
+ * four or five each.
+ *
+ * So they are rasterised to PNG at three densities and drawn at full colour,
+ * and the selected tab is marked by opacity rather than by hue. That keeps the
+ * whole set free of native dependencies, which is what lets these arrive over
+ * a reload instead of a twenty minute build.
+ *
+ * Rasterised from the SVGs by tools/rasterise-icons.js.
  */
 
-type Props = { color: ColorValue; size?: number }
-
-export function MapIcon({ color, size = 22 }: Props) {
-  const panel = Math.round(size * 0.32)
-  const tall = Math.round(size * 0.72)
-  return (
-    <View style={[styles.box, { width: size, height: size, flexDirection: 'row' }]}>
-      {/* A paper map: three panels side by side with the middle one dipping,
-          the way a folded map hangs when you hold it open. The panels overlap
-          by a border width so the creases read as single lines rather than
-          two outlines touching. */}
-      {[0, 1, 2].map((i) => (
-        <View
-          key={i}
-          style={{
-            width: panel,
-            height: tall,
-            marginTop: i === 1 ? 4 : 0,
-            marginLeft: i === 0 ? 0 : -1.5,
-            borderWidth: 1.5,
-            borderColor: color,
-            borderRadius: 1.5,
-          }}
-        />
-      ))}
-    </View>
-  )
+const ICONS = {
+  map: require('../../assets/icons/map.png') as ImageSourcePropType,
+  voucher: require('../../assets/icons/voucher.png') as ImageSourcePropType,
+  character: require('../../assets/icons/character.png') as ImageSourcePropType,
+  season: require('../../assets/icons/season.png') as ImageSourcePropType,
+  store: require('../../assets/icons/store.png') as ImageSourcePropType,
+  info: require('../../assets/icons/info.png') as ImageSourcePropType,
 }
 
-export function VoucherIcon({ color, size = 22 }: Props) {
-  const { c } = useTheme()
-  const w = size
-  const h = Math.round(size * 0.68)
-  const notch = 6
+type Props = {
+  /** Kept for call sites that still pass a tint; colour icons ignore it. */
+  color?: unknown
+  size?: number
+  /** Tabs pass this; the map buttons do not. */
+  focused?: boolean
+}
+
+function Icon({
+  name,
+  size = 26,
+  focused,
+}: {
+  name: keyof typeof ICONS
+  size?: number
+  focused?: boolean
+}) {
   return (
     <View style={[styles.box, { width: size, height: size }]}>
-      <View
+      <Image
+        source={ICONS[name]}
         style={{
-          width: w,
-          height: h,
-          borderWidth: 2,
-          borderColor: color,
-          borderRadius: 4,
-          alignItems: 'flex-end',
-          justifyContent: 'center',
-          paddingRight: 4,
+          width: size,
+          height: size,
+          // The unselected tab is dimmed rather than greyed: these are
+          // pictures, and a picture at 45% still reads as itself.
+          opacity: focused === false ? 0.45 : 1,
         }}
-      >
-        {/* The tear line, three dots rather than a dashed border: Android
-            draws dashes on a single side unreliably. */}
-        <View style={{ gap: 2 }}>
-          <View style={[styles.dot, { backgroundColor: color }]} />
-          <View style={[styles.dot, { backgroundColor: color }]} />
-          <View style={[styles.dot, { backgroundColor: color }]} />
-        </View>
-      </View>
-      {/* Two bites out of the top and bottom edges, painted in the tab bar's
-          own background so the outline appears to be cut. */}
-      <View
-        style={{
-          position: 'absolute',
-          top: (size - h) / 2 - notch / 2,
-          right: 4,
-          width: notch,
-          height: notch,
-          borderRadius: notch / 2,
-          backgroundColor: c.bg,
-        }}
-      />
-      <View
-        style={{
-          position: 'absolute',
-          bottom: (size - h) / 2 - notch / 2,
-          right: 4,
-          width: notch,
-          height: notch,
-          borderRadius: notch / 2,
-          backgroundColor: c.bg,
-        }}
+        resizeMode="contain"
       />
     </View>
   )
 }
 
-export function StoreIcon({ color, size = 22 }: Props) {
-  const w = Math.round(size * 0.82)
-  return (
-    <View style={[styles.box, { width: size, height: size }]}>
-      {/* A shop: an awning over a counter. The scallops are what stop it
-          reading as a plain box. */}
-      <View style={{ flexDirection: 'row', gap: 0 }}>
-        {[0, 1, 2].map((i) => (
-          <View
-            key={i}
-            style={{
-              width: w / 3,
-              height: 6,
-              borderWidth: 1.5,
-              borderColor: color,
-              borderTopLeftRadius: i === 0 ? 2 : 0,
-              borderTopRightRadius: i === 2 ? 2 : 0,
-              marginLeft: i === 0 ? 0 : -1.5,
-            }}
-          />
-        ))}
-      </View>
-      <View
-        style={{
-          width: w - 4,
-          height: Math.round(size * 0.42),
-          borderWidth: 1.5,
-          borderTopWidth: 0,
-          borderColor: color,
-          marginTop: -1,
-        }}
-      />
-    </View>
-  )
+export function MapIcon({ size, focused }: Props) {
+  return <Icon name="map" size={size} focused={focused} />
 }
 
-export function PassIcon({ color, size = 22 }: Props) {
-  // A square carrying only its top and right border, turned 45 degrees, is a
-  // chevron -- and three of them stacked is the tier language every pass in
-  // this audience's life already uses.
-  const arm = Math.round(size * 0.34)
-  return (
-    <View style={[styles.box, { width: size, height: size }]}>
-      {[0, 1, 2].map((i) => (
-        <View
-          key={i}
-          style={{
-            width: arm,
-            height: arm,
-            borderTopWidth: 2,
-            borderRightWidth: 2,
-            borderColor: color,
-            transform: [{ rotate: '-45deg' }],
-            // Overlapped, so they read as one mark rather than three shapes.
-            marginTop: i === 0 ? 0 : -arm * 0.52,
-            // The one you are climbing towards is the brightest.
-            opacity: 1 - i * 0.3,
-          }}
-        />
-      ))}
-    </View>
-  )
+export function VoucherIcon({ size, focused }: Props) {
+  return <Icon name="voucher" size={size} focused={focused} />
 }
 
-export function ProfileIcon({ color, size = 22 }: Props) {
-  const head = Math.round(size * 0.38)
-  const shoulders = Math.round(size * 0.74)
-  return (
-    <View style={[styles.box, { width: size, height: size }]}>
-      <View
-        style={{
-          width: head,
-          height: head,
-          borderRadius: head / 2,
-          borderWidth: 2,
-          borderColor: color,
-        }}
-      />
-      {/* An arch, not a half circle: the bottom border is dropped so the
-          shoulders run off the base of the icon the way a bust does. */}
-      <View
-        style={{
-          width: shoulders,
-          height: Math.round(size * 0.36),
-          marginTop: 2,
-          borderWidth: 2,
-          borderBottomWidth: 0,
-          borderColor: color,
-          borderTopLeftRadius: shoulders,
-          borderTopRightRadius: shoulders,
-        }}
-      />
-    </View>
-  )
+/** The Character tab wears the mascot's own face. */
+export function ProfileIcon({ size, focused }: Props) {
+  return <Icon name="character" size={size} focused={focused} />
+}
+
+export function PassIcon({ size, focused }: Props) {
+  return <Icon name="season" size={size} focused={focused} />
+}
+
+export function StoreIcon({ size, focused }: Props) {
+  return <Icon name="store" size={size} focused={focused} />
+}
+
+export function InfoIcon({ size, focused }: Props) {
+  return <Icon name="info" size={size} focused={focused} />
 }
 
 const styles = StyleSheet.create({
   box: { alignItems: 'center', justifyContent: 'center' },
-  dot: { width: 2, height: 2, borderRadius: 1 },
 })

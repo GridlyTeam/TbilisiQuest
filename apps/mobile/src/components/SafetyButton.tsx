@@ -14,6 +14,7 @@ import {
 import { supabase } from '../lib/supabase'
 import { useTranslation } from '../lib/i18n'
 import { useTheme, radius, space, font, type Palette } from '../lib/theme'
+import { InfoIcon } from './TabIcons'
 import type { Fix } from '../lib/useLocation'
 
 function useStyles() {
@@ -154,10 +155,10 @@ export default function SafetyButton({
         accessibilityRole="button"
         accessibilityLabel={ka ? 'უსაფრთხოება' : 'Safety'}
       >
-        {/* An "i", not a word: the button sits over the map, where a pill
+        {/* An icon, not a word: the button sits over the map, where a pill
             wide enough for "დახმარება" covers a street. The label it used to
             carry lives on as the accessibility label above. */}
-        <Text style={styles.buttonText}>i</Text>
+        <InfoIcon size={22} />
       </Pressable>
 
       <Modal
@@ -347,14 +348,6 @@ const makeStyles = (c: Palette) =>
       elevation: 5,
     },
     pressed: { opacity: 0.8 },
-    buttonText: {
-      color: c.text,
-      fontSize: 17,
-      fontWeight: '900',
-      letterSpacing: 0,
-      // The glyph's own bearing sits it left of centre in the circle.
-      marginLeft: 1,
-    },
 
     credit: {
       color: c.textFaint,

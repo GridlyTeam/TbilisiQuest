@@ -54,28 +54,28 @@ export default function TabsLayout() {
         options={{
           title: ka ? 'რუკა' : 'Map',
           headerShown: false,
-          tabBarIcon: ({ color }) => <MapIcon color={color} />,
+          tabBarIcon: ({ focused }) => <MapIcon focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="vouchers"
         options={{
           title: ka ? 'ვაუჩერები' : 'Vouchers',
-          tabBarIcon: ({ color }) => <VoucherIcon color={color} />,
+          tabBarIcon: ({ focused }) => <VoucherIcon focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="character"
         options={{
           title: ka ? 'პერსონაჟი' : 'Character',
-          tabBarIcon: ({ color }) => <ProfileIcon color={color} />,
+          tabBarIcon: ({ focused }) => <ProfileIcon focused={focused} />,
         }}
       />
       <Tabs.Screen
         name="season"
         options={{
           title: ka ? 'სეზონი' : 'Season',
-          tabBarIcon: ({ color }) => <PassIcon color={color} />,
+          tabBarIcon: ({ focused }) => <PassIcon focused={focused} />,
         }}
       />
     </Tabs>
