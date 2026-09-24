@@ -28,12 +28,16 @@ export const CREATURE_COLOURS: Record<string, string> = Object.fromEntries(
 
 export const DEFAULT_COLOUR = 'cyan'
 
-/** How far the artwork overflows the box. Higher crops in tighter. */
-const ZOOM = 1.5
+/**
+ * How far the artwork overflows the box. At 1.5 the creature ran edge to edge
+ * and looked wedged in; a shade over 1 crops to head and shoulders while
+ * leaving air on either side of it.
+ */
+const ZOOM = 1.15
 
 export default function HeadBox({
   colour,
-  size = 34,
+  size = 40,
   dimmed = false,
 }: {
   colour?: string | null
@@ -60,6 +64,9 @@ export default function HeadBox({
           backgroundColor: c.surface,
           overflow: 'hidden',
           alignItems: 'center',
+          // A little air above the head, so the crop reads as framing rather
+          // than as the picture being too big for its box.
+          paddingTop: size * 0.08,
         }}
       >
         <Image

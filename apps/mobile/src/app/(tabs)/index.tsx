@@ -338,7 +338,7 @@ export default function MapScreen() {
                 -- and the head box sits above it, the same box other players
                 see. */}
             <View style={styles.selfMarker}>
-              <HeadBox colour={myColour} size={38} />
+              <HeadBox colour={myColour} size={44} />
               <UserPuck />
             </View>
           </Marker>
@@ -496,7 +496,7 @@ export default function MapScreen() {
           <Pressable style={styles.cardSheet} onPress={(e) => e.stopPropagation()}>
             {card && (
               <>
-                <HeadBox colour={card.avatar_config?.colour} size={72} />
+                <HeadBox colour={card.avatar_config?.colour} size={78} />
                 <Text style={styles.cardName}>{card.display_name}</Text>
                 <Text style={styles.cardMeta}>
                   {ka
