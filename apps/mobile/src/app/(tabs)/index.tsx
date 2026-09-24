@@ -19,7 +19,7 @@ import {
 
 import { supabase } from '../../lib/supabase'
 import { useTranslation } from '../../lib/i18n'
-import { useLocation, distanceMeters } from '../../lib/useLocation'
+import { useLocation, distanceMeters, type Fix } from '../../lib/useLocation'
 import { useSafetyGate } from '../../lib/useSafetyGate'
 import SafetyOverlay from '../../components/SafetyOverlay'
 import SafetyBriefing from '../../components/SafetyBriefing'
@@ -242,18 +242,32 @@ export default function MapScreen() {
     })()
   }, [])
 
+  // A ref rather than a dependency on `fix` itself: watchPositionAsync emits
+  // roughly every 4-10 seconds while walking, and an effect keyed on the fix
+  // object tears down and restarts on every one of those -- the interval below
+  // never gets 30 seconds to live, and heartbeat_position ends up firing on
+  // nearly every GPS tick instead. Keying on presence alone lets the interval
+  // run on its own clock and read whatever position is newest when it fires.
+  const latestFix = useRef<Fix | null>(null)
   useEffect(() => {
-    if (!fix) return
+    latestFix.current = fix
+  }, [fix])
+
+  const hasFix = fix != null
+  useEffect(() => {
+    if (!hasFix) return
     let cancelled = false
 
     const tick = async () => {
+      const current = latestFix.current
+      if (!current) return
       await supabase.rpc('heartbeat_position', {
-        p_lat: fix.latitude,
-        p_lng: fix.longitude,
+        p_lat: current.latitude,
+        p_lng: current.longitude,
       })
       const { data } = await supabase.rpc('nearby_players', {
-        p_lat: fix.latitude,
-        p_lng: fix.longitude,
+        p_lat: current.latitude,
+        p_lng: current.longitude,
         p_radius_m: 3000,
       })
       if (!cancelled) setPlayers((data as NearbyPlayer[]) ?? [])
@@ -265,7 +279,7 @@ export default function MapScreen() {
       cancelled = true
       clearInterval(timer)
     }
-  }, [fix])
+  }, [hasFix])
 
   const openCard = useCallback(
     async (player: NearbyPlayer) => {

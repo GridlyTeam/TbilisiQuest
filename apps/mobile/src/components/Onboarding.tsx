@@ -70,16 +70,27 @@ export default function Onboarding() {
     setBusy(true)
     setError(null)
 
+    // RLS already scopes the update to auth.uid(); the point of fetching the
+    // user here is only to fail loudly if the session has gone stale, rather
+    // than silently matching zero rows the way an unguarded .eq() would.
+    const { data: auth } = await supabase.auth.getUser()
+    if (!auth.user) {
+      setBusy(false)
+      setError(ka ? 'თავიდან შედი და სცადე' : 'Please sign in again and retry')
+      return
+    }
+
     const { data: row } = await supabase
       .from('users')
       .select('avatar_config')
+      .eq('id', auth.user.id)
       .maybeSingle()
     const config = (row?.avatar_config ?? {}) as Record<string, string>
 
     const { error: nameError } = await supabase
       .from('users')
       .update({ display_name: trimmed })
-      .eq('id', (await supabase.auth.getUser()).data.user?.id ?? '')
+      .eq('id', auth.user.id)
 
     const { error: configError } = await supabase.rpc('set_avatar_config', {
       p_config: { ...config, colour },
