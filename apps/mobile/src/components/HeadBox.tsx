@@ -20,11 +20,11 @@ import { CREATURE_COLOURS as CREATURE, creatureSource } from './Creature'
  * set of head-only renders. One file per colour, and a map icon that can never
  * disagree with the profile.
  *
- * The outline is drawn in the text colour rather than the background one. That
- * looks like a detail and is not: the basemap follows the theme, so an outline
- * the colour of the background is the colour of the map behind it -- near-black
- * on the dark basemap, near-white on the light one. It was invisible in both
- * modes for the same reason.
+ * The outline takes the player's own creature colour, which is what tells two
+ * people apart on a map before you have tapped either of them. It is never the
+ * background colour, which is how it managed to be invisible in both themes at
+ * once: the basemap follows the theme, so an outline the colour of the
+ * background is the colour of the map behind it.
  */
 
 /** One palette, defined with the creature: two lists would drift apart. */
@@ -57,6 +57,16 @@ export default function HeadBox({
   const { c } = useTheme()
   const styles = makeStyles()
 
+  // The bubble is ringed in the player's own colour, so a map with several
+  // people on it tells them apart before you tap anything.
+  //
+  // Which of the two tones depends on the basemap, and that is the whole
+  // reason the palette carries both: the dark basemap needs the bright body
+  // colour to read against it, the light one needs the darker shade. Picking
+  // one for both is how the outline was invisible before.
+  const skin = CREATURE[colour ?? ''] ?? CREATURE[DEFAULT_COLOUR]
+  const ring = c.isDark ? skin.body : skin.shade
+
   const outline = 2
   const tailW = Math.round(size * 0.2)
   const tailH = Math.round(size * 0.26)
@@ -70,10 +80,10 @@ export default function HeadBox({
         <View
           style={[
             styles.plate,
-            { borderColor: c.text, backgroundColor: c.surface, maxWidth: size * 2.6 },
+            { borderColor: ring, backgroundColor: c.surface, maxWidth: size * 2.6 },
           ]}
         >
-          <Text style={[styles.name, { color: c.text }]} numberOfLines={1}>
+          <Text style={[styles.name, { color: ring }]} numberOfLines={1}>
             {name}
           </Text>
         </View>
@@ -85,7 +95,7 @@ export default function HeadBox({
           height: size,
           borderRadius: size * 0.34,
           borderWidth: outline,
-          borderColor: c.text,
+          borderColor: ring,
           backgroundColor: c.surface,
           overflow: 'hidden',
           alignItems: 'center',
@@ -117,7 +127,7 @@ export default function HeadBox({
             borderTopWidth: tailH,
             borderLeftColor: 'transparent',
             borderRightColor: 'transparent',
-            borderTopColor: c.text,
+            borderTopColor: ring,
           }}
         />
         <View
