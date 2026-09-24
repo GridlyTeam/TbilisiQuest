@@ -134,45 +134,29 @@ export function StoreIcon({ color, size = 22 }: Props) {
 }
 
 export function PassIcon({ color, size = 22 }: Props) {
-  const medal = Math.round(size * 0.5)
+  // A square carrying only its top and right border, turned 45 degrees, is a
+  // chevron -- and three of them stacked is the tier language every pass in
+  // this audience's life already uses.
+  const arm = Math.round(size * 0.34)
   return (
     <View style={[styles.box, { width: size, height: size }]}>
-      {/* A medal: the ribbon first so the disc sits over its ends. */}
-      <View style={{ flexDirection: 'row', gap: 3, marginBottom: -4 }}>
-        {[-14, 14].map((angle) => (
-          <View
-            key={angle}
-            style={{
-              width: 4,
-              height: 9,
-              borderWidth: 1.5,
-              borderColor: color,
-              transform: [{ rotate: `${angle}deg` }],
-            }}
-          />
-        ))}
-      </View>
-      <View
-        style={{
-          width: medal,
-          height: medal,
-          borderRadius: medal / 2,
-          borderWidth: 2,
-          borderColor: color,
-          backgroundColor: 'transparent',
-          alignItems: 'center',
-          justifyContent: 'center',
-        }}
-      >
+      {[0, 1, 2].map((i) => (
         <View
+          key={i}
           style={{
-            width: 3,
-            height: 3,
-            borderRadius: 1.5,
-            backgroundColor: color,
+            width: arm,
+            height: arm,
+            borderTopWidth: 2,
+            borderRightWidth: 2,
+            borderColor: color,
+            transform: [{ rotate: '-45deg' }],
+            // Overlapped, so they read as one mark rather than three shapes.
+            marginTop: i === 0 ? 0 : -arm * 0.52,
+            // The one you are climbing towards is the brightest.
+            opacity: 1 - i * 0.3,
           }}
         />
-      </View>
+      ))}
     </View>
   )
 }
