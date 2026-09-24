@@ -80,6 +80,9 @@ const NEARBY_RADIUS_M = 500
  */
 const FOCUS_ZOOM = 15
 
+/** UserPuck's own box. Its dot sits in the middle of this, not at the bottom. */
+const PUCK_BOX = 66
+
 /** Which rarity a shared marker should advertise. */
 const RARITY_RANK: Record<Rarity, number> = { common: 0, rare: 1, legendary: 2 }
 
@@ -367,6 +370,12 @@ export default function MapScreen() {
         {permission === 'granted' && fix && (
           <Marker
             lngLat={[fix.longitude, fix.latitude]}
+            // Anchored at the bottom and pushed back down by half the puck's
+            // own box: UserPuck is 66px tall with its dot centred, so with the
+            // default centre anchor the dot landed well below the position it
+            // was marking and the bubble floated a long way above it.
+            anchor="bottom"
+            offset={[0, PUCK_BOX / 2]}
             // The Marker's own press, not a Pressable inside it: on Android
             // these are native views placed on the map projection and the
             // map's gestures swallow touches aimed at React children, which
@@ -378,7 +387,11 @@ export default function MapScreen() {
                 -- and the head box sits above it, the same box other players
                 see. */}
             <View style={styles.selfMarker}>
-              <HeadBox colour={myColour} name={myName} size={44} />
+              {/* Tucked down over the puck's empty upper half so the tail
+                  ends just above the dot rather than a puck-height away. */}
+              <View style={styles.selfBubble}>
+                <HeadBox colour={myColour} name={myName} size={44} />
+              </View>
               <UserPuck />
             </View>
           </Marker>
@@ -931,7 +944,8 @@ const makeStyles = (c: Palette) => StyleSheet.create({
   },
   badgeSoldOut: { color: c.isDark ? '#2A2440' : '#D8D3E0' },
   pickerBackdrop: { flex: 1, backgroundColor: c.overlay, justifyContent: 'flex-end' },
-  selfMarker: { alignItems: 'center', marginBottom: -26 },
+  selfMarker: { alignItems: 'center' },
+  selfBubble: { marginBottom: -PUCK_BOX * 0.34 },
   cardSheet: {
     margin: space.lg,
     marginBottom: space.xl,
