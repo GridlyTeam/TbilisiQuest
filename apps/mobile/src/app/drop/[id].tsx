@@ -53,6 +53,7 @@ type DropDetail = {
   squad_allowed: boolean
   offer: 'percent_off' | 'bogo' | 'free_item' | null
   discount_percent: number | null
+  face_value_gel: number | null
 }
 
 
@@ -289,6 +290,13 @@ export default function DropDetailScreen() {
       {description && <Text style={styles.description}>{description}</Text>}
 
       <View style={styles.statRow}>
+        {drop.face_value_gel != null && Number(drop.face_value_gel) > 0 && (
+          <Stat
+            label={ka ? 'ღირებულება' : 'Worth'}
+            value={`${Math.round(Number(drop.face_value_gel))} ₾`}
+            tone="good"
+          />
+        )}
         <Stat
           label={ka ? 'დარჩა' : 'Left'}
           value={String(drop.remaining)}
@@ -441,8 +449,22 @@ function Stat({
     tone === 'good' ? c.good : tone === 'bad' ? c.bad : c.text
   return (
     <View style={styles.stat}>
-      <Text style={styles.statLabel}>{label}</Text>
-      <Text style={[styles.statValue, { color }]}>{value}</Text>
+      {/* One line each, always. A wrapped label turns a tidy row of figures
+          into ragged blocks of different heights, and these are numbers read
+          at a glance rather than sentences. The value shrinks to fit instead
+          of breaking -- Georgian labels are long and the numbers are short,
+          so there is room to give. */}
+      <Text style={styles.statLabel} numberOfLines={1} adjustsFontSizeToFit>
+        {label}
+      </Text>
+      <Text
+        style={[styles.statValue, { color }]}
+        numberOfLines={1}
+        adjustsFontSizeToFit
+        minimumFontScale={0.6}
+      >
+        {value}
+      </Text>
     </View>
   )
 }
@@ -548,9 +570,18 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     textTransform: 'uppercase',
   },
   description: { color: c.textMuted, fontSize: 15, lineHeight: 22 },
-  statRow: { flexDirection: 'row', gap: space.md, marginTop: space.md },
+  // Two to a row rather than four across. A fourth stat squeezed every one of
+  // them until the numbers wrapped and the labels clipped; wrapping at half
+  // width keeps each readable however many there are.
+  statRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: space.md,
+    marginTop: space.md,
+  },
   stat: {
-    flex: 1,
+    flexGrow: 1,
+    flexBasis: '46%',
     backgroundColor: c.surface,
     borderRadius: radius.md,
     borderWidth: 1,
@@ -564,7 +595,7 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     letterSpacing: 0,
     textTransform: 'uppercase',
   },
-  statValue: { fontSize: 21, fontWeight: '900', letterSpacing: 0, marginTop: 3 },
+  statValue: { fontSize: 19, fontWeight: '900', letterSpacing: 0, marginTop: 3 },
   squad: {
     backgroundColor: c.surface,
     borderRadius: radius.md,

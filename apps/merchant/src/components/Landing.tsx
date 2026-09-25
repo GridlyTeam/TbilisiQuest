@@ -36,7 +36,6 @@ const COPY = {
   ka: {
     portal: 'ბიზნესებს',
     signIn: 'შესვლა',
-    signUp: 'დაამატე შენი ბიზნესი',
     how: 'როგორ მუშაობს',
     heroEyebrow: 'უფასო აპლიკაცია · თბილისი',
     heroTitle: 'ყავა ნახევარ ფასად.',
@@ -109,7 +108,6 @@ const COPY = {
   en: {
     portal: 'For business',
     signIn: 'Sign in',
-    signUp: 'Add your place',
     how: 'How it works',
     heroEyebrow: 'Free app · Tbilisi',
     heroTitle: 'Coffee at half price.',
@@ -252,13 +250,12 @@ export default function Landing({ stats }: { stats: PublicStats | null }) {
           <a className="nav-link" href="#how">
             {t.how}
           </a>
-          {/* Merchants get both doors in the corner: one for the shop that
-              already has an account, one for the shop that does not. */}
-          <Link className="nav-link" href="/login">
+          {/* One door, not two. A venue does not sign itself up any more:
+              an operator places its pin and sets how many vouchers it may
+              issue, and a shop that has been through none of that has
+              nothing to log in to. */}
+          <Link className="portal-link" href="/login">
             {t.signIn}
-          </Link>
-          <Link className="portal-link" href="/login?mode=signup">
-            {t.signUp}
           </Link>
           <button
             className="theme-toggle"

@@ -123,17 +123,23 @@ export default function LoginPage() {
                 : t('auth.createAccount')}
           </button>
 
-          <button
-            type="button"
-            onClick={() => {
-              setMode(mode === 'signin' ? 'signup' : 'signin')
-              setError(null)
-              setNotice(null)
-            }}
-            className="w-full text-center text-xs text-muted hover:text-ink"
-          >
-            {mode === 'signin' ? t('auth.noAccount') : t('auth.haveAccount')}
-          </button>
+          {/* No toggle to sign-up from here. The form still opens in that
+              mode when ?mode=signup is on the URL, which is how an operator
+              hands a vetted shop its own way in -- but the page offers it to
+              nobody who was not sent the link. */}
+          {mode === 'signup' && (
+            <button
+              type="button"
+              onClick={() => {
+                setMode('signin')
+                setError(null)
+                setNotice(null)
+              }}
+              className="w-full text-center text-xs text-muted hover:text-ink"
+            >
+              {t('auth.haveAccount')}
+            </button>
+          )}
         </form>
 
         <div className="mt-6 flex justify-center">

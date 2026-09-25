@@ -31,6 +31,9 @@ type VoucherRow = {
     title_en: string
     rarity: Rarity
     claim_radius_m: number
+    offer: 'percent_off' | 'bogo' | 'free_item' | null
+    discount_percent: number | null
+    face_value_gel: number | null
     venues: {
       id: string
       name_ka: string
@@ -67,7 +70,7 @@ export default function VouchersScreen() {
     const { data, error } = await supabase
       .from('vouchers')
       .select(
-        'id, redemption_code, status, hold_expires_at, drops(title_ka, title_en, rarity, claim_radius_m, venues(id, name_ka, name_en))',
+        'id, redemption_code, status, hold_expires_at, drops(title_ka, title_en, rarity, claim_radius_m, offer, discount_percent, face_value_gel, venues(id, name_ka, name_en))',
       )
       .in('status', ['held', 'redeemed'])
       .order('claimed_at', { ascending: false })
@@ -220,6 +223,17 @@ export default function VouchersScreen() {
                 {ka ? item.drops?.venues?.name_ka : item.drops?.venues?.name_en}
               </Text>
 
+              {/* What it is worth, which the wallet never said. A voucher you
+                  cannot value is one you forget to go and use. */}
+              {item.drops?.face_value_gel != null &&
+                Number(item.drops.face_value_gel) > 0 && (
+                  <Text style={styles.cardWorth}>
+                    {ka
+                      ? `ღირს ${Math.round(Number(item.drops.face_value_gel))} ₾`
+                      : `Worth ${Math.round(Number(item.drops.face_value_gel))} ₾`}
+                  </Text>
+                )}
+
               {!redeemed && minutesLeft != null && (
                 <Text style={[styles.hold, expiring && styles.holdSoon]}>
                   {minutesLeft <= 0
@@ -291,6 +305,7 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     letterSpacing: 0,
   },
   cardVenue: { color: c.textMuted, fontSize: 13 },
+  cardWorth: { color: c.accent, fontSize: 13, fontWeight: '900', marginTop: 3 },
   hold: { color: c.textFaint, fontSize: 12, fontWeight: '700', marginTop: 3 },
   holdSoon: { color: c.bad },
   scan: {
