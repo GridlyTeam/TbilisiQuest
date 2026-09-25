@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Map as MapLibreMap, Marker, NavigationControl, type MapMouseEvent } from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
@@ -32,6 +32,9 @@ export default function LocationPicker({
   // The last position this component itself reported. Used to tell an
   // operator's own click apart from coordinates arriving from outside.
   const ours = useRef<{ lat: number; lng: number } | null>(null)
+  // A blank map is indistinguishable from a slow one, and the operator cannot
+  // read a console. If the tiles have not arrived the map says so itself.
+  const [trouble, setTrouble] = useState<string | null>(null)
 
   useEffect(() => {
     if (!container.current || map.current) return
@@ -56,10 +59,35 @@ export default function LocationPicker({
     observer.observe(container.current)
     instance.once('load', () => instance.resize())
 
+    // ResizeObserver covers a container that changes size later, but not one
+    // that was already its final size before the map existed and so never
+    // "changes" at all. Nudging it across the next few frames costs nothing
+    // and covers both.
+    const nudges = [
+      requestAnimationFrame(() => instance.resize()),
+      window.setTimeout(() => instance.resize(), 120),
+      window.setTimeout(() => instance.resize(), 600),
+    ]
+
+    // Nothing drawn after a few seconds means the style or its tiles did not
+    // arrive. Report it rather than leaving a white rectangle.
+    const watchdog = window.setTimeout(() => {
+      if (!instance.isStyleLoaded()) {
+        const canvas = instance.getCanvas()
+        setTrouble(
+          `Map tiles did not load (canvas ${canvas.width}x${canvas.height}).`,
+        )
+      }
+    }, 6000)
+
+    instance.once('idle', () => setTrouble(null))
+
     // Surface a failed style or blocked tile request instead of leaving a
     // blank rectangle and no explanation.
     instance.on('error', (event) => {
-      console.warn('[LocationPicker] map error', event.error?.message ?? event)
+      const message = event.error?.message ?? 'unknown map error'
+      console.warn('[LocationPicker] map error', message)
+      setTrouble(message)
     })
 
     marker.current = new Marker({ color: '#4C3A8C', draggable: true })
@@ -81,6 +109,10 @@ export default function LocationPicker({
     map.current = instance
 
     return () => {
+      cancelAnimationFrame(nudges[0])
+      window.clearTimeout(nudges[1])
+      window.clearTimeout(nudges[2])
+      window.clearTimeout(watchdog)
       observer.disconnect()
       instance.remove()
       map.current = null
@@ -117,6 +149,12 @@ export default function LocationPicker({
         ref={container}
         className="h-80 w-full overflow-hidden rounded-xl border border-line"
       />
+      {trouble && (
+        <p className="absolute left-3 right-3 top-3 rounded-lg border border-danger bg-danger px-3 py-2 text-xs font-medium text-danger-ink shadow-sm">
+          {trouble}
+        </p>
+      )}
+
       <button
         type="button"
         onClick={() => map.current?.easeTo({ center: [lng, lat], zoom: 17, duration: 400 })}

@@ -214,7 +214,7 @@ function BeaconButton({ drop, now }: { drop: DropSummary; now: Date | null }) {
       >
         {busy ? '…' : t('drops.beacon')}
       </button>
-      {error && <p className="mt-1 max-w-[9rem] text-[10px] text-bad">{error}</p>}
+      {error && <p className="mt-1 max-w-[9rem] text-[10px] text-danger-ink">{error}</p>}
     </div>
   )
 }
