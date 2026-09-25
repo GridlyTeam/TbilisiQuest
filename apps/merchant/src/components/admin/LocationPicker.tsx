@@ -1,10 +1,42 @@
 'use client'
 
 import { useEffect, useRef, useState } from 'react'
-import { Map as MapLibreMap, Marker, NavigationControl, type MapMouseEvent } from 'maplibre-gl'
+import {
+  Map as MapLibreMap,
+  Marker,
+  NavigationControl,
+  type MapMouseEvent,
+  type StyleSpecification,
+} from 'maplibre-gl'
 import 'maplibre-gl/dist/maplibre-gl.css'
 
-const STYLE = 'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json'
+/**
+ * A raster basemap rather than CARTO's vector style.
+ *
+ * The vector one left a blank canvas in the admin: the pin, the zoom controls
+ * and the attribution all drew -- those are DOM -- while the tiles, which are
+ * the WebGL canvas, never appeared, and MapLibre reported the style as loaded
+ * and raised no error. Vector rendering needs the tile decoder, the glyph
+ * server and the sprite sheet all to work; raster needs none of them, and this
+ * map exists to let an operator see which side of a street they are pinning,
+ * which a picture of the street does perfectly well.
+ */
+const STYLE: StyleSpecification = {
+  version: 8,
+  sources: {
+    carto: {
+      type: 'raster',
+      tiles: [
+        'https://a.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+        'https://b.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+        'https://c.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}.png',
+      ],
+      tileSize: 256,
+      attribution: '© CARTO, © OpenStreetMap contributors',
+    },
+  },
+  layers: [{ id: 'carto', type: 'raster', source: 'carto' }],
+}
 
 /**
  * Click-to-place pin for a venue.
