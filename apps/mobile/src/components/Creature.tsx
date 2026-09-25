@@ -51,7 +51,7 @@ export const DEFAULT_COLOUR = 'cyan'
  * Every layer is written on one canvas at this shape, so the body and whatever
  * it is wearing stack with no offsets to get wrong.
  */
-export const RATIO = 539 / 392
+export const RATIO = 540 / 392
 
 /**
  * Everything the creature can wear, lifted out of a render of it wearing that
