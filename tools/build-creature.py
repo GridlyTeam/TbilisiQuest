@@ -110,15 +110,23 @@ def alpha_from(solid: np.ndarray) -> np.ndarray:
     return ndimage.gaussian_filter(solid.astype(np.float32), 0.7)
 
 
-def unfringe(rgb: np.ndarray, alpha: np.ndarray) -> np.ndarray:
+def unfringe(rgb: np.ndarray, core: np.ndarray) -> np.ndarray:
     """
-    Push body colour outwards into the soft edge.
+    Push body colour outwards over the blended edge.
 
-    Anything not fully opaque is part backdrop, and keeping its colour is what
-    leaves a white halo around a character cut from a pale render. Each such
-    pixel takes the colour of the nearest solid one instead.
+    A character cut from a white render has a ring of pixels that are mostly
+    backdrop with a little body mixed in, and keeping their colour is what
+    leaves a pale halo round the silhouette. Each of them takes the colour of
+    the nearest pixel that is entirely body instead.
+
+    `core` is passed in rather than derived from the alpha, which is the bug
+    this signature exists to prevent. Deriving it as "alpha above 0.92" missed
+    the worst offenders: the cut-out keeps anything darker than the backdrop,
+    so a pixel that is four fifths white still lands inside the silhouette at
+    full opacity, and a test on alpha never looks at it. The core is the
+    silhouette eroded instead -- what is left after the blended ring is taken
+    off it.
     """
-    core = alpha > 0.92
     if not core.any():
         return rgb
     _, (iy, ix) = ndimage.distance_transform_edt(~core, return_indices=True)
@@ -127,25 +135,82 @@ def unfringe(rgb: np.ndarray, alpha: np.ndarray) -> np.ndarray:
 
 def tame_rim(rgb: np.ndarray, alpha: np.ndarray) -> np.ndarray:
     """
-    Pull down the render's rim light and leave a contour in its place.
+    Flatten the render's rim light and leave a contour in its place.
 
-    These renders are lit with a bright edge round the silhouette. Rotating its
-    hue keeps that brightness, so every colour comes out haloed just inside its
-    outline -- the thing that reads as a cheap cut-out. The band nearest the
-    edge has its highlights compressed towards the body's own mid-tone and then
-    darkens, so the character ends in a defined edge the way a drawn asset does.
+    These renders are lit with a bright edge round the silhouette, and rotating
+    the hue keeps that brightness, so every colour comes out haloed just inside
+    its outline -- the pale line that reads as a cheap cut-out.
+
+    The correction is narrow because the rim is: measured on the bare render,
+    the outermost two pixels sit at luminance 229 against a body of 145. But
+    the halo is wider than that spike: the body is round and lit from the
+    front, so its shading keeps climbing past the body's own level and peaks
+    about ten pixels in. Correcting only the first few pixels left that band
+    untouched, which is why the pale outline survived several attempts at it --
+    the fix was looking at the wrong place.
+
+    So instead of mixing those pixels towards the body, their brightness is
+    capped at it: whatever the rim was lit to, it may not end up brighter than
+    the surface behind it. Then the very edge darkens slightly, which gives the
+    character a drawn contour rather than a glow.
     """
     solid = alpha > 0.5
+    if not solid.any():
+        return rgb
+
     depth = ndimage.distance_transform_edt(solid)
-    band = 6.0
-    t = np.clip(depth / band, 0, 1)[..., None]
+    interior = solid & (depth > 8)
+    if not interior.any():
+        return rgb
 
-    deep = solid & (depth > band)
-    mid = np.median(rgb[deep], axis=0) if deep.any() else rgb.mean(axis=(0, 1))
+    lum = rgb.mean(axis=2)
+    cap = float(np.median(lum[interior]))
 
-    out = rgb * t + (rgb * 0.55 + mid * 0.45) * (1 - t)
-    out *= 0.80 + 0.20 * t
-    return np.clip(out, 0, 255)
+    # 1 at the outline, fading to 0 by BAND pixels in.
+    BAND = 16.0
+    strength = np.clip(1 - depth / BAND, 0, 1)
+
+    # How much each pixel would have to dim to sit at the body's own level.
+    needed = np.minimum(1.0, cap / np.maximum(lum, 1.0))
+    factor = 1 - strength * (1 - needed)
+
+    # And a touch darker right at the edge, so it reads as a contour.
+    factor *= 1 - 0.18 * strength
+
+    return np.clip(rgb * factor[..., None], 0, 255)
+
+
+def soften_speculars(
+    rgb: np.ndarray, skin: np.ndarray
+) -> np.ndarray:
+    """
+    Flatten the hot specular ridges the render leaves inside the silhouette.
+
+    tame_rim() only reaches the outline, and the worst highlight on this
+    character is nowhere near it: where the arm meets the body the two surfaces
+    are joined, so the crease down each armpit is more than seven pixels from
+    any edge and the rim correction never touched it. It came out as a white
+    line down both sides.
+
+    The body's own shading and the specular are separable by brightness. Across
+    the skin, the honest form shading reaches about the 97th percentile and
+    stops; the speculars sit well above it -- measured here, shading topped out
+    at 181 and the armpit ridge reached 231. So everything past that knee is
+    compressed towards it rather than clipped, which removes the ridge while
+    leaving the roundness that makes the character look lit at all.
+    """
+    if not skin.any():
+        return rgb
+
+    lum = rgb.mean(axis=2)
+    knee = float(np.percentile(lum[skin], 97))
+
+    over = np.maximum(lum - knee, 0)
+    target = knee + over * 0.25
+    factor = np.where(lum > knee, target / np.maximum(lum, 1.0), 1.0)
+    factor = np.where(skin, factor, 1.0)
+
+    return np.clip(rgb * factor[..., None], 0, 255)
 
 
 def hue_of(rgb: np.ndarray) -> np.ndarray:
@@ -251,7 +316,14 @@ def main() -> None:
 
     eyes = find_eyes(base_rgb, base_solid)
 
-    body = tame_rim(unfringe(base_rgb, base_alpha), base_alpha)
+    # The eyes keep their own brightness: they are meant to be the palest
+    # thing on the creature.
+    skin = base_solid & ~eyes
+    # Two pixels in from the outline: enough to clear the blend with the
+    # backdrop, little enough to keep the shading that describes the shape.
+    base_core = ndimage.binary_erosion(base_solid, iterations=2)
+    body = soften_speculars(unfringe(base_rgb, base_core), skin)
+    body = tame_rim(body, base_alpha)
 
 
     save(body, base_alpha, "creature-green.png")
@@ -279,7 +351,7 @@ def main() -> None:
         garment = ndimage.binary_opening(garment, iterations=2)
 
         g_alpha = alpha_from(garment)
-        g_rgb = unfringe(rgb, g_alpha)
+        g_rgb = unfringe(rgb, ndimage.binary_erosion(garment, iterations=2))
         save(g_rgb, g_alpha, f"layer-{name}.png")
         print(f"  outfit {name}: {int(garment.sum())}px")
 
