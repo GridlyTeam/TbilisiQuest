@@ -299,7 +299,7 @@ export default function DropDetailScreen() {
         )}
         <Stat
           label={ka ? 'დარჩა' : 'Left'}
-          value={String(drop.remaining)}
+          value={ka ? `${drop.remaining} ცალი` : `${drop.remaining} left`}
           tone={soldOut ? 'bad' : 'good'}
         />
         <Stat
@@ -587,6 +587,7 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     borderWidth: 1,
     borderColor: c.border,
     padding: space.md,
+    alignItems: 'center',
   },
   statLabel: {
     color: c.text,
@@ -594,8 +595,15 @@ const makeStyles = (c: Palette) => StyleSheet.create({
     fontWeight: '800',
     letterSpacing: 0,
     textTransform: 'uppercase',
+    textAlign: 'center',
   },
-  statValue: { fontSize: 19, fontWeight: '900', letterSpacing: 0, marginTop: 3 },
+  statValue: {
+    fontSize: 19,
+    fontWeight: '900',
+    letterSpacing: 0,
+    marginTop: 3,
+    textAlign: 'center',
+  },
   squad: {
     backgroundColor: c.surface,
     borderRadius: radius.md,
